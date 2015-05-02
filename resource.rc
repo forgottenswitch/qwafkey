@@ -1,0 +1,23 @@
+#include <winnt.h>
+#include "resource.h"
+
+IDI_ICON_TRAY               ICON                    "ico/icon_tray.ico"
+IDI_ICON_TRAY_PAUSE         ICON                    "ico/icon_tray_pause.ico"
+IDI_ICON_TRAY_PASS          ICON                    "ico/icon_tray_pass.ico"
+IDI_ICON_TRAY_UTF16         ICON                    "ico/icon_tray_utf16.ico"
+
+STRINGTABLE
+BEGIN
+IDS_SUSPEND "Suspend"
+IDS_QUIT    "Exit"
+IDS_PASS    "No remaps"
+END
+
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+STRINGTABLE
+BEGIN
+IDS_SUSPEND "Приостановить"
+IDS_QUIT    "Выход"
+IDS_PASS    "Не переназначать"
+END
+
