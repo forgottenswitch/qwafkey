@@ -58,7 +58,8 @@ typedef struct {
     unsigned short binding;
 } LK;
 
-
+KP OS_tchar_to_vk(TCHAR tc, HKL hkl);
+VK OS_sc_to_vk(SC sc, HKL hkl);
 
 #endif // STDAFX_H_INCLUDED
 

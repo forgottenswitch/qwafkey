@@ -77,8 +77,6 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         inp.ki.wScan = sc;
         inp.ki.time = GetTickCount();
         SendInput(1, &inp, sizeof(INPUT));
-    } else if (mods & KLM_SC) {
-        keybd_event(0, lk.binding, 0, 0);
     } else {
         keybd_event(lk.binding, sc, 0, 0);
     }
@@ -97,14 +95,17 @@ void KL_init() {
 void KL_bind(SC sc, UINT mods, SC binding) {
     LK lk;
     int lv = 0;
+    SC binding1 = binding;
     lk.active = true;
-    lk.mods = mods;
-    lk.binding = binding;
+    lk.mods = mods | KLM_SC;
+    if (mods & KLM_SC)
+        binding1 = OS_sc_to_vk(binding, nil);
+    lk.binding = binding1;
     KL_kly[lv][sc] = lk;
     if (mods & KLM_WCHAR) {
         printf("bind sc%03x[%d]: u%04x\n", sc, lv, binding);
     } else if (mods & KLM_SC) {
-        printf("bind sc%03x[%d]: sc%03x\n", sc, lv, binding);
+        printf("bind sc%03x[%d]: sc%03x=>vk%02x\n", sc, lv, binding, binding1);
     } else {
         printf("bind sc%03x[%d]: vk%02x\n", sc, lv, binding);
     }
