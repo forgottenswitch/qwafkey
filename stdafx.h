@@ -1,7 +1,8 @@
 #ifndef STDAFX_H_INCLUDED
 #define STDAFX_H_INCLUDED
 
-#define _WIN32_WINNT 0x0500
+#define _WIN32_WINNT 0x0501
+#define WINVER 0x500
 
 #if defined(UNICODE) && !defined(_UNICODE)
     #define _UNICODE
@@ -60,6 +61,10 @@ typedef struct {
 
 KP OS_tchar_to_vk(TCHAR tc, HKL hkl);
 VK OS_sc_to_vk(SC sc, HKL hkl);
+void OS_print_last_error();
+
+#define LANGID_Primary LOWORD
+#define LANGID_SubLang HIWORD
 
 #endif // STDAFX_H_INCLUDED
 

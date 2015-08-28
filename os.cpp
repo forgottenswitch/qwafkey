@@ -20,3 +20,18 @@ KP OS_tchar_to_vk(TCHAR tc, HKL hkl) {
 VK OS_sc_to_vk(SC sc, HKL hkl) {
     return MapVirtualKeyEx(sc, MAPVK_VSC_TO_VK, hkl);
 }
+
+void OS_print_last_error() {
+    DWORD error_code = GetLastError();
+    LPVOID lpMsgBuf;
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                  FORMAT_MESSAGE_FROM_SYSTEM |
+                  FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL,
+                  error_code,
+                  MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
+                  (LPTSTR) &lpMsgBuf,
+                  0, NULL );
+    printf("Error %d: %s\n", error_code, lpMsgBuf);
+    LocalFree(lpMsgBuf);
+}

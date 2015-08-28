@@ -26,7 +26,7 @@ void KL_activate() {
     SetWindowsHookEx(WH_KEYBOARD_LL, KL_proc, nil, 0);
 }
 
-void KL_disactivate() {
+void KL_deactivate() {
     KL_active = false;
     UnhookWindowsHookEx(KL_handle);
 }
@@ -87,10 +87,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 #undef StopThisEvent
 #undef PassThisEvent
 
-void KL_init() {
-    ZeroMemory(KL_kly, sizeof(KL_kly));
-    ZeroMemory(KL_phys, sizeof(KL_phys));
-}
+KLY *KL_bind_kly = &KL_kly;
 
 void KL_bind(SC sc, UINT mods, SC binding) {
     LK lk;
@@ -101,7 +98,7 @@ void KL_bind(SC sc, UINT mods, SC binding) {
     if (mods & KLM_SC)
         binding1 = OS_sc_to_vk(binding, nil);
     lk.binding = binding1;
-    KL_kly[lv][sc] = lk;
+    (*KL_bind_kly)[lv][sc] = lk;
     if (mods & KLM_WCHAR) {
         printf("bind sc%03x[%d]: u%04x\n", sc, lv, binding);
     } else if (mods & KLM_SC) {
@@ -109,4 +106,66 @@ void KL_bind(SC sc, UINT mods, SC binding) {
     } else {
         printf("bind sc%03x[%d]: vk%02x\n", sc, lv, binding);
     }
+}
+
+typedef struct {
+    // Primary Language ID
+    LANGID lang;
+    // Bindings
+    KLY kly;
+} KLC;
+
+size_t KL_klcs_size = 0;
+size_t KL_klcs_count = 0;
+KLC *KL_klcs = (KLC*)calloc((KL_klcs_size = 4), sizeof(KLC));
+
+void KL_add_lang(LANGID lang) {
+    if ((KL_klcs_count+=1) > KL_klcs_size) {
+        KL_klcs = (KLC*)realloc(KL_klcs, (KL_klcs_size *= 1.5) * sizeof(KLC));
+    }
+    KLC *klc = KL_klcs + KL_klcs_count - 1;
+    klc->lang = lang;
+}
+
+KLY *KL_lang_to_kly(LANGID lang) {
+    UINT i;
+    fori(i, 0, KL_klcs_count) {
+        if (KL_klcs[i].lang == lang)
+            return &(KL_klcs[i].kly);
+    }
+    return nil;
+}
+
+void KL_activate_lang(LANGID lang) {
+    printf("activating lang %04d\n", lang);
+    CopyMemory(KL_kly, KL_lang_to_kly(LANG_NEUTRAL), sizeof(KLY));
+    KLY *kly = KL_lang_to_kly(lang);
+    if (kly != nil) {
+        int lvi, ki;
+        fori(lvi, 0, KLVN) {
+            fori(ki, 0, KPN) {
+                LK lk = (*kly)[lvi][ki];
+                if (lk.active) {
+                    printf("cp sc%03x; ", ki);
+                    KL_kly[lvi][ki] = lk;
+                }
+            }
+        }
+    }
+}
+
+void KL_set_bind_lang(LANGID lang) {
+    KLY *kly = KL_lang_to_kly(lang);
+    if (kly == nil) {
+        KL_add_lang(lang);
+        kly = KL_lang_to_kly(lang);
+    }
+    KL_bind_kly = kly;
+}
+
+void KL_init() {
+    ZeroMemory(KL_kly, sizeof(KL_kly));
+    ZeroMemory(KL_phys, sizeof(KL_phys));
+    KL_add_lang(LANG_NEUTRAL);
+    KL_bind_kly = KL_lang_to_kly(LANG_NEUTRAL);
 }

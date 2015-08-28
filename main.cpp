@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "hk.h"
 #include "kl.h"
+#include "eh.h"
+#include "mh.h"
 
 using namespace std;
 
@@ -20,6 +22,17 @@ int hdigtoi(TCHAR tc) {
     if (tc >= 'A' && tc <= 'F')
         return tc - 'F' + 10;
     return -1;
+}
+
+bool str_sets(char *str, char *thing) {
+    while (isspc(*str))
+        str++;
+    size_t n = strlen(thing);
+    if (!strncmp(str, thing, n)) {
+        char c = str[n];
+        return !c || isspc(c) || c == ':' || c == '=';
+    }
+    return false;
 }
 
 void parse_args(int argc, char *argv[]) {
@@ -68,13 +81,26 @@ void parse_args(int argc, char *argv[]) {
                     KL_bind(sc, mods, sc1);
                 }
             }
+        } else if (str_sets(arg, "lang")) {
+            int i = 0;
+            char c;
+            while (isspc(arg[i])) i++;
+            while ((c = arg[i]) && !isspc(c) && c != ':' && c != '=') i++;
+            while (isspc(arg[i])) { i++; }
+            c = arg[i];
+            if (c == ':' || c == '=') {
+                int n = atoi(arg + i + 1);
+                printf("  bind lang: %04d\n", n);
+                KL_set_bind_lang(n);
+            }
         }
     }
 }
 
 char *default_argv[] = {
     "sc002:sc003",
-    "",
+    "lang:4",
+    "sc003:sc004"
 };
 
 int main(int argc, char *argv[]) {
@@ -83,8 +109,14 @@ int main(int argc, char *argv[]) {
 
     HK_register(HK_ONOFF, MOD_WIN, VK_F2);
 
+    EH_activate();
+    MH_activate();
+
     parse_args(len(default_argv), default_argv);
     parse_args(argc-1, argv+1);
+
+    KL_activate_lang(LANG_NEUTRAL);
+    KL_activate_lang(4);
 
     for (;;) {
         int result;
@@ -101,7 +133,7 @@ int main(int argc, char *argv[]) {
             switch (id) {
             case HK_ONOFF:
                 if (KL_active) {
-                    KL_disactivate();
+                    KL_deactivate();
                     puts("suspended");
                 } else {
                     KL_activate();
