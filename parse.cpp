@@ -104,7 +104,7 @@ void parse_args(int argc, char *argv[]) {
                 printf(": %04x\n", w);
                 KL_bind(sc, KLM_WCHAR, w);
             } else if (c == '=') {
-                printf("  a");
+                printf("  =");
                 i++;
                 while (isspc(arg[i])) i++;
                 char c = arg[i];
