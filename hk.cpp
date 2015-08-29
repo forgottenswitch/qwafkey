@@ -26,8 +26,8 @@ void HK_register(int id, UINT mods, VK vk) {
     int ret = RegisterHotKey(nil, id, mods, vk);
     if (ret == 1) {
         puts("OK");
-        return;
+    } else {
+        OS_print_last_error();
     }
-    printf("Failed(%d)\n", ret);
 }
 

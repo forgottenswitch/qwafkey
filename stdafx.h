@@ -33,9 +33,9 @@ typedef struct {
     VK vk;
 } KP;
 
-#define KLM_WCHAR 16
-#define KLM_MOD 32
-#define KLM_SC 64
+#define KLM_SC 16
+#define KLM_WCHAR 32
+#define KLM_KA 64
 
 #define KLM_L3 16
 #define KLM_L5 32
@@ -62,6 +62,7 @@ typedef struct {
 KP OS_tchar_to_vk(TCHAR tc, HKL hkl);
 VK OS_sc_to_vk(SC sc, HKL hkl);
 void OS_print_last_error();
+void OS_get_layouts(int *count, HKL **buf);
 
 #define LANGID_Primary LOWORD
 #define LANGID_SubLang HIWORD

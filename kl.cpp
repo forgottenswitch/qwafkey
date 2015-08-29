@@ -1,21 +1,11 @@
 #include "kl.h"
+#include "ka.h"
 
 bool KL_active = false;
 HHOOK KL_handle;
 
 // bitmask: MOD_ALT/CONTROL/SHIFT/WIN, KLM_L3,KLM_L5
 BYTE KL_mods;
-
-/*
-KPN is number of bingins on a level (binding is a mapping from SC to KP to perform)
-It should cover tilde,1..0,minus,plus,backslash,brackets,semicolon,apostrophe,comma,period,slash
-and others alphanumericals: a key on left of Z and a key on right of apostrophe.
-All of the tilde till slash happen to have SC less than 64.
-*/
-#define KPN 64
-typedef LK KLV[KPN];
-#define KLVN 6
-typedef KLV KLY[KLVN];
 
 KLY KL_kly;
 
@@ -53,10 +43,13 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     faked = (flags & LLKHF_INJECTED || (!(KL_phys[sc]) && !down));
     if (flags & LLKHF_EXTENDED)
         sc |= 0x100;
-    if (faked || sc >= KPN)
+    if (faked || sc >= KPN) {
         return PassThisEvent();
+    }
+    KL_phys[sc] = down;
 
     unsigned char lv = 0;
+    printf("/%d ", KL_mods);
     if (KL_mods & KLM_L3)
         lv = 3;
     if (KL_mods & KLM_L5 && !lv)
@@ -64,8 +57,10 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     if (KL_mods & MOD_SHIFT)
         lv++;
     LK lk = KL_kly[lv][sc];
-    if (!lk.active)
+    if (!lk.active) {
+        printf(" na%s", (down ? "_ " : "^\n"));
         return PassThisEvent();
+    }
 
     unsigned char mods = lk.mods;
     if (mods == KLM_WCHAR) {
@@ -77,7 +72,12 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         inp.ki.wScan = sc;
         inp.ki.time = GetTickCount();
         SendInput(1, &inp, sizeof(INPUT));
+    } else if (mods & KLM_KA) {
+        printf(" ka_call ka%d(%d){", lk.binding, down);
+        KA_call(lk.binding, down);
+        printf("}%s", (down ? "_" : "^\n"));
     } else {
+        printf(" send vk%02x}%s", lk.binding, (down ? "_" : "^\n"));
         keybd_event(lk.binding, sc, 0, 0);
     }
 
@@ -88,23 +88,33 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 #undef PassThisEvent
 
 KLY *KL_bind_kly = &KL_kly;
+bool KL_bind_lvls[KLVN];
 
 void KL_bind(SC sc, UINT mods, SC binding) {
     LK lk;
-    int lv = 0;
-    SC binding1 = binding;
-    lk.active = true;
-    lk.mods = mods | KLM_SC;
-    if (mods & KLM_SC)
-        binding1 = OS_sc_to_vk(binding, nil);
-    lk.binding = binding1;
-    (*KL_bind_kly)[lv][sc] = lk;
-    if (mods & KLM_WCHAR) {
-        printf("bind sc%03x[%d]: u%04x\n", sc, lv, binding);
-    } else if (mods & KLM_SC) {
-        printf("bind sc%03x[%d]: sc%03x=>vk%02x\n", sc, lv, binding, binding1);
-    } else {
-        printf("bind sc%03x[%d]: vk%02x\n", sc, lv, binding);
+    UINT lv;
+    fori (lv, 0, len(KL_bind_lvls)) {
+        int lv1 = lv+1;
+        if (!KL_bind_lvls[lv]) {
+            printf("bind sc%03x:%d not ", sc, lv1);
+            continue;
+        }
+        SC binding1 = binding;
+        lk.active = true;
+        lk.mods = mods | KLM_SC;
+        if (mods & KLM_SC)
+            binding1 = OS_sc_to_vk(binding, nil);
+        lk.binding = binding1;
+        (*KL_bind_kly)[lv][sc] = lk;
+        if (mods & KLM_WCHAR) {
+            printf("bind sc%03x:%d u%04x ", sc, lv1, binding);
+        } else if (mods & KLM_SC) {
+            printf("bind sc%03x:%d sc%03x=>vk%02x ", sc, lv1, binding, binding1);
+        } else if (mods & KLM_KA) {
+            printf("bind sc%03x:%d ka%d ", sc, lv1, binding);
+        } else {
+            printf("bind sc%03x:%d vk%02x ", sc, lv1, binding);
+        }
     }
 }
 
@@ -137,7 +147,7 @@ KLY *KL_lang_to_kly(LANGID lang) {
 }
 
 void KL_activate_lang(LANGID lang) {
-    printf("activating lang %04d\n", lang);
+    printf("lang %04d ", lang);
     CopyMemory(KL_kly, KL_lang_to_kly(LANG_NEUTRAL), sizeof(KLY));
     KLY *kly = KL_lang_to_kly(lang);
     if (kly != nil) {
@@ -146,12 +156,13 @@ void KL_activate_lang(LANGID lang) {
             fori(ki, 0, KPN) {
                 LK lk = (*kly)[lvi][ki];
                 if (lk.active) {
-                    printf("cp sc%03x; ", ki);
+                    printf("sc%03x ", ki);
                     KL_kly[lvi][ki] = lk;
                 }
             }
         }
     }
+    puts("");
 }
 
 void KL_set_bind_lang(LANGID lang) {
@@ -161,6 +172,19 @@ void KL_set_bind_lang(LANGID lang) {
         kly = KL_lang_to_kly(lang);
     }
     KL_bind_kly = kly;
+}
+
+void KL_bind_lvls_zero() {
+    UINT i;
+    fori (i, 0, len(KL_bind_lvls)) {
+        KL_bind_lvls[i] = false;
+    }
+}
+
+void KL_bind_lvls_init() {
+    KL_bind_lvls_zero();
+    KL_bind_lvls[0] = true;
+    KL_bind_lvls[1] = true;
 }
 
 void KL_init() {

@@ -1,4 +1,20 @@
+#ifndef KL_H_INCLUDED
+#define KL_H_INCLUDED
+
 #include "stdafx.h"
+
+/*
+KPN is number of bingins on a level (binding is a mapping from SC to KP to perform)
+It should cover tilde,1..0,minus,plus,backslash,brackets,semicolon,apostrophe,comma,period,slash
+and others alphanumericals: a key on left of Z and a key on right of apostrophe.
+All of the tilde till slash happen to have SC less than 64.
+*/
+#define KPN 64
+typedef LK KLV[KPN];
+#define KLVN 6
+typedef KLV KLY[KLVN];
+
+extern BYTE KL_mods;
 
 extern bool KL_active;
 extern HHOOK KL_handle;
@@ -13,3 +29,10 @@ void KL_bind(SC sc, UINT mods, SC binding);
 void KL_add_lang(LANGID lang);
 void KL_activate_lang(LANGID lang);
 void KL_set_bind_lang(LANGID lang);
+
+extern bool KL_bind_lvls[KLVN];
+
+void KL_bind_lvls_zero();
+void KL_bind_lvls_init();
+
+#endif // KL_H_INCLUDED
