@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 
-#define KA_PARAMS bool down
+#define KA_PARAMS bool down, SC sc
 typedef void (*KA_FUNC)(KA_PARAMS);
 
 void KA_init();

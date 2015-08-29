@@ -16,23 +16,19 @@ ka(KA_prev_layout) {
     LM_activate_selected_locale();
 }
 
+#define SC_LCONTROL 0x01D
 ka(KA_control) {
-    keybd_event(VK_LCONTROL, 0x01D, (down ? 0 : KEYEVENTF_KEYUP), 0);
+    KM_shift_event(&KL_km_control, down, sc);
+    keybd_event(VK_LCONTROL, SC_LCONTROL, (down ? 0 : KEYEVENTF_KEYUP), 0);
 }
+#undef SC_LCONTROL
 
 ka(KA_l5_shift) {
-    if (down) {
-        KL_mods |= KLM_L5;
-    } else {
-        printf("/%d,%d,%d,%d ", KL_mods, KL_mods ^ KLM_L5, KL_mods & KLM_L5, KL_mods | KLM_L5);
-        KL_mods ^= KLM_L5;
-    }
+    KM_shift_event(&KL_km_l5, down, sc);
 }
 
 ka(KA_l5_lock) {
-    if (down) {
-        KL_mods ^= KLM_L5;
-    }
+    KM_lock_event(&KL_km_l5, down, sc);
 }
 
 #undef ka
@@ -55,7 +51,7 @@ KA_Pair KA_fns[] = {
 int KA_call(UINT id, KA_PARAMS) {
     if (id >= len(KA_fns))
         return -1;
-    KA_fns[id].func(down);
+    KA_fns[id].func(down, sc);
     return 0;
 }
 

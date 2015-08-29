@@ -2,6 +2,7 @@
 #define KL_H_INCLUDED
 
 #include "stdafx.h"
+#include "km.h"
 
 /*
 KPN is number of bingins on a level (binding is a mapping from SC to KP to perform)
@@ -14,7 +15,11 @@ typedef LK KLV[KPN];
 #define KLVN 6
 typedef KLV KLY[KLVN];
 
-extern BYTE KL_mods;
+extern KM KL_km_shift;
+extern KM KL_km_control;
+extern KM KL_km_alt;
+extern KM KL_km_l3;
+extern KM KL_km_l5;
 
 extern bool KL_active;
 extern HHOOK KL_handle;
