@@ -8,17 +8,27 @@
 # define MAPVK_VSC_TO_VK_EX 3
 #endif // MAPVK_VK_TO_CHAR
 
-KP OS_tchar_to_vk(TCHAR tc, HKL hkl) {
+KP OS_wchar_to_sc(WCHAR w) {
     KP ret;
-    SHORT vks = VkKeyScanEx(tc, hkl);
+    SHORT vks = VkKeyScan((TCHAR)w);
     VK vk = LOBYTE(vks);
     ret.mods = HIBYTE(vks);
-    ret.vk = MapVirtualKeyEx(vk, MAPVK_VK_TO_VSC, hkl);
+    printf("vksc{/%d,%02x}", ret.mods, vk);
+    ret.sc = MapVirtualKey(vk, MAPVK_VK_TO_VSC);
     return ret;
 }
 
-VK OS_sc_to_vk(SC sc, HKL hkl) {
-    return MapVirtualKeyEx(sc, MAPVK_VSC_TO_VK, hkl);
+KP OS_wchar_to_vk(WCHAR w) {
+    KP ret;
+    SHORT vks = VkKeyScan((TCHAR)w);
+    ret.vk = LOBYTE(vks);
+    BYTE modsVKS = HIBYTE(vks);
+    ret.mods = ((modsVKS & 4)>>2) + (modsVKS & 2) + ((modsVKS & 1)<<2);
+    return ret;
+}
+
+VK OS_sc_to_vk(SC sc) {
+    return MapVirtualKey(sc, MAPVK_VSC_TO_VK);
 }
 
 void OS_print_last_error() {
@@ -32,6 +42,6 @@ void OS_print_last_error() {
                   MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
                   (LPTSTR) &lpMsgBuf,
                   0, NULL );
-    printf("Error %d: %s\n", error_code, lpMsgBuf);
+    printf("Error %ld: %s\n", error_code, (char*)lpMsgBuf);
     LocalFree(lpMsgBuf);
 }

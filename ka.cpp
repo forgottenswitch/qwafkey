@@ -24,7 +24,7 @@ ka(KA_l5_shift) {
     if (down) {
         KL_mods |= KLM_L5;
     } else {
-        printf("mods >> %d %d %d %d\n", KL_mods, KL_mods ^ KLM_L5, KL_mods & KLM_L5, KL_mods | KLM_L5);
+        printf("/%d,%d,%d,%d ", KL_mods, KL_mods ^ KLM_L5, KL_mods & KLM_L5, KL_mods | KLM_L5);
         KL_mods ^= KLM_L5;
     }
 }

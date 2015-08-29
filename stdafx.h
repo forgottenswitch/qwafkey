@@ -30,7 +30,10 @@ typedef unsigned short SC;
 
 typedef struct {
     unsigned char mods;
-    VK vk;
+    union {
+        VK vk;
+        SC sc;
+    };
 } KP;
 
 #define KLM_SC 16
@@ -59,8 +62,8 @@ typedef struct {
     unsigned short binding;
 } LK;
 
-KP OS_tchar_to_vk(TCHAR tc, HKL hkl);
-VK OS_sc_to_vk(SC sc, HKL hkl);
+KP OS_wchar_to_vk(WCHAR tc);
+VK OS_sc_to_vk(SC sc);
 void OS_print_last_error();
 void OS_get_layouts(int *count, HKL **buf);
 

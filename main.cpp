@@ -5,6 +5,7 @@
 #include "eh.h"
 #include "lm.h"
 #include "ka.h"
+#include "kn.h"
 
 char *default_argv[] = {
     "levels:123456",
@@ -12,7 +13,9 @@ char *default_argv[] = {
     "sc03A:!control",
     "levels:56",
     "sc026:vk25",
-    "sc004:a<",
+    "sc025:up",
+    "qJ:down",
+    "sc004:=<",
     "levels:12",
     "sc002:sc003",
     "lang:409",
@@ -22,6 +25,7 @@ char *default_argv[] = {
 };
 
 int main(int argc, char *argv[]) {
+    KN_init();
     KL_init();
     KA_init();
     parse_args(len(default_argv), default_argv);

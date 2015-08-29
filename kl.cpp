@@ -10,6 +10,7 @@ BYTE KL_mods;
 KLY KL_kly;
 
 bool KL_phys[255];
+UCHAR KL_phys_mods[255];
 
 void KL_activate() {
     KL_active = true;
@@ -49,7 +50,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     KL_phys[sc] = down;
 
     unsigned char lv = 0;
-    printf("/%d ", KL_mods);
+    printf("/%d", KL_mods);
     if (KL_mods & KLM_L3)
         lv = 3;
     if (KL_mods & KLM_L5 && !lv)
@@ -62,7 +63,13 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         return PassThisEvent();
     }
 
-    unsigned char mods = lk.mods;
+    unsigned char mods = lk.mods, mods_sca = lk.mods & (MOD_SHIFT | MOD_CONTROL | MOD_ALT);
+    #if ENABLE_KLM_SC
+    if (mods & KLM_SC) {
+        printf(" send sc%03x}%s", lk.binding, (down ? "_" : "^\n"));
+        keybd_event((VK)ev->vkCode, lk.binding, (down ? KEYEVENTF_SCANCODE : KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP), 0);
+    } else
+    #endif // ENABLE_KLM_SC
     if (mods == KLM_WCHAR) {
         INPUT inp;
         inp.type = INPUT_KEYBOARD;
@@ -77,8 +84,62 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         KA_call(lk.binding, down);
         printf("}%s", (down ? "_" : "^\n"));
     } else {
-        printf(" send vk%02x}%s", lk.binding, (down ? "_" : "^\n"));
-        keybd_event(lk.binding, sc, 0, 0);
+        UCHAR kl_mods_sca = KL_mods & (MOD_SHIFT | MOD_CONTROL | MOD_ALT);
+        char mods1 = mods_sca - kl_mods_sca;
+        printf(" send vk%02x -/%d:%d:%d}%s", lk.binding, mods1, mods_sca, kl_mods_sca, (down ? "_" : "^\n"));
+        if (mods1) {
+            char mod_shift0 = ((mods_sca & MOD_SHIFT) - (kl_mods_sca & MOD_SHIFT))>>2, mod_shift = mod_shift0;
+            char mod_control0 = ((mods_sca & MOD_CONTROL) - (kl_mods_sca & MOD_CONTROL))>>1, mod_control = mod_control0;
+            char mod_alt0 = (mods_sca & MOD_ALT) - (kl_mods_sca & MOD_ALT), mod_alt = mod_alt0;
+
+            INPUT inps[7];
+            int tick_count = GetTickCount();
+            int mods_count = (mod_shift & 1) + (mod_control & 1) + (mod_alt & 1);
+            int i;
+            int inps_count = 1 + mods_count * 2;
+            fori (i, 0, inps_count) {
+                VK vk1 = lk.binding;
+                DWORD flags = 0;
+                if (mod_shift) {
+                    printf("+");
+                    flags = (mod_shift > 0 ? 0 : KEYEVENTF_KEYUP);
+                    mod_shift = 0;
+                    vk1 = VK_LSHIFT;
+                } else if (mod_control) {
+                    printf("^");
+                    flags = (mod_control > 0 ? 0 : KEYEVENTF_KEYUP);
+                    mod_control = 0;
+                    vk1 = VK_LCONTROL;
+                } else if (mod_alt) {
+                    printf("!%d;", i);
+                    flags = (mod_alt > 0 ? 0 : KEYEVENTF_KEYUP);
+                    mod_alt = 0;
+                    vk1 = VK_LMENU;
+                } else {
+                    printf("-");
+                    mod_shift = -mod_shift0;
+                    mod_control = -mod_control0;
+                    mod_alt = -mod_alt0;
+                    vk1 = lk.binding;
+                }
+                INPUT *inp = &(inps[i]);
+                inp->type = INPUT_KEYBOARD;
+                inp->ki.wVk = vk1;
+                inp->ki.dwFlags = flags;
+                inp->ki.dwExtraInfo = 0;
+                inp->ki.wScan = sc;
+                inp->ki.time = tick_count;
+            }
+
+            printf("si%d{", inps_count);
+            fori (i, 0, inps_count) {
+                printf("vk%02x", inps[i].ki.wVk);
+            }
+            printf("}");
+            SendInput(inps_count, inps, sizeof(INPUT));
+        } else {
+            keybd_event(lk.binding, sc, (down ? 0 : KEYEVENTF_KEYUP), 0);
+        }
     }
 
     return StopThisEvent();
@@ -102,9 +163,17 @@ void KL_bind(SC sc, UINT mods, SC binding) {
         SC binding1 = binding;
         lk.active = true;
         lk.mods = mods | KLM_SC;
-        if (mods & KLM_SC)
-            binding1 = OS_sc_to_vk(binding, nil);
+        if (mods & KLM_SC) {
+            binding1 = OS_sc_to_vk(binding);
+        }
         lk.binding = binding1;
+        if (lv % 2) {
+            UINT mods0 = mods;
+            if (KL_bind_lvls[lv - 1]) {
+                mods |= MOD_SHIFT;
+            }
+            printf("+(%d:%d)", mods0, mods);
+        }
         (*KL_bind_kly)[lv][sc] = lk;
         if (mods & KLM_WCHAR) {
             printf("bind sc%03x:%d u%04x ", sc, lv1, binding);
@@ -116,6 +185,7 @@ void KL_bind(SC sc, UINT mods, SC binding) {
             printf("bind sc%03x:%d vk%02x ", sc, lv1, binding);
         }
     }
+    puts("");
 }
 
 typedef struct {
@@ -150,15 +220,35 @@ void KL_activate_lang(LANGID lang) {
     printf("lang %04d ", lang);
     CopyMemory(KL_kly, KL_lang_to_kly(LANG_NEUTRAL), sizeof(KLY));
     KLY *kly = KL_lang_to_kly(lang);
+    int lvi, ki;
     if (kly != nil) {
-        int lvi, ki;
         fori(lvi, 0, KLVN) {
             fori(ki, 0, KPN) {
                 LK lk = (*kly)[lvi][ki];
                 if (lk.active) {
-                    printf("sc%03x ", ki);
-                    KL_kly[lvi][ki] = lk;
+                    printf("sc%03x:%d ", ki, lvi+1);
+                    LK *lk1 = &(KL_kly[lvi][ki]);
+                    *lk1 = lk;
                 }
+            }
+        }
+    }
+    fori (lvi, 0, KLVN) {
+        fori (ki, 0, KPN) {
+            LK *p_lk = &(KL_kly[lvi][ki]), lk = *p_lk;
+            if (lk.active) {
+                if (lk.mods & KLM_WCHAR) {
+                    WCHAR w = lk.binding;
+                    printf("sc%03x:%d->", ki, lvi+1);
+                    KP kp = OS_wchar_to_vk(w);
+                    if (kp.vk) {
+                        printf("vk%02x/%d", kp.vk, kp.mods);
+                        lk.mods = kp.mods;
+                        lk.binding = kp.vk;
+                    }
+                    printf(";");
+                }
+                *p_lk = lk;
             }
         }
     }
@@ -192,4 +282,24 @@ void KL_init() {
     ZeroMemory(KL_phys, sizeof(KL_phys));
     KL_add_lang(LANG_NEUTRAL);
     KL_bind_kly = KL_lang_to_kly(LANG_NEUTRAL);
+    UINT sc;
+    fori (sc, 0, len(KL_phys_mods)) {
+        VK vk = OS_sc_to_vk(sc);
+        UCHAR mod = 0;
+        switch (vk) {
+        case VK_SHIFT: case VK_LSHIFT: case VK_RSHIFT:
+            mod = MOD_SHIFT;
+            break;
+        case VK_CONTROL: case VK_LCONTROL: case VK_RCONTROL:
+            mod = MOD_CONTROL;
+            break;
+        case VK_MENU: case VK_LMENU: case VK_RMENU:
+            mod = MOD_ALT;
+            break;
+        case VK_LWIN: case VK_RWIN:
+            mod = MOD_WIN;
+            break;
+        }
+        KL_phys_mods[sc] = mod;
+    }
 }
