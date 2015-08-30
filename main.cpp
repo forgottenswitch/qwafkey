@@ -11,15 +11,28 @@ char *default_argv[] = {
     "levels:123456",
     "sc027:!l5_shift",
     "sc03A:!control",
+
     "levels:56",
-    "sc026:vk25",
+    "sc026:right",
     "sc025:up",
     "qJ:down",
     "sc004:=<",
+    "qS:!l2_latch",
+    "qF:=[",
+
+    "levels:6",
+    "qF:=]",
+
     "levels:12",
+    "qComma:!l3_latch",
     "sc002:sc003",
+
+    "levels:34",
+    "qJ:=_",
+
     "lang:409",
     "sc003:sc004",
+
     "lang:419",
     "sc004:sc005",
 };

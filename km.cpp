@@ -7,12 +7,26 @@ void KM_init(KM *km) {
 void KM_nonmod_event(KM *km, bool down, SC sc) {
     if (km->latch) {
         if (!down) {
-            if (!km->latch_released) {
-                km->latch_releases += 1;
-            } else {
+            if (km->latch_released) {
                 km->latch = 0;
-                km->in_effect = km->shifts_count;
+                km->latch_releases = 1;
+                goto l_release;
+            } else if (km->latch == sc) {
+                km->latch_released = true;
+                goto l_release;
+            } else {
+                km->latch_releases += 1;
             }
+        }
+    }
+    return;
+l_release:
+    printf("{l_release}");
+    if (!(km->in_effect = km->shifts_count || !km->latch_releases)) {
+        VK vk = km->latch_faked;
+        if (vk) {
+            km->latch_faked = 0;
+            keybd_event(vk, sc, KEYEVENTF_KEYUP, 0);
         }
     }
 }
@@ -46,15 +60,25 @@ void KM_latch_event(KM *km, bool down, SC sc) {
     km->locked = false;
     if (down) {
         if (!km->latch || km->latch_released) {
-            km->latch = true;
+            printf("{set latch %03x}", sc);
+            km->latch = sc;
             km->latch_released = false;
             km->latch_releases = 0;
         }
     } else {
         km->latch_released = true;
-        km->latch = !km->latch_releases;
+        printf("{released:%d:%d}", km->latch, km->latch_releases);
+        if (km->latch_releases) {
+            km->latch = 0;
+            VK vk = km->latch_faked;
+            if (vk) {
+                km->latch_faked = 0;
+                keybd_event(vk, sc, KEYEVENTF_KEYUP, 0);
+            }
+        }
     }
     km->in_effect = km->latch || km->shifts_count;
+    printf("{latch.in_effect=%d:%d}", km->in_effect, km->latch_releases);
 }
 
 void KM_lock_event(KM *km, bool down, SC sc) {

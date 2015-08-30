@@ -19,7 +19,8 @@ ka(KA_prev_layout) {
 #define SC_LCONTROL 0x01D
 ka(KA_control) {
     KM_shift_event(&KL_km_control, down, sc);
-    keybd_event(VK_LCONTROL, SC_LCONTROL, (down ? 0 : KEYEVENTF_KEYUP), 0);
+    if (!(!down && KL_km_control.shifts_count > 0))
+        keybd_event(VK_LCONTROL, SC_LCONTROL, (down ? 0 : KEYEVENTF_KEYUP), 0);
 }
 #undef SC_LCONTROL
 
@@ -29,6 +30,15 @@ ka(KA_l5_shift) {
 
 ka(KA_l5_lock) {
     KM_lock_event(&KL_km_l5, down, sc);
+}
+
+ka(KA_l3_latch) {
+    KM_latch_event(&KL_km_l3, down, sc);
+}
+
+ka(KA_l2_latch) {
+    KL_km_shift.latch_faked = VK_LSHIFT;
+    KM_latch_event(&KL_km_shift, down, sc);
 }
 
 #undef ka
@@ -45,6 +55,8 @@ KA_Pair KA_fns[] = {
     ka(KA_control),
     ka(KA_l5_shift),
     ka(KA_l5_lock),
+    ka(KA_l3_latch),
+    ka(KA_l2_latch),
 };
 #undef ka
 

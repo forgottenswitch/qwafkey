@@ -13,7 +13,7 @@ KM KL_km_l5;
 
 KLY KL_kly;
 
-bool KL_phys[255];
+UCHAR KL_phys[255];
 UCHAR KL_phys_mods[255];
 
 void KL_activate() {
@@ -68,17 +68,25 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
                 break;
             }
             return PassThisEvent();
+        } else {
+            KM_nonmod_event(&KL_km_shift, down, sc);
+            KM_nonmod_event(&KL_km_l3, down, sc);
         }
     }
 
     unsigned char lv = 0;
-    if (KL_km_l3.in_effect)
-        lv = 3;
-    if (KL_km_l5.in_effect && !lv)
-        lv += 5;
-    if (KL_km_shift.in_effect)
-        lv++;
+    if (KL_km_l3.in_effect) {
+        lv = 2;
+    } else if (KL_km_l5.in_effect) {
+        lv = 4;
+    }
+    if (KL_km_shift.in_effect) {
+        lv += 1;
+    }
+
     LK lk = KL_kly[lv][sc];
+    printf(" l%db%x", lv, lk.binding);
+
     if (!lk.active) {
         printf(" na%s", (down ? "_ " : "^\n"));
         return PassThisEvent();
@@ -103,7 +111,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         char mod_control = (((mods & MOD_CONTROL) && !KL_km_control.in_effect) ? 1 : 0), mod_control0 = mod_control;
         char mod_alt = (((mods & MOD_ALT) && !KL_km_alt.in_effect) ? 1 : 0), mod_alt0 = mod_alt;
         int mods_count = (mod_shift & 1) + mod_control + mod_alt;
-        printf(" send vk%02x [%d%d%d]}%s", lk.binding, mod_shift, mod_control, mod_alt, (down ? "_" : "^\n"));
+        printf(" send vk%02x[%d%d%d]%s", lk.binding, mod_shift, mod_control, mod_alt, (down ? "_" : "^\n"));
         if (mods_count) {
             INPUT inps[7];
             int tick_count = GetTickCount();
@@ -113,7 +121,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
                 VK vk1 = lk.binding;
                 DWORD flags = 0;
                 if (mod_shift) {
-                    printf("+%d;", mod_shift);
+                    printf("+%d-", mod_shift);
                     flags = (mod_shift > 0 ? 0 : KEYEVENTF_KEYUP);
                     mod_shift = 0;
                     vk1 = VK_LSHIFT;
@@ -144,11 +152,6 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
                 inp->ki.time = tick_count;
             }
 
-            printf("si%d{", inps_count);
-            fori (i, 0, inps_count) {
-                printf("vk%02x", inps[i].ki.wVk);
-            }
-            printf("}");
             SendInput(inps_count, inps, sizeof(INPUT));
         } else {
             keybd_event(lk.binding, sc, (down ? 0 : KEYEVENTF_KEYUP), 0);
@@ -167,10 +170,11 @@ bool KL_bind_lvls[KLVN];
 void KL_bind(SC sc, UINT mods, SC binding) {
     LK lk;
     UINT lv;
+    printf("bind sc%03x ", sc);
     fori (lv, 0, len(KL_bind_lvls)) {
         int lv1 = lv+1;
         if (!KL_bind_lvls[lv]) {
-            printf("bind sc%03x:%d not ", sc, lv1);
+            printf(":%d - ", lv1);
             continue;
         }
         SC binding1 = binding;
@@ -189,13 +193,13 @@ void KL_bind(SC sc, UINT mods, SC binding) {
         }
         (*KL_bind_kly)[lv][sc] = lk;
         if (mods & KLM_WCHAR) {
-            printf("bind sc%03x:%d u%04x ", sc, lv1, binding);
+            printf(":%d u%04x ", lv1, binding);
         } else if (mods & KLM_SC) {
-            printf("bind sc%03x:%d sc%03x=>vk%02x ", sc, lv1, binding, binding1);
+            printf(":%d sc%03x=>vk%02x ", lv1, binding, binding1);
         } else if (mods & KLM_KA) {
-            printf("bind sc%03x:%d ka%d ", sc, lv1, binding);
+            printf(":%d ka%d ", lv1, binding);
         } else {
-            printf("bind sc%03x:%d vk%02x ", sc, lv1, binding);
+            printf(":%d vk%02x ", lv1, binding);
         }
     }
     puts("");
