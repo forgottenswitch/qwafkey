@@ -198,7 +198,6 @@ KN_LPair KN_lpairs[] = {
     k("qF", SC_F),
     k("qG", SC_G),
     k("qH", SC_H),
-    k("qI", SC_I),
     k("qJ", SC_J),
     k("qK", SC_K),
     k("qL", SC_L),
@@ -230,7 +229,7 @@ SC KN_lname_to_sc(char *name) {
     size_t i;
     fori (i, 0, len(KN_lpairs)) {
         KN_LPair *lp = KN_lpairs + i;
-        if (!_strnicmp(lp->name, name, maxpos)) {
+        if ((strlen(lp->name) == maxpos) && !_strnicmp(lp->name, name, maxpos)) {
             return lp->sc;
         }
     }

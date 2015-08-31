@@ -30,10 +30,10 @@ void LM_get_locales(bool set_selected) {
         langstr[KL_NAMELENGTH] = '\0';
         CopyMemory(str4, langstr+4, 4);
         str4[4] = '\0';
-        printf("gkln{\"%s\",\"%s\"} ", langstr, str4);
+        dput("gkln{\"%s\",\"%s\"} ", langstr, str4);
         LANGID lang = atoi(str4);
         l->lang = lang;
-        printf(" locale{%04d, %08x}\n", lang, (UINT)hkl);
+        dput(" locale{%04d, %08x}\n", lang, (UINT)hkl);
     }
     if (set_selected) {
         bool found;
@@ -52,17 +52,30 @@ void LM_get_locales(bool set_selected) {
 }
 
 void LM_init() {
-    puts("LM_init locales...");
+    dputs("LM_init locales...");
     LM_get_locales(true);
-    puts("LM_init activate...");
+    dputs("LM_init activate...");
     LM_activate_selected_locale();
-    puts("LM_init done");
 }
+
+HWND LM_hwnd = 0;
 
 void LM_activate_selected_locale() {
     LM_Locale *l = LM_locales.elts + LM_selected_locale;
     LANGID lang = l->lang;
-    printf(" locale %04d ", lang);
-    ActivateKeyboardLayout(l->hkl, 0);
+    dput(" locale %04d ", lang);
+    OS_activate_layout(LM_hwnd, l->hkl);
     KL_activate_lang(lang);
+}
+
+void LM_activate_next_locale() {
+    if ((LM_selected_locale += 1) >= LM_locales.count)
+        LM_selected_locale = 0;
+    LM_activate_selected_locale();
+}
+
+void LM_activate_prev_locale() {
+    if ((LM_selected_locale -= 1) >= 0)
+        LM_selected_locale = LM_locales.count;
+    LM_activate_selected_locale();
 }

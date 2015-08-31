@@ -7,15 +7,24 @@
 #include "ka.h"
 #include "kn.h"
 
+#ifndef NOGUI
+# include "ui.h"
+#endif // NOGUI
+
 char *default_argv[] = {
+    "mods:#",
+    "F2:!toggle",
+    "qZ:!dim_screen",
+
     "levels:123456",
     "sc027:!l5_shift",
     "sc03A:!control",
 
     "levels:56",
-    "sc026:right",
-    "sc025:up",
+    "qH:left",
     "qJ:down",
+    "qK:up",
+    "qL:right",
     "sc004:=<",
     "qS:!l2_latch",
     "qF:=[",
@@ -29,6 +38,7 @@ char *default_argv[] = {
 
     "levels:34",
     "qJ:=_",
+    "qM:!next_layout",
 
     "lang:409",
     "sc003:sc004",
@@ -36,6 +46,25 @@ char *default_argv[] = {
     "lang:419",
     "sc004:sc005",
 };
+
+void main_loop() {
+    for (;;) {
+        int result;
+        MSG msg;
+        result = GetMessage(&msg, nil, 0, 0);
+        if (result <= 0)
+            break;
+        switch (msg.message) {
+        case WM_HOTKEY:
+            VK vk = HIWORD(msg.lParam);
+            WORD mods = LOWORD(msg.lParam);
+            UINT id = (UINT) msg.wParam;
+            dput("HK %02d (%s); ", (id - HK_0), HK_to_s(mods, vk));
+            HK_KA_call(id);
+            break;
+        }
+    }
+}
 
 int main(int argc, char *argv[]) {
     KN_init();
@@ -48,36 +77,15 @@ int main(int argc, char *argv[]) {
     LM_init();
 
     KL_activate();
-    HK_register(HK_ONOFF, MOD_WIN, VK_F2);
 
     EH_activate();
 
-    for (;;) {
-        int result;
-        MSG msg;
-        result = GetMessage(&msg, nil, 0, 0);
-        if (result <= 0)
-            break;
-        switch (msg.message) {
-        case WM_HOTKEY:
-            VK vk = HIWORD(msg.lParam);
-            WORD mods = LOWORD(msg.lParam);
-            int id = (int) msg.wParam;
-            printf("HK %02d (%s); ", (id - HK_0), HK_to_s(mods, vk));
-            switch (id) {
-            case HK_ONOFF:
-                if (KL_active) {
-                    KL_deactivate();
-                    puts("suspended");
-                } else {
-                    KL_activate();
-                    puts("resumed");
-                }
-                break;
-            }
-            break;
-        }
-    }
+#ifndef NOGUI
+    UI_init();
+    atexit(UI_TR_delete);
+    UI_spawn();
+#endif // NOGUI
 
+    main_loop();
     return 0;
 }

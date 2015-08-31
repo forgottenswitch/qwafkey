@@ -10,6 +10,14 @@
     #define UNICODE
 #endif
 
+#ifdef DEBUG
+# define dput printf
+# define dputs puts
+#else
+# define dput(...)
+# define dputs(...)
+#endif
+
 #include <tchar.h>
 #include <windows.h>
 
@@ -65,10 +73,12 @@ typedef struct {
 KP OS_wchar_to_vk(WCHAR tc);
 VK OS_sc_to_vk(SC sc);
 void OS_print_last_error();
-void OS_get_layouts(int *count, HKL **buf);
+void OS_activate_layout(HWND hwnd, HKL hkl);
 
 #define LANGID_Primary LOWORD
 #define LANGID_SubLang HIWORD
+
+#define HK_0 32000
 
 #endif // STDAFX_H_INCLUDED
 

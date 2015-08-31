@@ -2,6 +2,7 @@
 #include "kl.h"
 #include "ka.h"
 #include "kn.h"
+#include "hk.h"
 
 bool isspc(TCHAR tc) {
     return (tc == ' ') || (tc == '\t');
@@ -32,8 +33,11 @@ bool str_sets(char *str, char *thing) {
     return false;
 }
 
+bool parse_in_mods = false;
+UINT parse_hk_mods;
+
 void parse_args(int argc, char *argv[]) {
-    printf("parse_args %d, ...\n", argc);
+    dput("parse_args %d, ...\n", argc);
     KL_bind_lvls_init();
     int argi;
     fori (argi, 0, argc) {
@@ -42,28 +46,30 @@ void parse_args(int argc, char *argv[]) {
         int i = 1;
         char c;
 
-        printf(" parse arg <<%s>>", arg);
+        dput(" parse arg <<%s>>", arg);
         if (arg[0] == 's' && arg[1] == 'c' && ishex(arg[2])) {
             while (ishex((c = arg[i+=1]))) {
                 sc *= 16;
                 sc += hdigtoi(c);
             }
-            printf("  sc:%03x", sc);
+            dput("  sc:%03x", sc);
             goto assign;
         } else if ((sc = KN_lname_to_sc(arg))) {
             while ((c = arg[i]) && c != ':' && c != '=') i++;
             goto assign;
         } else if (str_sets(arg, "lang")) {
+            parse_in_mods = false;
             int i = 0;
             char c;
             while ((c = arg[i]) && c != ':' && c != '=') i++;
             if (c) {
                 int n = atoi(arg + i + 1);
-                printf("  bind lang: %04d\n", n);
+                dput("  bind lang: %04d\n", n);
                 KL_bind_lvls_init();
                 KL_set_bind_lang(n);
             }
         } else if (str_sets(arg, "levels")) {
+            parse_in_mods = false;
             int i = 0;
             char c;
             while ((c = arg[i]) && c != ':' && c != '=') i++;
@@ -79,7 +85,35 @@ void parse_args(int argc, char *argv[]) {
                     }
                 }
             }
-            puts("");
+            dputs("");
+        } else if (str_sets(arg, "mods")) {
+            parse_in_mods = true;
+            int i = 0;
+            char c;
+            while ((c = arg[i]) && c != ':' && c != '=') i++;
+            if (c) {
+                i++;
+                while (isspc(arg[i])) i++;
+                parse_hk_mods = 0;
+                while ((c = arg[i])) {
+                    i++;
+                    switch (c) {
+                    case '!':
+                        parse_hk_mods |= MOD_ALT;
+                        break;
+                    case '^':
+                        parse_hk_mods |= MOD_CONTROL;
+                        break;
+                    case '+':
+                        parse_hk_mods |= MOD_SHIFT;
+                        break;
+                    case '#':
+                        parse_hk_mods |= MOD_WIN;
+                        break;
+                    }
+                }
+            }
+            dputs("");
         }
         continue;
 
@@ -92,56 +126,60 @@ void parse_args(int argc, char *argv[]) {
             c = arg[i];
             VK vk;
             if ((vk = KN_name_to_vk(arg + i))) {
-                printf(": [%s]\n", arg + i);
+                dput(": [%s]\n", arg + i);
                 KL_bind(sc, 0, vk);
             } else if (c == 'u' || c == 'U') {
-                printf("  u");
+                dput("  u");
                 WCHAR w = 0;
                 while (ishex((c = arg[i+=1]))) {
                     w *= 16;
                     w += hdigtoi(c);
                 }
-                printf(": %04x\n", w);
+                dput(": %04x\n", w);
                 KL_bind(sc, KLM_WCHAR, w);
             } else if (c == '=') {
-                printf("  =");
+                dput("  =");
                 i++;
                 while (isspc(arg[i])) i++;
                 char c = arg[i];
-                printf(":%03d,%c\n", c, c);
+                dput(":%03d,%c\n", c, c);
                 KL_bind(sc, KLM_WCHAR, c);
             } else if (c == 's' && arg[i+=1] == 'c') {
-                printf("  sc1");
+                dput("  sc1");
                 int mods = KLM_SC;
                 SC sc1 = 0;
                 while (ishex((c = arg[i+=1]))) {
                     sc1 *= 16;
                     sc1 += hdigtoi(c);
                 }
-                printf(":%03x\n", sc1);
+                dput(":%03x\n", sc1);
                 KL_bind(sc, mods, sc1);
             } else if (c == 'v' && arg[i+=1] == 'k') {
-                printf("  vk1");
+                dput("  vk1");
                 int mods = 0;
                 UINT vk1 = 0;
                 while (ishex((c = arg[i+=1]))) {
                     vk1 *= 16;
                     vk1 += hdigtoi(c);
                 }
-                printf(":%02x\n", vk1);
+                dput(":%02x\n", vk1);
                 KL_bind(sc, mods, vk1);
             } else if (c == '!') {
-                printf("  ka");
+                dput("  ka");
                 char *name = arg + i + 1;
                 int id = KA_name_to_id(name);
-                printf("%d", id);
+                dput("%d", id);
                 if (id >= 0) {
-                    printf(" %s\n", name);
-                    KL_bind(sc, KLM_KA, id);
+                    dput(" %s\n", name);
+                    if (parse_in_mods) {
+                        VK vk = OS_sc_to_vk(sc);
+                        HK_KA_register(id, parse_hk_mods, vk);
+                    } else {
+                        KL_bind(sc, KLM_KA, id);
+                    }
                 }
-                printf("\n");
+                dput("\n");
             }
-
         }
     }
 }

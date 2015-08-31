@@ -15,18 +15,19 @@ typedef LK KLV[KPN];
 #define KLVN 6
 typedef KLV KLY[KLVN];
 
+extern bool KL_active;
+extern HHOOK KL_handle;
+
 extern KM KL_km_shift;
 extern KM KL_km_control;
 extern KM KL_km_alt;
 extern KM KL_km_l3;
 extern KM KL_km_l5;
 
-extern bool KL_active;
-extern HHOOK KL_handle;
-
 LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam);
 
 void KL_init();
+void KL_toggle();
 void KL_activate();
 void KL_deactivate();
 void KL_bind(SC sc, UINT mods, SC binding);

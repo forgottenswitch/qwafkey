@@ -3,13 +3,10 @@
 
 #include "stdafx.h"
 
-typedef enum _HKs {
-    HK_0 = 32000,
-    HK_ONOFF,
-    HK2,
-} HKs;
+char *HK_to_s(UINT mods, VK vk);
+void HK_register(int id, UINT mods, VK vk);
 
-extern char *HK_to_s(UINT mods, VK vk);
-extern void HK_register(int id, UINT mods, VK vk);
+void HK_KA_register(int ka, UINT mods, VK vk);
+void HK_KA_call(UINT hk_id);
 
 #endif // HK_H_INCLUDED

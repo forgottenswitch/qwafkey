@@ -16,7 +16,8 @@ void EH_CALLBACK EH_proc(
 ) {
     DWORD tid = GetWindowThreadProcessId(hwnd, nil);
     WORD langid = LANGID_Primary(GetKeyboardLayout(tid));
-    printf("%s switch { lang:%08x; }\n", (langid==0 ? "console" : "task"), langid);
+    dput("%s switch { lang:%08x; }\n", (langid==0 ? "console" : "task"), langid);
+    LM_hwnd = hwnd;
     LM_activate_selected_locale();
 }
 

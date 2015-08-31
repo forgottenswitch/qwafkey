@@ -1,0 +1,13 @@
+#include <winnt.h>
+#include "resource.h"
+
+IDI_ICON_ON        ICON  "ico/on.ico"
+IDI_ICON_OFF       ICON  "ico/off.ico"
+
+STRINGTABLE
+BEGIN
+IDS_SUSPEND        "Suspend"
+IDS_NEXT_LAYOUT    "Next layout"
+IDS_PREV_LAYOUT    "Previous layout"
+IDS_EXIT           "Exit"
+END

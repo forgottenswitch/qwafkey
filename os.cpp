@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "shellapi.h"
 
 #ifndef MAPVK_VK_TO_VSC
 # define MAPVK_VK_TO_CHAR 2
@@ -13,7 +14,7 @@ KP OS_wchar_to_sc(WCHAR w) {
     SHORT vks = VkKeyScan((TCHAR)w);
     VK vk = LOBYTE(vks);
     ret.mods = HIBYTE(vks);
-    printf("vksc{/%d,%02x}", ret.mods, vk);
+    dput("vksc{/%d,%02x}", ret.mods, vk);
     ret.sc = MapVirtualKey(vk, MAPVK_VK_TO_VSC);
     return ret;
 }
@@ -42,6 +43,10 @@ void OS_print_last_error() {
                   MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
                   (LPTSTR) &lpMsgBuf,
                   0, NULL );
-    printf("Error %ld: %s\n", error_code, (char*)lpMsgBuf);
+    dput("Error %ld: %s\n", error_code, (char*)lpMsgBuf);
     LocalFree(lpMsgBuf);
+}
+
+void OS_activate_layout(HWND hwnd, HKL hkl) {
+    PostMessage(hwnd, WM_INPUTLANGCHANGEREQUEST, (WPARAM)hkl, KLF_ACTIVATE);
 }

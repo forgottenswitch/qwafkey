@@ -1,6 +1,9 @@
 #include "kl.h"
 #include "ka.h"
 #include "km.h"
+#ifndef NOGUI
+# include "ui.h"
+#endif // NOGUI
 
 bool KL_active = false;
 HHOOK KL_handle;
@@ -17,13 +20,27 @@ UCHAR KL_phys[255];
 UCHAR KL_phys_mods[255];
 
 void KL_activate() {
+    KL_handle = SetWindowsHookEx(WH_KEYBOARD_LL, KL_proc, nil, 0);
     KL_active = true;
-    SetWindowsHookEx(WH_KEYBOARD_LL, KL_proc, nil, 0);
+#ifndef NOGUI
+    UI_TR_update();
+#endif // NOGUI
 }
 
 void KL_deactivate() {
-    KL_active = false;
     UnhookWindowsHookEx(KL_handle);
+    KL_active = false;
+#ifndef NOGUI
+    UI_TR_update();
+#endif // NOGUI
+}
+
+void KL_toggle() {
+    if (KL_active) {
+        KL_deactivate();
+    } else {
+        KL_activate();
+    }
 }
 
 #define RawThisEvent() 0
@@ -85,10 +102,10 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     }
 
     LK lk = KL_kly[lv][sc];
-    printf(" l%db%x", lv, lk.binding);
+    dput(" l%db%x", lv, lk.binding);
 
     if (!lk.active) {
-        printf(" na%s", (down ? "_ " : "^\n"));
+        dput(" na%s", (down ? "_ " : "^\n"));
         return PassThisEvent();
     }
 
@@ -103,15 +120,15 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         inp.ki.time = GetTickCount();
         SendInput(1, &inp, sizeof(INPUT));
     } else if (mods & KLM_KA) {
-        printf(" ka_call ka%d(%d){", lk.binding, down);
+        dput(" ka_call ka%d(%d){", lk.binding, down);
         KA_call(lk.binding, down, sc);
-        printf("}%s", (down ? "_" : "^\n"));
+        dput("}%s", (down ? "_" : "^\n"));
     } else {
         char mod_shift = (mods & MOD_SHIFT) ? (KL_km_shift.in_effect ? 0 : 1) : (KL_km_shift.in_effect ? -1 : 0), mod_shift0 = mod_shift;
         char mod_control = (((mods & MOD_CONTROL) && !KL_km_control.in_effect) ? 1 : 0), mod_control0 = mod_control;
         char mod_alt = (((mods & MOD_ALT) && !KL_km_alt.in_effect) ? 1 : 0), mod_alt0 = mod_alt;
         int mods_count = (mod_shift & 1) + mod_control + mod_alt;
-        printf(" send vk%02x[%d%d%d]%s", lk.binding, mod_shift, mod_control, mod_alt, (down ? "_" : "^\n"));
+        dput(" send vk%02x[%d%d%d]%s", lk.binding, mod_shift, mod_control, mod_alt, (down ? "_" : "^\n"));
         if (mods_count) {
             INPUT inps[7];
             int tick_count = GetTickCount();
@@ -121,22 +138,22 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
                 VK vk1 = lk.binding;
                 DWORD flags = 0;
                 if (mod_shift) {
-                    printf("+%d-", mod_shift);
+                    dput("+%d-", mod_shift);
                     flags = (mod_shift > 0 ? 0 : KEYEVENTF_KEYUP);
                     mod_shift = 0;
                     vk1 = VK_LSHIFT;
                 } else if (mod_control) {
-                    printf("^");
+                    dput("^");
                     flags = (mod_control > 0 ? 0 : KEYEVENTF_KEYUP);
                     mod_control = 0;
                     vk1 = VK_LCONTROL;
                 } else if (mod_alt) {
-                    printf("!");
+                    dput("!");
                     flags = (mod_alt > 0 ? 0 : KEYEVENTF_KEYUP);
                     mod_alt = 0;
                     vk1 = VK_RMENU;
                 } else {
-                    printf("-");
+                    dput("-");
                     mod_shift = -mod_shift0;
                     mod_control = -mod_control0;
                     mod_alt = -mod_alt0;
@@ -170,11 +187,11 @@ bool KL_bind_lvls[KLVN];
 void KL_bind(SC sc, UINT mods, SC binding) {
     LK lk;
     UINT lv;
-    printf("bind sc%03x ", sc);
+    dput("bind sc%03x ", sc);
     fori (lv, 0, len(KL_bind_lvls)) {
         int lv1 = lv+1;
         if (!KL_bind_lvls[lv]) {
-            printf(":%d - ", lv1);
+            dput(":%d - ", lv1);
             continue;
         }
         SC binding1 = binding;
@@ -189,20 +206,20 @@ void KL_bind(SC sc, UINT mods, SC binding) {
             if (KL_bind_lvls[lv - 1]) {
                 mods |= MOD_SHIFT;
             }
-            printf("+(%d:%d)", mods0, mods);
+            dput("+(%d:%d)", mods0, mods);
         }
         (*KL_bind_kly)[lv][sc] = lk;
         if (mods & KLM_WCHAR) {
-            printf(":%d u%04x ", lv1, binding);
+            dput(":%d u%04x ", lv1, binding);
         } else if (mods & KLM_SC) {
-            printf(":%d sc%03x=>vk%02x ", lv1, binding, binding1);
+            dput(":%d sc%03x=>vk%02x ", lv1, binding, binding1);
         } else if (mods & KLM_KA) {
-            printf(":%d ka%d ", lv1, binding);
+            dput(":%d ka%d ", lv1, binding);
         } else {
-            printf(":%d vk%02x ", lv1, binding);
+            dput(":%d vk%02x ", lv1, binding);
         }
     }
-    puts("");
+    dputs("");
 }
 
 typedef struct {
@@ -255,7 +272,7 @@ void KL_compile_klc(KLC *klc) {
         fori(sc, 0, KPN) {
             LK lk = (*kly)[lv][sc];
             if (lk.active) {
-                printf("sc%03x:%d ", sc, lv+1);
+                dput("sc%03x:%d ", sc, lv+1);
                 KL_kly[lv][sc] = lk;
             }
         }
@@ -264,17 +281,17 @@ void KL_compile_klc(KLC *klc) {
         fori (sc, 0, KPN) {
             LK *p_lk = &(KL_kly[lv][sc]), lk = *p_lk;
             if (lk.active) {
-                //printf("a(%03x:%d:%x/%x)", sc, lv+1, lk.binding, lk.mods);
+                //dput("a(%03x:%d:%x/%x)", sc, lv+1, lk.binding, lk.mods);
                 if (lk.mods & KLM_WCHAR) {
                     WCHAR w = lk.binding;
-                    printf("sc%03x:%d->", sc, lv+1);
+                    dput("sc%03x:%d->", sc, lv+1);
                     KP kp = OS_wchar_to_vk(w);
                     if (kp.vk) {
-                        printf("vk%02x/%d", kp.vk, kp.mods);
+                        dput("vk%02x/%d", kp.vk, kp.mods);
                         lk.mods = kp.mods;
                         lk.binding = kp.vk;
                     }
-                    printf(";");
+                    dput(";");
                 }
                 *p_lk = lk;
             }
@@ -285,15 +302,15 @@ void KL_compile_klc(KLC *klc) {
 }
 
 void KL_activate_lang(LANGID lang) {
-    printf("lang %04d ", lang);
+    dput("lang %04d ", lang);
     KLC *lang_klc = KL_lang_to_klc(lang);
     if (lang_klc->compiled) {
         CopyMemory(KL_kly, lang_klc->kly, sizeof(KLY));
     } else {
-        printf("compile ");
+        dput("compile ");
         KL_compile_klc(lang_klc);
     }
-    puts("");
+    dputs("");
 }
 
 void KL_set_bind_lang(LANGID lang) {

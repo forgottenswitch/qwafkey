@@ -4,16 +4,22 @@
 
 #define ka(name) void name(KA_PARAMS)
 
+ka(KA_toggle) {
+    if (!down)
+        return;
+    KL_toggle();
+}
+
 ka(KA_next_layout) {
-    if ((LM_selected_locale += 1) >= LM_locales.count)
-        LM_selected_locale = 0;
-    LM_activate_selected_locale();
+    if (!down)
+        return;
+    LM_activate_next_locale();
 }
 
 ka(KA_prev_layout) {
-    if ((LM_selected_locale -= 1) >= 0)
-        LM_selected_locale = LM_locales.count;
-    LM_activate_selected_locale();
+    if (!down)
+        return;
+    LM_activate_prev_locale();
 }
 
 #define SC_LCONTROL 0x01D
@@ -41,6 +47,14 @@ ka(KA_l2_latch) {
     KM_latch_event(&KL_km_shift, down, sc);
 }
 
+ka(KA_dim_screen) {
+    if (!down)
+        return;
+    dputs("dim_screen");
+    Sleep(500);
+    SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, (LPARAM)2);
+}
+
 #undef ka
 
 typedef struct {
@@ -50,6 +64,7 @@ typedef struct {
 
 #define ka(name) { name, #name }
 KA_Pair KA_fns[] = {
+    ka(KA_toggle),
     ka(KA_next_layout),
     ka(KA_prev_layout),
     ka(KA_control),
@@ -57,6 +72,7 @@ KA_Pair KA_fns[] = {
     ka(KA_l5_lock),
     ka(KA_l3_latch),
     ka(KA_l2_latch),
+    ka(KA_dim_screen),
 };
 #undef ka
 
@@ -83,7 +99,7 @@ void KA_init() {
     fori (i, 0, len(KA_fns)) {
         KA_Pair *ka_pair = KA_fns + i;
         ka_pair->name += 3;
-        printf(" ka%d{%x,%s}", i, (UINT)ka_pair->func, ka_pair->name);
+        dput(" ka%d{%x,%s}", i, (UINT)ka_pair->func, ka_pair->name);
     }
-    puts("");
+    dputs("");
 }
