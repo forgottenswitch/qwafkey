@@ -72,6 +72,7 @@ typedef struct {
 
 KP OS_wchar_to_vk(WCHAR tc);
 VK OS_sc_to_vk(SC sc);
+SC OS_vk_to_sc(SC sc);
 void OS_print_last_error();
 void OS_activate_layout(HWND hwnd, HKL hkl);
 void OS_activate_next_layout(HWND hwnd);

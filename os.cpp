@@ -32,6 +32,11 @@ VK OS_sc_to_vk(SC sc) {
     return MapVirtualKey(sc, MAPVK_VSC_TO_VK);
 }
 
+SC OS_vk_to_sc(SC sc) {
+    return MapVirtualKey(sc, MAPVK_VK_TO_VSC);
+}
+
+
 void OS_print_last_error() {
     DWORD error_code = GetLastError();
     LPVOID lpMsgBuf;

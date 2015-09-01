@@ -128,55 +128,56 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         KA_call(lk.binding, down, sc);
         dput("}%s", (down ? "_" : "^\n"));
     } else {
-        char mod_shift = (mods & MOD_SHIFT) ? (KL_km_shift.in_effect ? 0 : 1) : (KL_km_shift.in_effect ? -1 : 0), mod_shift0 = mod_shift;
+        bool shift_was_down = KL_km_shift.in_effect;
+        bool need_shift = (mods & MOD_SHIFT);
+        char mod_shift = (need_shift ? 1 : -1), mod_shift0 = mod_shift;
         char mod_control = (((mods & MOD_CONTROL) && !KL_km_control.in_effect) ? 1 : 0), mod_control0 = mod_control;
         char mod_alt = (((mods & MOD_ALT) && !KL_km_alt.in_effect) ? 1 : 0), mod_alt0 = mod_alt;
         int mods_count = (mod_shift & 1) + mod_control + mod_alt;
         dput(" send vk%02x[%d%d%d]%s", lk.binding, mod_shift, mod_control, mod_alt, (down ? "_" : "^\n"));
-        if (mods_count) {
-            INPUT inps[7];
-            int tick_count = GetTickCount();
-            int i;
-            int inps_count = 1 + mods_count * 2;
-            fori (i, 0, inps_count) {
-                VK vk1 = lk.binding;
-                DWORD flags = 0;
-                if (mod_shift) {
-                    dput("+%d-", mod_shift);
-                    flags = (mod_shift > 0 ? 0 : KEYEVENTF_KEYUP);
-                    mod_shift = 0;
-                    vk1 = VK_LSHIFT;
-                } else if (mod_control) {
-                    dput("^");
-                    flags = (mod_control > 0 ? 0 : KEYEVENTF_KEYUP);
-                    mod_control = 0;
-                    vk1 = VK_LCONTROL;
-                } else if (mod_alt) {
-                    dput("!");
-                    flags = (mod_alt > 0 ? 0 : KEYEVENTF_KEYUP);
-                    mod_alt = 0;
-                    vk1 = VK_RMENU;
-                } else {
-                    dput("-");
-                    mod_shift = -mod_shift0;
-                    mod_control = -mod_control0;
-                    mod_alt = -mod_alt0;
-                    vk1 = lk.binding;
-                    flags = (down ? 0 : KEYEVENTF_KEYUP);
+        INPUT inps[7];
+        int tick_count = GetTickCount();
+        int i;
+        int inps_count = 1 + mods_count * 2;
+        fori (i, 0, inps_count) {
+            VK vk1 = lk.binding;
+            DWORD flags = 0;
+            if (mod_shift) {
+                if (mod_shift > 0 && !need_shift && !shift_was_down) {
+                    inps_count--;
+                    continue;
                 }
-                INPUT *inp = &(inps[i]);
-                inp->type = INPUT_KEYBOARD;
-                inp->ki.wVk = vk1;
-                inp->ki.dwFlags = flags;
-                inp->ki.dwExtraInfo = 0;
-                inp->ki.wScan = sc;
-                inp->ki.time = tick_count;
+                dput("+%d-", mod_shift);
+                flags = (mod_shift > 0 ? 0 : KEYEVENTF_KEYUP);
+                mod_shift = 0;
+                vk1 = VK_LSHIFT;
+            } else if (mod_control) {
+                dput("^");
+                flags = (mod_control > 0 ? 0 : KEYEVENTF_KEYUP);
+                mod_control = 0;
+                vk1 = VK_LCONTROL;
+            } else if (mod_alt) {
+                dput("!");
+                flags = (mod_alt > 0 ? 0 : KEYEVENTF_KEYUP);
+                mod_alt = 0;
+                vk1 = VK_RMENU;
+            } else {
+                dput("-");
+                mod_shift = -mod_shift0;
+                mod_control = -mod_control0;
+                mod_alt = -mod_alt0;
+                vk1 = lk.binding;
+                flags = (down ? 0 : KEYEVENTF_KEYUP);
             }
-
-            SendInput(inps_count, inps, sizeof(INPUT));
-        } else {
-            keybd_event(lk.binding, sc, (down ? 0 : KEYEVENTF_KEYUP), 0);
+            INPUT *inp = &(inps[i]);
+            inp->type = INPUT_KEYBOARD;
+            inp->ki.wVk = vk1;
+            inp->ki.dwFlags = flags;
+            inp->ki.dwExtraInfo = 0;
+            inp->ki.wScan = sc;
+            inp->ki.time = tick_count;
         }
+        SendInput(inps_count, inps, sizeof(INPUT));
     }
 
     return StopThisEvent();
