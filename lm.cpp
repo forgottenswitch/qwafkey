@@ -61,12 +61,16 @@ void LM_init() {
 
 HWND LM_hwnd = 0;
 
-void LM_activate_selected_locale() {
-    LM_Locale *l = LM_locales.elts + LM_selected_locale;
+void LM_activate_nth_locale(size_t idx) {
+    LM_Locale *l = LM_locales.elts + idx;
     LANGID lang = l->lang;
     dput(" locale %04x ", lang);
     OS_activate_layout(LM_hwnd, l->hkl);
     KL_activate_lang(lang);
+}
+
+void LM_activate_selected_locale() {
+    LM_activate_nth_locale(LM_selected_locale);
 }
 
 void LM_activate_next_locale() {

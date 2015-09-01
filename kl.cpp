@@ -111,14 +111,18 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 
     UCHAR mods = lk.mods;
     if (mods == KLM_WCHAR) {
-        INPUT inp;
-        inp.type = INPUT_KEYBOARD;
-        inp.ki.wVk = 0;
-        inp.ki.dwFlags = KEYEVENTF_UNICODE;
-        inp.ki.dwExtraInfo = 0;
-        inp.ki.wScan = sc;
-        inp.ki.time = GetTickCount();
-        SendInput(1, &inp, sizeof(INPUT));
+        if (down) {
+            WCHAR wc = lk.binding;
+            dput(" send U+%04x ", wc);
+            INPUT inp;
+            inp.type = INPUT_KEYBOARD;
+            inp.ki.wVk = 0;
+            inp.ki.dwFlags = KEYEVENTF_UNICODE;
+            inp.ki.dwExtraInfo = 0;
+            inp.ki.wScan = wc;
+            inp.ki.time = GetTickCount();
+            SendInput(1, &inp, sizeof(INPUT));
+        }
     } else if (mods & KLM_KA) {
         dput(" ka_call ka%d(%d){", lk.binding, down);
         KA_call(lk.binding, down, sc);
@@ -196,7 +200,7 @@ void KL_bind(SC sc, UINT mods, SC binding) {
         }
         SC binding1 = binding;
         lk.active = true;
-        lk.mods = mods | KLM_SC;
+        lk.mods = mods;
         if (mods & KLM_SC) {
             binding1 = OS_sc_to_vk(binding);
         }
@@ -285,7 +289,7 @@ void KL_compile_klc(KLC *klc) {
                     WCHAR w = lk.binding;
                     dput("sc%03x:%d->", sc, lv+1);
                     KP kp = OS_wchar_to_vk(w);
-                    if (kp.vk) {
+                    if (kp.vk != 0xFF) {
                         dput("vk%02x/%d", kp.vk, kp.mods);
                         lk.mods = kp.mods;
                         lk.binding = kp.vk;

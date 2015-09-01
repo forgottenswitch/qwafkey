@@ -20,7 +20,7 @@ char *default_argv[] = {
     "sc03A:!control",
 
     "levels:56",
-/*
+
     "qH:left",
     "qJ:down",
     "qK:up",
@@ -33,9 +33,11 @@ char *default_argv[] = {
     "qM:Enter"
     "qComma:Home",
     "qPeriod:End",
+    "q7:u2018",
     "q8:Insert",
     "q9:Menu",
-*/
+    "q0:u2019",
+
     "sc004:=<",
     "qS:!l2_latch",
     "qF:=[",

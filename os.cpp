@@ -21,7 +21,7 @@ KP OS_wchar_to_sc(WCHAR w) {
 
 KP OS_wchar_to_vk(WCHAR w) {
     KP ret;
-    SHORT vks = VkKeyScan((TCHAR)w);
+    SHORT vks = VkKeyScanW(w);
     ret.vk = LOBYTE(vks);
     BYTE modsVKS = HIBYTE(vks);
     ret.mods = ((modsVKS & 4)>>2) + (modsVKS & 2) + ((modsVKS & 1)<<2);
@@ -59,4 +59,10 @@ void OS_activate_next_layout(HWND hwnd) {
 
 void OS_activate_prev_layout(HWND hwnd) {
     PostMessage(hwnd, WM_INPUTLANGCHANGEREQUEST, INPUTLANGCHANGE_BACKWARD, 0);
+}
+
+bool OS_is_console(HWND hwnd) {
+  char winclass[256];
+  GetClassName(hwnd, winclass, sizeof(winclass));
+  return !strncmp(winclass, "ConsoleWindowClass", sizeof(winclass) - 1);
 }
