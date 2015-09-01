@@ -1,5 +1,6 @@
 #include "eh.h"
 #include "lm.h"
+#include "kl.h"
 
 #ifdef __MINGW32__
 # define EH_CALLBACK
@@ -14,11 +15,14 @@ void EH_CALLBACK EH_proc(
     LONG idObject, LONG idChild,
     DWORD dwEventThread, DWORD dwmsEventTime
 ) {
-    DWORD tid = GetWindowThreadProcessId(hwnd, nil);
-    WORD langid = LANGID_Primary(GetKeyboardLayout(tid));
-    dput("%s switch { lang:%08x; }\n", (langid==0 ? "console" : "task"), langid);
+    DWORD thread_id = GetWindowThreadProcessId(hwnd, nil);
+    WORD langid = LANGID_Primary(GetKeyboardLayout(thread_id));
+    LANGID lm_langid = LM_selected_langid();
+    dput("%s switch { lang:%08x:%x;:%x }\n", (langid==0 ? "console" : "task"), lm_langid, langid, KL_active);
     LM_hwnd = hwnd;
-    LM_activate_selected_locale();
+    if (KL_active && lm_langid != langid) {
+        LM_activate_selected_locale();
+    }
 }
 
 void EH_activate() {

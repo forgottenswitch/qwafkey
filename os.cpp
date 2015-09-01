@@ -48,5 +48,15 @@ void OS_print_last_error() {
 }
 
 void OS_activate_layout(HWND hwnd, HKL hkl) {
-    PostMessage(hwnd, WM_INPUTLANGCHANGEREQUEST, (WPARAM)hkl, KLF_ACTIVATE);
+    PostMessage(hwnd, WM_INPUTLANGCHANGEREQUEST, 0, (LPARAM)hkl);
+}
+
+#define INPUTLANGCHANGE_FORWARD 0x0002
+#define INPUTLANGCHANGE_BACKWARD 0x0004
+void OS_activate_next_layout(HWND hwnd) {
+    PostMessage(hwnd, WM_INPUTLANGCHANGEREQUEST, INPUTLANGCHANGE_FORWARD, 0);
+}
+
+void OS_activate_prev_layout(HWND hwnd) {
+    PostMessage(hwnd, WM_INPUTLANGCHANGEREQUEST, INPUTLANGCHANGE_BACKWARD, 0);
 }

@@ -187,7 +187,7 @@ bool KL_bind_lvls[KLVN];
 void KL_bind(SC sc, UINT mods, SC binding) {
     LK lk;
     UINT lv;
-    dput("bind sc%03x ", sc);
+    dput("bind sc%03x:\n  ", sc);
     fori (lv, 0, len(KL_bind_lvls)) {
         int lv1 = lv+1;
         if (!KL_bind_lvls[lv]) {
@@ -219,7 +219,6 @@ void KL_bind(SC sc, UINT mods, SC binding) {
             dput(":%d vk%02x ", lv1, binding);
         }
     }
-    dputs("");
 }
 
 typedef struct {
@@ -302,7 +301,7 @@ void KL_compile_klc(KLC *klc) {
 }
 
 void KL_activate_lang(LANGID lang) {
-    dput("lang %04d ", lang);
+    dput("lang %04x ", lang);
     KLC *lang_klc = KL_lang_to_klc(lang);
     if (lang_klc->compiled) {
         CopyMemory(KL_kly, lang_klc->kly, sizeof(KLY));

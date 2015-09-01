@@ -74,9 +74,11 @@ KP OS_wchar_to_vk(WCHAR tc);
 VK OS_sc_to_vk(SC sc);
 void OS_print_last_error();
 void OS_activate_layout(HWND hwnd, HKL hkl);
+void OS_activate_next_layout(HWND hwnd);
+void OS_activate_prev_layout(HWND hwnd);
 
 #define LANGID_Primary LOWORD
-#define LANGID_SubLang HIWORD
+#define LANGID_Device HIWORD
 
 #define HK_0 32000
 

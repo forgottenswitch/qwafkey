@@ -1,5 +1,6 @@
 #include "lm.h"
 #include "kl.h"
+#include "parse.h"
 
 LM_LocalesBuffer LM_locales = { 0, 0, nil };
 int LM_selected_locale = 0;
@@ -31,9 +32,9 @@ void LM_get_locales(bool set_selected) {
         CopyMemory(str4, langstr+4, 4);
         str4[4] = '\0';
         dput("gkln{\"%s\",\"%s\"} ", langstr, str4);
-        LANGID lang = atoi(str4);
+        LANGID lang = hextoi(str4);
         l->lang = lang;
-        dput(" locale{%04d, %08x}\n", lang, (UINT)hkl);
+        dput(" locale{%04x, %08x}\n", lang, (UINT)hkl);
     }
     if (set_selected) {
         bool found;
@@ -63,7 +64,7 @@ HWND LM_hwnd = 0;
 void LM_activate_selected_locale() {
     LM_Locale *l = LM_locales.elts + LM_selected_locale;
     LANGID lang = l->lang;
-    dput(" locale %04d ", lang);
+    dput(" locale %04x ", lang);
     OS_activate_layout(LM_hwnd, l->hkl);
     KL_activate_lang(lang);
 }
@@ -78,4 +79,8 @@ void LM_activate_prev_locale() {
     if ((LM_selected_locale -= 1) >= 0)
         LM_selected_locale = LM_locales.count;
     LM_activate_selected_locale();
+}
+
+LANGID LM_selected_langid() {
+    return LM_locales.elts[LM_selected_locale].lang;
 }

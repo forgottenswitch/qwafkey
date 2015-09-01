@@ -22,6 +22,18 @@ ka(KA_prev_layout) {
     LM_activate_prev_locale();
 }
 
+ka(KA_next_os_layout) {
+    if (!down)
+        return;
+    OS_activate_next_layout(LM_hwnd);
+}
+
+ka(KA_prev_os_layout) {
+    if (!down)
+        return;
+    OS_activate_prev_layout(LM_hwnd);
+}
+
 #define SC_LCONTROL 0x01D
 ka(KA_control) {
     KM_shift_event(&KL_km_control, down, sc);
@@ -67,6 +79,8 @@ KA_Pair KA_fns[] = {
     ka(KA_toggle),
     ka(KA_next_layout),
     ka(KA_prev_layout),
+    ka(KA_next_os_layout),
+    ka(KA_prev_os_layout),
     ka(KA_control),
     ka(KA_l5_shift),
     ka(KA_l5_lock),

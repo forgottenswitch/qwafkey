@@ -12,19 +12,30 @@
 #endif // NOGUI
 
 char *default_argv[] = {
-    "mods:#",
-    "F2:!toggle",
-    "qZ:!dim_screen",
+    "@#F3:!toggle",
+    "@#qZ:!dim_screen",
 
     "levels:123456",
     "sc027:!l5_shift",
     "sc03A:!control",
 
     "levels:56",
+/*
     "qH:left",
     "qJ:down",
     "qK:up",
     "qL:right",
+    "qU:Backspace",
+    "qO:Delete",
+    "qI:Escape",
+    "qY:pgup",
+    "qN:pgdn",
+    "qM:Enter"
+    "qComma:Home",
+    "qPeriod:End",
+    "q8:Insert",
+    "q9:Menu",
+*/
     "sc004:=<",
     "qS:!l2_latch",
     "qF:=[",
@@ -39,12 +50,14 @@ char *default_argv[] = {
     "levels:34",
     "qJ:=_",
     "qM:!next_layout",
+    "qSlash:!next_os_layout",
 
     "lang:409",
     "sc003:sc004",
 
     "lang:419",
     "sc004:sc005",
+
 };
 
 void main_loop() {

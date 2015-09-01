@@ -3,16 +3,21 @@
 #include "ka.h"
 #include "kn.h"
 #include "hk.h"
+#include "parse.h"
 
-bool isspc(TCHAR tc) {
+#ifndef MOD_NOREPEAT
+# define MOD_NOREPEAT 0x4000
+#endif // MOD_NOREPEAT
+
+bool isspc(char tc) {
     return (tc == ' ') || (tc == '\t');
 }
 
-bool ishex(TCHAR tc) {
+bool ishex(char tc) {
     return (tc >= '0' && tc <= '9') || (tc >= 'a' && tc <= 'f') || (tc >= 'A' && tc <= 'F');
 }
 
-int hdigtoi(TCHAR tc) {
+int hdigtoi(char tc) {
     if (tc >= '0' && tc <= '9')
         return tc - '0';
     if (tc >= 'a' && tc <= 'f')
@@ -20,6 +25,21 @@ int hdigtoi(TCHAR tc) {
     if (tc >= 'A' && tc <= 'F')
         return tc - 'A' + 10;
     return -1;
+}
+
+int hextoi(char *hex) {
+    while (isspc(*hex))
+        hex++;
+    if (hex[0] == '0' && hex[1] == 'x')
+        hex+=2;
+    int rv = 0;
+    char c, d;
+    while ((c = hex[0]) && ((d = hdigtoi(c)) >= 0)) {
+        rv *= 16;
+        rv += d;
+        hex++;
+    }
+    return rv;
 }
 
 bool str_sets(char *str, char *thing) {
@@ -43,11 +63,24 @@ void parse_args(int argc, char *argv[]) {
     fori (argi, 0, argc) {
         char *arg = argv[argi];
         int sc = 0;
-        int i = 1;
+        int i = 0;
         char c;
 
-        dput(" parse arg <<%s>>", arg);
+        dput("\nparse arg <<%s>> ", arg);
+        UINT mods = 0;
+        while (isspc(arg[0])) arg++;
+        while ((c = arg[0]) && (c == '!' || c == '^' || c == '+' || c == '#' || c == '@')) {
+            arg++;
+            switch (c) {
+            case '!': mods |= MOD_ALT; break;
+            case '^': mods |= MOD_CONTROL; break;
+            case '+': mods |= MOD_SHIFT; break;
+            case '#': mods |= MOD_WIN; break;
+            case '@': mods |= MOD_NOREPEAT; break;
+            }
+        }
         if (arg[0] == 's' && arg[1] == 'c' && ishex(arg[2])) {
+            i = 1;
             while (ishex((c = arg[i+=1]))) {
                 sc *= 16;
                 sc += hdigtoi(c);
@@ -59,19 +92,17 @@ void parse_args(int argc, char *argv[]) {
             goto assign;
         } else if (str_sets(arg, "lang")) {
             parse_in_mods = false;
-            int i = 0;
-            char c;
+            i = 0;
             while ((c = arg[i]) && c != ':' && c != '=') i++;
             if (c) {
-                int n = atoi(arg + i + 1);
-                dput("  bind lang: %04d\n", n);
+                int n = hextoi(arg + i + 1);
+                dput("  bind lang: %04d", n);
                 KL_bind_lvls_init();
                 KL_set_bind_lang(n);
             }
         } else if (str_sets(arg, "levels")) {
             parse_in_mods = false;
-            int i = 0;
-            char c;
+            i = 0;
             while ((c = arg[i]) && c != ':' && c != '=') i++;
             if (c) {
                 i++;
@@ -85,35 +116,6 @@ void parse_args(int argc, char *argv[]) {
                     }
                 }
             }
-            dputs("");
-        } else if (str_sets(arg, "mods")) {
-            parse_in_mods = true;
-            int i = 0;
-            char c;
-            while ((c = arg[i]) && c != ':' && c != '=') i++;
-            if (c) {
-                i++;
-                while (isspc(arg[i])) i++;
-                parse_hk_mods = 0;
-                while ((c = arg[i])) {
-                    i++;
-                    switch (c) {
-                    case '!':
-                        parse_hk_mods |= MOD_ALT;
-                        break;
-                    case '^':
-                        parse_hk_mods |= MOD_CONTROL;
-                        break;
-                    case '+':
-                        parse_hk_mods |= MOD_SHIFT;
-                        break;
-                    case '#':
-                        parse_hk_mods |= MOD_WIN;
-                        break;
-                    }
-                }
-            }
-            dputs("");
         }
         continue;
 
@@ -126,7 +128,7 @@ void parse_args(int argc, char *argv[]) {
             c = arg[i];
             VK vk;
             if ((vk = KN_name_to_vk(arg + i))) {
-                dput(": [%s]\n", arg + i);
+                dput(": [%s] ", arg + i);
                 KL_bind(sc, 0, vk);
             } else if (c == 'u' || c == 'U') {
                 dput("  u");
@@ -135,14 +137,14 @@ void parse_args(int argc, char *argv[]) {
                     w *= 16;
                     w += hdigtoi(c);
                 }
-                dput(": %04x\n", w);
+                dput(": %04x ", w);
                 KL_bind(sc, KLM_WCHAR, w);
             } else if (c == '=') {
                 dput("  =");
                 i++;
                 while (isspc(arg[i])) i++;
                 char c = arg[i];
-                dput(":%03d,%c\n", c, c);
+                dput(":%03d,%c ", c, c);
                 KL_bind(sc, KLM_WCHAR, c);
             } else if (c == 's' && arg[i+=1] == 'c') {
                 dput("  sc1");
@@ -152,7 +154,7 @@ void parse_args(int argc, char *argv[]) {
                     sc1 *= 16;
                     sc1 += hdigtoi(c);
                 }
-                dput(":%03x\n", sc1);
+                dput(":%03x ", sc1);
                 KL_bind(sc, mods, sc1);
             } else if (c == 'v' && arg[i+=1] == 'k') {
                 dput("  vk1");
@@ -162,23 +164,22 @@ void parse_args(int argc, char *argv[]) {
                     vk1 *= 16;
                     vk1 += hdigtoi(c);
                 }
-                dput(":%02x\n", vk1);
+                dput(":%02x ", vk1);
                 KL_bind(sc, mods, vk1);
             } else if (c == '!') {
                 dput("  ka");
                 char *name = arg + i + 1;
                 int id = KA_name_to_id(name);
-                dput("%d", id);
+                dput("%d ", id);
                 if (id >= 0) {
-                    dput(" %s\n", name);
-                    if (parse_in_mods) {
+                    dput(" !%s/%d ", name, mods);
+                    if (mods) {
                         VK vk = OS_sc_to_vk(sc);
-                        HK_KA_register(id, parse_hk_mods, vk);
+                        HK_KA_register(id, mods, vk);
                     } else {
                         KL_bind(sc, KLM_KA, id);
                     }
                 }
-                dput("\n");
             }
         }
     }

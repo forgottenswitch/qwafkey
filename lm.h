@@ -22,5 +22,6 @@ void LM_init();
 void LM_activate_selected_locale();
 void LM_activate_next_locale();
 void LM_activate_prev_locale();
+LANGID LM_selected_langid();
 
 #endif // LM_H_INCLUDED
