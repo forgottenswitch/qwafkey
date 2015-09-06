@@ -9,178 +9,497 @@
 # define MOD_NOREPEAT 0x4000
 #endif // MOD_NOREPEAT
 
-bool isspc(char tc) {
-    return (tc == ' ') || (tc == '\t');
+size_t parse_lineno;
+size_t parse_colno;
+
+bool isspc(char c) {
+    return (c == ' ') || (c == '\t');
 }
 
-bool ishex(char tc) {
-    return (tc >= '0' && tc <= '9') || (tc >= 'a' && tc <= 'f') || (tc >= 'A' && tc <= 'F');
+bool ishex(char c) {
+    return between(c, '0', '9') || between(c, 'a', 'f') || between(c, 'A', 'F');
 }
 
-int hdigtoi(char tc) {
-    if (tc >= '0' && tc <= '9')
-        return tc - '0';
-    if (tc >= 'a' && tc <= 'f')
-        return tc - 'a' + 10;
-    if (tc >= 'A' && tc <= 'F')
-        return tc - 'A' + 10;
+bool isdecimal(char c) {
+    return between(c, '0', '9');
+}
+
+int hexdigtoi(char c) {
+    if (between(c, '0', '9'))
+        return c - '0';
+    if (between(c, 'a', 'f'))
+        return c - 'a' + 10;
+    if (between(c, 'A', 'F'))
+        return c - 'A' + 10;
     return -1;
 }
 
-int hextoi(char *hex) {
-    while (isspc(*hex))
-        hex++;
-    if (hex[0] == '0' && hex[1] == 'x')
-        hex+=2;
-    int rv = 0;
-    char c, d;
-    while ((c = hex[0]) && ((d = hdigtoi(c)) >= 0)) {
-        rv *= 16;
-        rv += d;
-        hex++;
-    }
-    return rv;
+bool isidentchar0(char c) {
+    return between(c, 'a', 'z') || between(c, 'A', 'Z') || (c == '_');
 }
 
-bool str_sets(char *str, char *thing) {
-    while (isspc(*str))
+bool isidentchar(char c) {
+    return isidentchar0(c) || between(c, '0', '9');
+}
+
+#define READ_PARMS char **input
+#define RET(str1, val) do { *input = (str1); return (val); } while (0)
+
+int read_Z_decimal(READ_PARMS) {
+    char *str = *input, c;
+    int sign = 1;
+    if ((c = *str) && (c == '-')) {
+        sign = -1;
         str++;
-    size_t n = strlen(thing);
-    if (!strncmp(str, thing, n)) {
-        char c = str[n];
-        return !c || isspc(c) || c == ':' || c == '=';
+    } else if (c == '+') {
+        str++;
+    }
+    while (isspc(*str)) str++;
+    if (isdecimal((c = *str))) {
+        int n = c - '0';
+        while (isdecimal((c = *(str+=1)))) {
+            n *= 10;
+            n += c - '0';
+        }
+        RET(str, sign * n);
+    }
+    return 0;
+}
+
+int read_hex(READ_PARMS) {
+    char *str = *input, c = *str;
+    int sign = 1;
+    if (c && (c == '-')) {
+        sign = -1;
+        str++;
+    } else if (c == '+') {
+        str++;
+    } else if (c == '0' && str[1] == 'x') {
+        str+=2;
+    }
+    while (isspc(*str)) str++;
+    if (ishex((c = *str))) {
+        int n = hexdigtoi(c);
+        while (ishex((c = *(str+=1)))) {
+            n *= 16;
+            n += hexdigtoi(c);
+        }
+        RET(str, sign * n);
+    }
+    return 0;
+}
+
+int read_ka(READ_PARMS) {
+    char *str = *input, c;
+    int id;
+    if (*str == '!') {
+        str++;
+        if (isidentchar0((c = *str))) {
+            char buf[256];
+            size_t i = 0;
+            buf[0] = c;
+            while (isidx(i, buf) && isidentchar((c = *(str++)))) {
+                buf[i++] = c;
+            }
+            buf[i++] = '\0';
+            id = KA_name_to_id(buf);
+            RET(str, id);
+        }
+    }
+    return 0;
+}
+
+int read_mods(READ_PARMS) {
+    char *str = *input;
+    int mods = 0;
+    while (1) {
+        char c = *str;
+        switch (c) {
+        case '!':
+            mods |= MOD_ALT;
+            break;
+        case '^':
+            mods |= MOD_CONTROL;
+            break;
+        case '+':
+            mods |= MOD_SHIFT;
+            break;
+        case '#':
+            mods |= MOD_WIN;
+            break;
+        case '@':
+            mods |= MOD_NOREPEAT;
+            break;
+        default:
+            RET(str, mods);
+        }
+        str++;
+    }
+}
+
+bool read_char(READ_PARMS, char ch) {
+    if (**input == ch) {
+        RET((*input)+1, true);
     }
     return false;
 }
 
-bool parse_in_mods = false;
-UINT parse_hk_mods;
+bool read_comma(READ_PARMS) {
+    return read_char(input, ',');
+}
 
-void parse_args(int argc, char *argv[]) {
-    dput("parse_args %d, ...\n", argc);
-    KL_bind_lvls_init();
-    int argi;
-    fori (argi, 0, argc) {
-        char *arg = argv[argi];
-        int sc = 0;
-        int i = 0;
-        char c;
+bool read_colon(READ_PARMS) {
+    return read_char(input, ':');
+}
 
-        dput("\nparse arg <<%s>> ", arg);
-        UINT mods = 0;
-        while (isspc(arg[0])) arg++;
-        while ((c = arg[0]) && (c == '!' || c == '^' || c == '+' || c == '#' || c == '@')) {
-            arg++;
-            switch (c) {
-            case '!': mods |= MOD_ALT; break;
-            case '^': mods |= MOD_CONTROL; break;
-            case '+': mods |= MOD_SHIFT; break;
-            case '#': mods |= MOD_WIN; break;
-            case '@': mods |= MOD_NOREPEAT; break;
-            }
+bool read_newline(READ_PARMS) {
+    char *str = *input;
+    if (read_char(&str, '\r') &&
+        read_char(&str, '\n')) {
+        RET(str, true);
+    }
+    return false;
+}
+
+bool read_spc(READ_PARMS) {
+    char *str = *input;
+    bool moved = false;
+    while (isspc(*str)) {
+        str++;
+        moved = true;
+    }
+    if (moved) {
+        RET(str, true);
+    }
+    return false;
+}
+
+void read_to_bol(READ_PARMS) {
+    char *str = *input, c;
+    while ((c = *str) && (c != '\n')) str++;
+    str++;
+    *input = str;
+}
+
+bool read_empty_line(READ_PARMS) {
+    char *str = *input;
+    read_spc(&str);
+    if ((str[0] == '\r') && (str[1] == '\n')) {
+        RET(str + 2, true);
+    }
+    return false;
+}
+
+bool read_comment(READ_PARMS) {
+    char *str = *input, c = *str;
+    if (c == ';') {
+        read_to_bol(&str);
+        RET(str, true);
+    } else if ((c == '/') && (str[1] == '/')) {
+        read_to_bol(&str);
+        RET(str, true);
+    } else if ((c == '/') && (str[1] == '*')) {
+        str+=2;
+        while ((c = str[0]) && !((c == '*') && (str[1] == '/'))) {
+            str++;
         }
-        if (arg[0] == 's' && arg[1] == 'c' && ishex(arg[2])) {
-            i = 1;
-            while (ishex((c = arg[i+=1]))) {
-                sc *= 16;
-                sc += hdigtoi(c);
-            }
-            dput("  sc:%03x", sc);
-            goto assign;
-        } else if ((sc = KN_lname_to_sc(arg))) {
-            while ((c = arg[i]) && c != ':' && c != '=') i++;
-            goto assign;
-        } else if (str_sets(arg, "lang")) {
-            parse_in_mods = false;
-            i = 0;
-            while ((c = arg[i]) && c != ':' && c != '=') i++;
-            if (c) {
-                int n = hextoi(arg + i + 1);
-                dput("  bind lang: %04d", n);
-                KL_bind_lvls_init();
-                KL_set_bind_lang(n);
-            }
-        } else if (str_sets(arg, "levels")) {
-            parse_in_mods = false;
-            i = 0;
-            while ((c = arg[i]) && c != ':' && c != '=') i++;
-            if (c) {
-                i++;
-                while (isspc(arg[i])) i++;
-                KL_bind_lvls_zero();
-                while ((c = arg[i])) {
-                    i++;
-                    if (c >= '0' && c <= '9') {
-                        int d = c - '0';
-                        KL_bind_lvls[d-1] = true;
-                    }
-                }
-            }
-        }
-        continue;
+        RET(str, true);
+    }
+    return false;
+}
 
-        assign:
-        while (isspc(arg[i])) i++;
-        if ((c = arg[i]) == '=' || c == ':') {
-            i++;
-            while (isspc(arg[i]))
-                i++;
-            c = arg[i];
-            VK vk;
-            if ((vk = KN_name_to_vk(arg + i))) {
-                dput(": [%s] ", arg + i);
-                KL_bind(sc, 0, vk);
-            } else if (c == 'u' || c == 'U') {
-                dput("  u");
-                WCHAR w = 0;
-                while (ishex((c = arg[i+=1]))) {
-                    w *= 16;
-                    w += hdigtoi(c);
-                }
-                dput(": %04x ", w);
+bool read_whitespace(READ_PARMS) {
+    char *str = *input;
+    bool moved = false;
+    while (read_spc(&str) || read_comment(&str) || read_newline(&str)) {
+        moved = true;
+    }
+    if (moved) {
+        RET(str, true);
+    }
+    return false;
+}
+
+int read_sc_alias(READ_PARMS) {
+    char *str = *input, *str0 = str;
+    if (isidentchar0(str[0])) {
+        char buf[256];
+        do str++; while (isidentchar(*str));
+        strbcr(buf, str0, str+1);
+        RET(str, KN_lname_to_sc(buf));
+    }
+    return 0;
+}
+
+int read_vk_alias(READ_PARMS) {
+    char *str = *input, *str0 = str;
+    if (isidentchar0(str[0])) {
+        char buf[256];
+        do str++; while (isidentchar(*str));
+        strbcr(buf, str0, str+1);
+        RET(str, KN_name_to_vk(buf));
+    }
+    return 0;
+}
+
+#define getter(name, type)            /*
+*/  name(                              /*
+*/    READ_PARMS,                      /*
+*/    type *rv,                        /*
+*/    type (fn)(READ_PARMS)            /*
+*/  ) {                                /*
+*/    char *str = *input, *str0 = str; /*
+*/    *rv = fn(&str);                  /*
+*/    if (str != str0) {               /*
+*/      RET(str, true);                /*
+*/     }                               /*
+*/    return false;                    /*
+*/  }
+bool getter(get_int, int);
+bool getter(get_size_t, size_t);
+#undef getter
+
+#define RET_get(str, type, getter, reader)    /*
+*/  do {                                      /*
+*/    type rv;                                /*
+*/    if (getter(&(str), &rv, (reader))) {    /*
+*/      RET(str, rv);                         /*
+*/    }                                       /*
+*/  } while (0)
+
+int read_sc(READ_PARMS) {
+    char *str = *input;
+    if ((str[0] == 's') && (str[1] == 'c')) {
+        str+=2;
+        int sc;
+        if (get_int(&str, &sc, read_hex)) {
+            RET(str, sc);
+        }
+    }
+    return 0;
+}
+
+int read_vk(READ_PARMS) {
+    char *str = *input;
+    if ((str[0] == 'v') && (str[1] == 'k')) {
+        str+=2;
+        int vk;
+        if (get_int(&str, &vk, read_hex)) {
+            RET(str, vk);
+        }
+    }
+    return 0;
+}
+
+int read_unicode_char(READ_PARMS) {
+    char *str = *input, c = str[0];
+    if (c == 'u' || c == 'U') {
+        str++;
+        RET_get(str, int, get_int, read_hex);
+    }
+    return 0;
+}
+
+int read_utf8_ch(READ_PARMS) {
+    char *str = *input, c = *str;
+    int ch = 0, cl = 0;
+    if (c>>7 == 0) {
+        RET(str+1, c);
+    } else if (c>>5 == 0b110) {
+        ch = c & (32-1);
+        cl = 1;
+    } else if (c>>4 == 0b1110) {
+        ch = c & (16-1);
+        cl = 2;
+    } else if (c>>6 == 0b11110) {
+        ch = c & (8-1);
+        cl = 3;
+    }
+    for (; cl; cl--) {
+        str++;
+        if ((c = *str)) {
+            if (c>>6 != 0b10) {
+                RET(str+1, ch);
+            }
+            ch *= (64-1);
+            ch += c & (64-1);
+        }
+    }
+    RET(str+1, ch);
+}
+
+int read_raw_char(READ_PARMS) {
+    char *str = *input;
+    if (*str == '=') {
+        str++;
+        RET_get(str, int, get_int, read_utf8_ch);
+    }
+    return 0;
+}
+
+bool read_bind(READ_PARMS) {
+    char *str = *input;
+    int sc, vk;
+    if (get_int(&str, &sc, read_sc) || get_int(&str, &vk, read_vk) || get_int(&str, &sc, read_sc_alias) ) {
+        read_spc(&str);
+        if (read_colon(&str)) {
+            int w, sc1, vk1, ka;
+            read_spc(&str);
+            if (get_int(&str, &w, read_unicode_char) || get_int(&str, &w, read_raw_char)) {
                 KL_bind(sc, KLM_WCHAR, w);
-            } else if (c == '=') {
-                dput("  =");
-                i++;
-                while (isspc(arg[i])) i++;
-                char c = arg[i];
-                dput(":%03d,%c ", c, c);
-                KL_bind(sc, KLM_WCHAR, c);
-            } else if (c == 's' && arg[i+=1] == 'c') {
-                dput("  sc1");
-                int mods = KLM_SC;
-                SC sc1 = 0;
-                while (ishex((c = arg[i+=1]))) {
-                    sc1 *= 16;
-                    sc1 += hdigtoi(c);
+            } else if (get_int(&str, &vk1, read_vk) || get_int(&str, &vk1, read_vk_alias)) {
+                KL_bind(sc, 0, vk1);
+            } else if (get_int(&str, &sc1, read_sc) || get_int(&str, &sc1, read_sc_alias)) {
+                KL_bind(sc, KLM_SC, sc1);
+            } else if (get_int(&str, &ka, read_ka)) {
+                KL_bind(sc, KLM_KA, ka);
+            } else {
+                return false;
+            }
+            RET(str, true);
+        }
+    }
+    return false;
+}
+
+bool read_hotk(READ_PARMS) {
+    char *str = *input;
+    int mods, sc = 0, vk, ka;
+    if (get_int(&str, &mods, read_mods)) {
+        if (get_int(&str, &vk, read_vk) || get_int(&str, &sc, read_sc) || get_int(&str, &sc, read_sc_alias)) {
+            if (!vk) {
+                if (!sc) {
+                    return 0;
                 }
-                dput(":%03x ", sc1);
-                KL_bind(sc, mods, sc1);
-            } else if (c == 'v' && arg[i+=1] == 'k') {
-                dput("  vk1");
-                int mods = 0;
-                UINT vk1 = 0;
-                while (ishex((c = arg[i+=1]))) {
-                    vk1 *= 16;
-                    vk1 += hdigtoi(c);
-                }
-                dput(":%02x ", vk1);
-                KL_bind(sc, mods, vk1);
-            } else if (c == '!') {
-                dput("  ka");
-                char *name = arg + i + 1;
-                int id = KA_name_to_id(name);
-                dput("%d ", id);
-                if (id >= 0) {
-                    dput(" !%s/%d ", name, mods);
-                    if (mods) {
-                        VK vk = OS_sc_to_vk(sc);
-                        HK_KA_register(id, mods, vk);
-                    } else {
-                        KL_bind(sc, KLM_KA, id);
-                    }
+                vk = OS_sc_to_vk(sc);
+            }
+            if (read_colon(&str)) {
+                if (get_int(&str, &ka, read_ka)) {
+                    HK_KA_register(ka, mods, vk);
+                    RET(str, true);
                 }
             }
         }
+    }
+    return false;
+}
+
+bool read_word(READ_PARMS, char *wrd) {
+    char *str = *input;
+    size_t wrdlen = strlen(wrd);
+    if (!strncmp(str, wrd, wrdlen)) {
+        if (!isidentchar(str[wrdlen])) {
+            RET(str+wrdlen, true);
+        }
+    }
+    return false;
+}
+
+bool read_lang(READ_PARMS) {
+    char *str = *input;
+    if (read_word(&str, "lang")) {
+        if (read_colon(&str)) {
+            int n;
+            if ((n = read_hex(&str))) {
+                KL_set_bind_lang(n);
+                RET(str, true);
+            }
+        }
+    }
+    return false;
+}
+
+size_t read_N_decimal(READ_PARMS) {
+    char *str = *input;
+    int n;
+    if (get_int(&str, &n, read_Z_decimal)) {
+        if (n > 0) {
+            size_t n_gz = n;
+            RET(str, n_gz);
+        }
+    }
+    return 0;
+}
+
+bool read_levs(READ_PARMS) {
+    char *str = *input;
+    size_t n;
+    bool zeroed = false;
+    if (read_word(&str, "level") && read_colon(&str)) {
+        read_spc(&str);
+        read_colon(&str);
+        read_spc(&str);
+        if (get_size_t(&str, &n, read_N_decimal)) {
+            dput("lvl(%d) ", n);
+            n--;
+            if (isidx(n, KL_bind_lvls)) {
+                KL_bind_lvls_zero();
+                KL_bind_lvls_sole = true;
+                KL_bind_lvls[n] = true;
+            };
+        }
+        RET(str, true);
+    } else if (read_word(&str, "levels")) {
+        read_spc(&str);
+        read_colon(&str);
+        do {
+            read_spc(&str);
+            if (get_size_t(&str, &n, read_N_decimal)) {
+                dput("lvn(%d) ", n);
+                n--;
+                if (isidx(n, KL_bind_lvls)) {
+                    if (!zeroed) {
+                        KL_bind_lvls_zero();
+                        zeroed = true;
+                    }
+                    KL_bind_lvls_sole = false;
+                    KL_bind_lvls[n] = true;
+                }
+            }
+            read_spc(&str);
+        } while (read_comma(&str));
+        RET(str, true);
+    };
+    return false;
+}
+
+bool read_line(READ_PARMS) {
+    dput("unrecognized line %d\n", parse_lineno);
+    read_to_bol(input);
+    return (**input != '\0');
+}
+
+#undef READ_PARMS
+
+void parse_args(int argc, char *argv[], int argb) {
+    int argi;
+    KL_bind_init();
+    fori (argi, argb, argc) {
+        char *arg = argv[argi];
+        read_spc(&arg);
+        dput("%20s| ", arg);
+        if (!(read_bind(&arg) ||
+              read_hotk(&arg) ||
+              read_lang(&arg) ||
+              read_levs(&arg)
+        )) {
+            dput("unrecognized arg %d: %s\n", argi, arg);
+        }
+        dput("\n");
+    }
+}
+
+void parse_str(char *str) {
+    parse_lineno = 0;
+    parse_colno = 0;
+    KL_bind_init();
+    while (read_whitespace(&str) ||
+           read_bind(&str) ||
+           read_hotk(&str) ||
+           read_lang(&str) ||
+           read_levs(&str) ||
+           read_line(&str)
+    ) {
+        parse_lineno += 1;
     }
 }

@@ -188,14 +188,15 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 
 KLY *KL_bind_kly = &KL_kly;
 bool KL_bind_lvls[KLVN];
+bool KL_bind_lvls_sole;
 
 void KL_bind(SC sc, UINT mods, SC binding) {
     LK lk;
     UINT lv;
-    dput("bind sc%03x:\n  ", sc);
+    dput("bind sc%03x: ", sc);
     fori (lv, 0, len(KL_bind_lvls)) {
         int lv1 = lv+1;
-        if (!KL_bind_lvls[lv]) {
+        if (!KL_bind_lvls[lv] && !(KL_bind_lvls_sole && lv > 0 && KL_bind_lvls[lv-1])) {
             dput(":%d - ", lv1);
             continue;
         }
@@ -208,10 +209,8 @@ void KL_bind(SC sc, UINT mods, SC binding) {
         lk.binding = binding1;
         if (lv % 2) {
             UINT mods0 = mods;
-            if (KL_bind_lvls[lv - 1]) {
-                mods |= MOD_SHIFT;
-            }
-            dput("+(%d:%d)", mods0, mods);
+            mods |= MOD_SHIFT;
+            dput("+(%x)", mods0);
         }
         (*KL_bind_kly)[lv][sc] = lk;
         if (mods & KLM_WCHAR) {
@@ -258,7 +257,9 @@ KLY *KL_lang_to_kly(LANGID lang) {
 
 KLC *KL_lang_to_klc(LANGID lang) {
     UINT i;
+    dput("klcs_count:%d ", KL_klcs_count);
     fori(i, 0, KL_klcs_count) {
+        dput("klc.lang:%x ", KL_klcs[i].lang);
         if (KL_klcs[i].lang == lang)
             return &(KL_klcs[i]);
     }
@@ -308,6 +309,10 @@ void KL_compile_klc(KLC *klc) {
 void KL_activate_lang(LANGID lang) {
     dput("lang %04x ", lang);
     KLC *lang_klc = KL_lang_to_klc(lang);
+    if (lang_klc == nil) {
+        dput("no such lang! ");
+        return;
+    }
     if (lang_klc->compiled) {
         CopyMemory(KL_kly, lang_klc->kly, sizeof(KLY));
     } else {
@@ -333,8 +338,9 @@ void KL_bind_lvls_zero() {
     }
 }
 
-void KL_bind_lvls_init() {
+void KL_bind_init() {
     KL_bind_lvls_zero();
+    KL_bind_kly = KL_lang_to_kly(LANG_NEUTRAL);
     KL_bind_lvls[0] = true;
     KL_bind_lvls[1] = true;
 }

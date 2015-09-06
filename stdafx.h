@@ -29,7 +29,18 @@
 
 #define nil NULL
 #define fori(i, from, to) for (i = from; i < to; i++)
-#define len(ary) (sizeof(ary)/sizeof(ary[0]))
+#define len(ary) (sizeof((ary))/sizeof((ary)[0]))
+#define last(ary) ary[len(ary)-1]
+#define between(v, min, max) ((min) <= (v) && (v) <= (max))
+#define isidx(i, ary) (between((i), 0, len((ary))))
+
+#define strbcr(buf, from, to)\
+    do {\
+        size_t l = to - from;\
+        if (l > len(buf)) { l = len(buf); }\
+        memcpy(buf, from, l);\
+        buf[l-1] = '\0';\
+    } while (0)
 
 typedef unsigned char VK;
 typedef unsigned short SC;

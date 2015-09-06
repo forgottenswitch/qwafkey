@@ -37,7 +37,9 @@ void KL_activate_lang(LANGID lang);
 void KL_set_bind_lang(LANGID lang);
 
 extern bool KL_bind_lvls[KLVN];
+extern bool KL_bind_lvls_sole;
 
+void KL_bind_init();
 void KL_bind_lvls_zero();
 void KL_bind_lvls_init();
 

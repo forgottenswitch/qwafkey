@@ -29,7 +29,7 @@ void HK_register(int id, UINT mods, VK vk) {
     dput("Register HK%d+%02d (%s): ", HK_0, (id - HK_0), HK_to_s(mods, vk));
     int ret = RegisterHotKey(nil, id, mods, vk);
     if (ret == 1) {
-        dputs("OK");
+        dput("OK ");
     } else {
         OS_print_last_error();
     }

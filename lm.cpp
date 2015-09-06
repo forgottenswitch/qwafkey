@@ -5,6 +5,26 @@
 LM_LocalesBuffer LM_locales = { 0, 0, nil };
 int LM_selected_locale = 0;
 
+int hexntoi(char *str, size_t n) {
+    size_t i;
+    int rv = 0;
+    fori (i, 0, n) {
+        char c = *str;
+        str++;
+        rv *= 16;
+        if (between(c, '0', '9')) {
+            rv += c - '0';
+        } else if (between(c, 'a', 'f')) {
+            rv += c - 'a' + 10;
+        } else if (between(c, 'A', 'F')) {
+            rv += c - 'A' + 10;
+        } else {
+            return rv /= 16;
+        }
+    }
+    return rv;
+}
+
 void LM_get_locales(bool set_selected) {
     int count = LM_locales.count, size = LM_locales.size;
     LM_Locale *elts = LM_locales.elts;
@@ -32,7 +52,7 @@ void LM_get_locales(bool set_selected) {
         CopyMemory(str4, langstr+4, 4);
         str4[4] = '\0';
         dput("gkln{\"%s\",\"%s\"} ", langstr, str4);
-        LANGID lang = hextoi(str4);
+        LANGID lang = hexntoi(str4, len(str4));
         l->lang = lang;
         dput(" locale{%04x, %08x}\n", lang, (UINT)hkl);
     }
