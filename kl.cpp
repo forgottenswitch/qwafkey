@@ -130,7 +130,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     } else {
         bool shift_was_down = KL_km_shift.in_effect;
         bool need_shift = (mods & MOD_SHIFT);
-        char mod_shift = (need_shift ? 1 : -1), mod_shift0 = mod_shift;
+        char mod_shift = (KL_km_shift.in_effect ? (need_shift ? 0 : -1) : (need_shift ? 1 : 0)), mod_shift0 = mod_shift;
         char mod_control = (((mods & MOD_CONTROL) && !KL_km_control.in_effect) ? 1 : 0), mod_control0 = mod_control;
         char mod_alt = (((mods & MOD_ALT) && !KL_km_alt.in_effect) ? 1 : 0), mod_alt0 = mod_alt;
         int mods_count = (mod_shift & 1) + mod_control + mod_alt;
@@ -200,6 +200,11 @@ void KL_bind(SC sc, UINT mods, SC binding) {
             dput(":%d - ", lv1);
             continue;
         }
+        if (lv % 2) {
+            UINT mods0 = mods;
+            mods |= MOD_SHIFT;
+            dput("+(%x)", mods0);
+        }
         SC binding1 = binding;
         lk.active = true;
         lk.mods = mods;
@@ -207,11 +212,6 @@ void KL_bind(SC sc, UINT mods, SC binding) {
             binding1 = OS_sc_to_vk(binding);
         }
         lk.binding = binding1;
-        if (lv % 2) {
-            UINT mods0 = mods;
-            mods |= MOD_SHIFT;
-            dput("+(%x)", mods0);
-        }
         (*KL_bind_kly)[lv][sc] = lk;
         if (mods & KLM_WCHAR) {
             dput(":%d u%04x ", lv1, binding);
