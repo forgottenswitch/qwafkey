@@ -64,6 +64,10 @@ void KM_latch_event(KM *km, bool down, SC sc) {
             km->latch = sc;
             km->latch_released = false;
             km->latch_releases = 0;
+            VK vk = km->latch_faked;
+            if (vk) {
+                keybd_event(vk, sc, 0, 0);
+            }
         }
     } else {
         km->latch_released = true;

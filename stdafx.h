@@ -62,6 +62,8 @@ typedef struct {
 #define KLM_L3 16
 #define KLM_L5 32
 
+#define KLM_TEMP 16
+
 /*
 
 .mods field: bitwise mask

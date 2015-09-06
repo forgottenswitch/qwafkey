@@ -43,6 +43,7 @@ ka(KA_control) {
 #undef SC_LCONTROL
 
 ka(KA_l5_shift) {
+    KL_phys_mods[sc] = KLM_TEMP;
     KM_shift_event(&KL_km_l5, down, sc);
 }
 

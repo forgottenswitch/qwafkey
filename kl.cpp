@@ -83,6 +83,9 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             case MOD_ALT:
                 KM_shift_event(&KL_km_alt, down, sc);
                 break;
+            case KLM_TEMP:
+                KL_phys_mods[sc] = 0;
+                goto mods_end;
             }
             return PassThisEvent();
         } else {
@@ -90,6 +93,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             KM_nonmod_event(&KL_km_l3, down, sc);
         }
     }
+    mods_end:
 
     unsigned char lv = 0;
     if (KL_km_l3.in_effect) {
