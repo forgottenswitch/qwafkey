@@ -226,7 +226,10 @@ int read_sc_alias(READ_PARMS) {
         char buf[256];
         do str++; while (isidentchar(*str));
         strbcr(buf, str0, str+1);
-        RET(str, KN_lname_to_sc(buf));
+        SC sc = KN_lname_to_sc(buf);
+        if (sc) {
+            RET(str, sc);
+        }
     }
     return 0;
 }
@@ -241,6 +244,12 @@ int read_vk_alias(READ_PARMS) {
     }
     return 0;
 }
+
+typedef struct {
+    SC sc;
+    char mods;
+    SC binding;
+} Bind;
 
 #define getter(name, type)            /*
 */  name(                              /*
@@ -257,6 +266,7 @@ int read_vk_alias(READ_PARMS) {
 */  }
 bool getter(get_int, int);
 bool getter(get_size_t, size_t);
+bool getter(get_bind, Bind);
 #undef getter
 
 #define RET_get(str, type, getter, reader)    /*
@@ -337,24 +347,77 @@ int read_raw_char(READ_PARMS) {
     return 0;
 }
 
+Bind read_binding(READ_PARMS) {
+    char *str = *input;
+    int w, sc1, vk1, ka;
+    Bind rv = { 0, 0, 0 };
+    if (get_int(&str, &w, read_unicode_char) || get_int(&str, &w, read_raw_char)) {
+        rv.mods = KLM_WCHAR;
+        rv.binding = w;
+    } else if (get_int(&str, &vk1, read_vk) || get_int(&str, &vk1, read_vk_alias)) {
+        rv.binding = vk1;
+    } else if (get_int(&str, &sc1, read_sc) || get_int(&str, &sc1, read_sc_alias)) {
+        rv.mods = KLM_SC;
+        rv.binding = sc1;
+    } else if (get_int(&str, &ka, read_ka)) {
+        rv.mods = KLM_KA;
+        rv.binding = ka;
+    } else {
+        return rv;
+    }
+    RET(str, rv);
+}
+
+bool Bind_lvls[KLVN];
+bool Bind_sole_lvl = false;
+
 bool read_bind(READ_PARMS) {
     char *str = *input;
     int sc, vk;
+    Bind bind, binds[KLVN];
+    size_t binds_count = 0;
     if (get_int(&str, &sc, read_sc) || get_int(&str, &vk, read_vk) || get_int(&str, &sc, read_sc_alias) ) {
         read_spc(&str);
         if (read_colon(&str)) {
-            int w, sc1, vk1, ka;
-            read_spc(&str);
-            if (get_int(&str, &w, read_unicode_char) || get_int(&str, &w, read_raw_char)) {
-                KL_bind(sc, KLM_WCHAR, w);
-            } else if (get_int(&str, &vk1, read_vk) || get_int(&str, &vk1, read_vk_alias)) {
-                KL_bind(sc, 0, vk1);
-            } else if (get_int(&str, &sc1, read_sc) || get_int(&str, &sc1, read_sc_alias)) {
-                KL_bind(sc, KLM_SC, sc1);
-            } else if (get_int(&str, &ka, read_ka)) {
-                KL_bind(sc, KLM_KA, ka);
-            } else {
-                return false;
+            do {
+                read_spc(&str);
+                if (get_bind(&str, &bind, read_binding)) {
+                    if (isidx(binds_count, binds)) {
+                        binds[binds_count] = bind;
+                    }
+                    binds_count++;
+                }
+                read_spc(&str);
+            } while (read_comma(&str));
+            size_t binds_i = 0;
+            if (binds_count) {
+                if (Bind_sole_lvl) {
+                    size_t i;
+                    fori (i, 0, KLVN) {
+                        if (Bind_lvls[i]) {
+                            bind = binds[0];
+                            KL_bind(sc, i, bind.mods, bind.binding);
+                            i++;
+                            if (i < KLVN) {
+                                bind = binds[(binds_count > 1 ? 1 : 0)];
+                                KL_bind(sc, i, bind.mods, bind.binding);
+                            }
+                            break;
+                        }
+                    }
+                } else {
+                    size_t i;
+                    fori (i, 0, KLVN) {
+                        if (Bind_lvls[i]) {
+                            bind = binds[binds_i];
+                            KL_bind(sc, i, bind.mods, bind.binding);
+                            binds_i++;
+                            if (binds_i >= binds_count) {
+                                binds_i = 0;
+                            }
+                        }
+                    }
+                }
             }
             RET(str, true);
         }
@@ -432,10 +495,10 @@ bool read_levs(READ_PARMS) {
         if (get_size_t(&str, &n, read_N_decimal)) {
             dput("lvl(%d) ", n);
             n--;
-            if (isidx(n, KL_bind_lvls)) {
-                KL_bind_lvls_zero();
-                KL_bind_lvls_sole = true;
-                KL_bind_lvls[n] = true;
+            if (isidx(n, Bind_lvls)) {
+                ZeroBuf(Bind_lvls);
+                Bind_sole_lvl = true;
+                Bind_lvls[n] = true;
             };
         }
         RET(str, true);
@@ -447,13 +510,13 @@ bool read_levs(READ_PARMS) {
             if (get_size_t(&str, &n, read_N_decimal)) {
                 dput("lvn(%d) ", n);
                 n--;
-                if (isidx(n, KL_bind_lvls)) {
+                if (isidx(n, Bind_lvls)) {
                     if (!zeroed) {
-                        KL_bind_lvls_zero();
+                        ZeroBuf(Bind_lvls);
                         zeroed = true;
                     }
-                    KL_bind_lvls_sole = false;
-                    KL_bind_lvls[n] = true;
+                    Bind_sole_lvl = false;
+                    Bind_lvls[n] = true;
                 }
             }
             read_spc(&str);
@@ -473,6 +536,7 @@ bool read_line(READ_PARMS) {
 
 void parse_args(int argc, char *argv[], int argb) {
     int argi;
+    ZeroBuf(Bind_lvls);
     KL_bind_init();
     fori (argi, argb, argc) {
         char *arg = argv[argi];
@@ -492,6 +556,7 @@ void parse_args(int argc, char *argv[], int argb) {
 void parse_str(char *str) {
     parse_lineno = 0;
     parse_colno = 0;
+    ZeroBuf(Bind_lvls);
     KL_bind_init();
     while (read_whitespace(&str) ||
            read_bind(&str) ||

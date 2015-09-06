@@ -42,6 +42,8 @@
         buf[l-1] = '\0';\
     } while (0)
 
+#define ZeroBuf(ary) ZeroMemory((ary), sizeof((ary)))
+
 typedef unsigned char VK;
 typedef unsigned short SC;
 

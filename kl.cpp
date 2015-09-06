@@ -191,42 +191,33 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 #undef PassThisEvent
 
 KLY *KL_bind_kly = &KL_kly;
-bool KL_bind_lvls[KLVN];
-bool KL_bind_lvls_sole;
 
-void KL_bind(SC sc, UINT mods, SC binding) {
+void KL_bind(SC sc, UINT lvl, UINT mods, SC binding) {
     LK lk;
-    UINT lv;
-    dput("bind sc%03x: ", sc);
-    fori (lv, 0, len(KL_bind_lvls)) {
-        int lv1 = lv+1;
-        if (!KL_bind_lvls[lv] && !(KL_bind_lvls_sole && lv > 0 && KL_bind_lvls[lv-1])) {
-            dput(":%d - ", lv1);
-            continue;
-        }
-        if (lv % 2) {
-            UINT mods0 = mods;
-            mods |= MOD_SHIFT;
-            dput("+(%x)", mods0);
-        }
-        SC binding1 = binding;
-        lk.active = true;
-        lk.mods = mods;
-        if (mods & KLM_SC) {
-            binding1 = OS_sc_to_vk(binding);
-        }
-        lk.binding = binding1;
-        (*KL_bind_kly)[lv][sc] = lk;
-        if (mods & KLM_WCHAR) {
-            dput(":%d u%04x ", lv1, binding);
-        } else if (mods & KLM_SC) {
-            dput(":%d sc%03x=>vk%02x ", lv1, binding, binding1);
-        } else if (mods & KLM_KA) {
-            dput(":%d ka%d ", lv1, binding);
-        } else {
-            dput(":%d vk%02x ", lv1, binding);
-        }
+    SC binding1 = binding;
+    UINT lvl1 = lvl+1;
+    if (mods & KLM_SC) {
+        binding1 = OS_sc_to_vk(binding);
     }
+    dput("bind sc%03x[%d]:", sc, lvl1);
+    if (mods & KLM_WCHAR) {
+        dput("u%04x ", binding);
+    } else if (mods & KLM_SC) {
+        dput("sc%03x=>vk%02x ", binding, binding1);
+    } else if (mods & KLM_KA) {
+        dput("ka%d ", binding);
+    } else {
+        dput("vk%02x ", binding);
+    }
+    if (!(lvl1 % 2) && !(mods & KLM_WCHAR) && !(mods & KLM_KA)) {
+        UINT mods0 = mods;
+        mods |= MOD_SHIFT;
+        dput("+(%x)", mods0);
+    }
+    lk.active = true;
+    lk.mods = mods;
+    lk.binding = binding1;
+    (*KL_bind_kly)[lvl][sc] = lk;
 }
 
 typedef struct {
@@ -335,18 +326,8 @@ void KL_set_bind_lang(LANGID lang) {
     KL_bind_kly = kly;
 }
 
-void KL_bind_lvls_zero() {
-    UINT i;
-    fori (i, 0, len(KL_bind_lvls)) {
-        KL_bind_lvls[i] = false;
-    }
-}
-
 void KL_bind_init() {
-    KL_bind_lvls_zero();
     KL_bind_kly = KL_lang_to_kly(LANG_NEUTRAL);
-    KL_bind_lvls[0] = true;
-    KL_bind_lvls[1] = true;
 }
 
 void KL_init() {
