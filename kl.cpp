@@ -1,6 +1,7 @@
 #include "kl.h"
 #include "ka.h"
 #include "km.h"
+#include "lm.h"
 #ifndef NOGUI
 # include "ui.h"
 #endif // NOGUI
@@ -138,50 +139,54 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         char mod_control = (((mods & MOD_CONTROL) && !KL_km_control.in_effect) ? 1 : 0), mod_control0 = mod_control;
         char mod_alt = (((mods & MOD_ALT) && !KL_km_alt.in_effect) ? 1 : 0), mod_alt0 = mod_alt;
         int mods_count = (mod_shift & 1) + mod_control + mod_alt;
-        dput(" send vk%02x[%d%d%d]%s", lk.binding, mod_shift, mod_control, mod_alt, (down ? "_" : "^\n"));
-        INPUT inps[7];
-        int tick_count = GetTickCount();
-        int i;
-        int inps_count = 1 + mods_count * 2;
-        fori (i, 0, inps_count) {
-            VK vk1 = lk.binding;
-            DWORD flags = 0;
-            if (mod_shift) {
-                if (mod_shift > 0 && !need_shift && !shift_was_down) {
-                    inps_count--;
-                    continue;
+        if (!mods_count) {
+            dput(" evt vk%02x%c", lk.binding, (down ? '_' : '^'));
+            keybd_event(lk.binding, sc, (down ? 0 : KEYEVENTF_KEYUP), 0);
+        } else {
+            int inps_count = 1 + mods_count * 2;
+            INPUT inps[7];
+            int i, tick_count = GetTickCount();
+            dput(" send%d vk%02x[%d%d%d]%s", inps_count, lk.binding, mod_shift, mod_control, mod_alt, (down ? "_" : "^\n"));
+            fori (i, 0, inps_count) {
+                VK vk1 = lk.binding;
+                DWORD flags = 0;
+                if (mod_shift) {
+                    if (mod_shift > 0 && !need_shift && !shift_was_down) {
+                        inps_count--;
+                        continue;
+                    }
+                    dput("+%d-", mod_shift);
+                    flags = (mod_shift > 0 ? 0 : KEYEVENTF_KEYUP);
+                    mod_shift = 0;
+                    vk1 = VK_LSHIFT;
+                } else if (mod_control) {
+                    dput("^");
+                    flags = (mod_control > 0 ? 0 : KEYEVENTF_KEYUP);
+                    mod_control = 0;
+                    vk1 = VK_LCONTROL;
+                } else if (mod_alt) {
+                    dput("!");
+                    flags = (mod_alt > 0 ? 0 : KEYEVENTF_KEYUP);
+                    mod_alt = 0;
+                    vk1 = VK_RMENU;
+                } else {
+                    dput("-");
+                    mod_shift = -mod_shift0;
+                    mod_control = -mod_control0;
+                    mod_alt = -mod_alt0;
+                    vk1 = lk.binding;
+                    flags = (down ? 0 : KEYEVENTF_KEYUP);
                 }
-                dput("+%d-", mod_shift);
-                flags = (mod_shift > 0 ? 0 : KEYEVENTF_KEYUP);
-                mod_shift = 0;
-                vk1 = VK_LSHIFT;
-            } else if (mod_control) {
-                dput("^");
-                flags = (mod_control > 0 ? 0 : KEYEVENTF_KEYUP);
-                mod_control = 0;
-                vk1 = VK_LCONTROL;
-            } else if (mod_alt) {
-                dput("!");
-                flags = (mod_alt > 0 ? 0 : KEYEVENTF_KEYUP);
-                mod_alt = 0;
-                vk1 = VK_RMENU;
-            } else {
-                dput("-");
-                mod_shift = -mod_shift0;
-                mod_control = -mod_control0;
-                mod_alt = -mod_alt0;
-                vk1 = lk.binding;
-                flags = (down ? 0 : KEYEVENTF_KEYUP);
+                INPUT *inp = &(inps[i]);
+                inp->type = INPUT_KEYBOARD;
+                inp->ki.wVk = vk1;
+                inp->ki.dwFlags = flags;
+                inp->ki.dwExtraInfo = 0;
+                inp->ki.wScan = sc;
+                inp->ki.time = tick_count;
             }
-            INPUT *inp = &(inps[i]);
-            inp->type = INPUT_KEYBOARD;
-            inp->ki.wVk = vk1;
-            inp->ki.dwFlags = flags;
-            inp->ki.dwExtraInfo = 0;
-            inp->ki.wScan = sc;
-            inp->ki.time = tick_count;
+            SendInput(inps_count, inps, sizeof(INPUT));
         }
-        SendInput(inps_count, inps, sizeof(INPUT));
     }
 
     return StopThisEvent();
@@ -265,6 +270,8 @@ KLC *KL_lang_to_klc(LANGID lang) {
 void KL_compile_klc(KLC *klc) {
     if (klc->lang == LANG_NEUTRAL)
         return;
+    HKL cur_hkl = GetKeyboardLayout(0);
+    ActivateKeyboardLayout(LM_langid_to_hkl(klc->lang), 0);
     KLY *kly = &(klc->kly);
     CopyMemory(KL_kly, KL_lang_to_kly(LANG_NEUTRAL), sizeof(KLY));
     int lv, sc;
@@ -299,6 +306,7 @@ void KL_compile_klc(KLC *klc) {
     }
     CopyMemory(kly, KL_kly, sizeof(KLY));
     klc->compiled = true;
+    ActivateKeyboardLayout(cur_hkl, 0);
 }
 
 void KL_activate_lang(LANGID lang) {

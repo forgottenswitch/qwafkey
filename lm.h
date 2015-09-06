@@ -24,5 +24,6 @@ void LM_activate_selected_locale();
 void LM_activate_next_locale();
 void LM_activate_prev_locale();
 LANGID LM_selected_langid();
+HKL LM_langid_to_hkl(LANGID langid);
 
 #endif // LM_H_INCLUDED

@@ -108,3 +108,13 @@ void LM_activate_prev_locale() {
 LANGID LM_selected_langid() {
     return LM_locales.elts[LM_selected_locale].lang;
 }
+
+HKL LM_langid_to_hkl(LANGID langid) {
+    size_t i;
+    fori (i, 0, LM_locales.count) {
+        LM_Locale *loc = LM_locales.elts + i;
+        if (loc->lang == langid) {
+            return loc->hkl;
+        }
+    }
+}

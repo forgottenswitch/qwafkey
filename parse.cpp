@@ -365,6 +365,7 @@ Bind read_binding(READ_PARMS) {
     } else {
         return rv;
     }
+    dput("rb{%x} ", rv.binding);
     RET(str, rv);
 }
 
@@ -398,7 +399,8 @@ bool read_bind(READ_PARMS) {
                             bind = binds[0];
                             KL_bind(sc, i, bind.mods, bind.binding);
                             i++;
-                            if (i < KLVN) {
+                            if ((i < KLVN) && (i % 2)) {
+                                dput("B(%d) ", binds_count);
                                 bind = binds[(binds_count > 1 ? 1 : 0)];
                                 KL_bind(sc, i, bind.mods, bind.binding);
                             }
