@@ -18,7 +18,7 @@ typedef KLV KLY[KLVN];
 extern bool KL_active;
 extern HHOOK KL_handle;
 
-extern UCHAR KL_phys_mods[255];
+extern UCHAR KL_phys_mods[MAXSC];
 
 extern KM KL_km_shift;
 extern KM KL_km_control;

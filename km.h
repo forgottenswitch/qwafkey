@@ -5,8 +5,6 @@
 
 #define KM_MAXSHIFTS 4
 
-extern UCHAR KL_phys_mods[255];
-
 typedef struct {
     bool in_effect;
     bool locked;

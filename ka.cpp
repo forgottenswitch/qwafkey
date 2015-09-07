@@ -1,6 +1,7 @@
 #include "ka.h"
 #include "lm.h"
 #include "kl.h"
+#include "scancodes.h"
 
 #define ka(name) void name(KA_PARAMS)
 
@@ -34,13 +35,11 @@ ka(KA_prev_os_layout) {
     OS_activate_prev_layout(LM_hwnd);
 }
 
-#define SC_LCONTROL 0x01D
 ka(KA_control) {
     KM_shift_event(&KL_km_control, down, sc);
     if (!(!down && KL_km_control.shifts_count > 0))
         keybd_event(VK_LCONTROL, SC_LCONTROL, (down ? 0 : KEYEVENTF_KEYUP), 0);
 }
-#undef SC_LCONTROL
 
 ka(KA_l5_shift) {
     KL_phys_mods[sc] = KLM_TEMP;

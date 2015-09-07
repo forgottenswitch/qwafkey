@@ -46,6 +46,7 @@
 
 typedef unsigned char VK;
 typedef unsigned short SC;
+#define MAXSC 512
 
 #define VK_ch(ch) LOBYTE(VkKeyScan(ch))
 

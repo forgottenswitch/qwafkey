@@ -2,6 +2,7 @@
 #include "ka.h"
 #include "km.h"
 #include "lm.h"
+#include "scancodes.h"
 #ifndef NOGUI
 # include "ui.h"
 #endif // NOGUI
@@ -17,8 +18,8 @@ KM KL_km_l5;
 
 KLY KL_kly;
 
-UCHAR KL_phys[255];
-UCHAR KL_phys_mods[255];
+UCHAR KL_phys[MAXSC];
+UCHAR KL_phys_mods[MAXSC];
 
 void KL_activate() {
     KL_handle = SetWindowsHookEx(WH_KEYBOARD_LL, KL_proc, nil, 0);
@@ -111,7 +112,52 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 
     if (!lk.active) {
         dput(" na%s", (down ? "_ " : "^\n"));
-        return PassThisEvent();
+        if (lv < 2) {
+            dput("[12]");
+            return PassThisEvent();
+        } else if (lv < 4) {
+            dput("[34]");
+            INPUT inp[5], *curinp = inp;
+            char lctrl = (KL_phys[SC_LCONTROL] ? 0 : 1), lctrl1=-lctrl;
+            char ralt = (KL_phys[SC_RMENU] ? 0 : 1), ralt1=-ralt;
+            size_t inpl = lctrl*2 + ralt*2;
+            if (!inpl) {
+                return PassThisEvent();
+            }
+            inpl++;
+            size_t i;
+            DWORD time = GetTickCount();
+            fori (i, 0, inpl) {
+                bool down1;
+                SC sc1;
+                if (lctrl) {
+                    down1 = lctrl > 0;
+                    sc1 = SC_LCONTROL;
+                    lctrl = 0;
+                } else if (ralt) {
+                    down1 = ralt > 0;
+                    sc1 = SC_RMENU;
+                    ralt = 0;
+                } else {
+                    lctrl = lctrl1;
+                    ralt = ralt1;
+                    sc1 = sc;
+                    down1 = down;
+                }
+                curinp->type = INPUT_KEYBOARD;
+                curinp->ki.wVk = 0;
+                curinp->ki.dwFlags = KEYEVENTF_SCANCODE | (down1 ? 0 : KEYEVENTF_KEYUP);
+                curinp->ki.dwExtraInfo = 0;
+                curinp->ki.wScan = sc1;
+                curinp->ki.time = time;
+                curinp++;
+            }
+            SendInput(inpl, inp, sizeof(INPUT));
+            return StopThisEvent();
+        } else {
+            dput("[56]");
+            return StopThisEvent();
+        }
     }
 
     UCHAR mods = lk.mods;

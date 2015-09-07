@@ -62,7 +62,7 @@ char *default_argv[] = {
     "qV:=\",='",
     "qB:=;,=`",
 
-    "level:1",
+    "levels:1,2,3,4",
     "qComma:!l3_latch",
 
     "level:3",
