@@ -108,7 +108,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     }
 
     LK lk = KL_kly[lv][sc];
-    dput(" l%db%x", lv, lk.binding);
+    dput(" l%d,b%x", lv, lk.binding);
 
     if (!lk.active) {
         dput(" na%s", (down ? "_ " : "^\n"));
@@ -261,9 +261,8 @@ void KL_bind(SC sc, UINT lvl, UINT mods, SC binding) {
         dput("vk%02x ", binding);
     }
     if (!(lvl1 % 2) && !(mods & KLM_WCHAR) && !(mods & KLM_KA)) {
-        UINT mods0 = mods;
+        dput("+(%x)", mods);
         mods |= MOD_SHIFT;
-        dput("+(%x)", mods0);
     }
     lk.active = true;
     lk.mods = mods;

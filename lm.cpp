@@ -3,7 +3,7 @@
 #include "parse.h"
 
 LM_LocalesBuffer LM_locales = { 0, 0, nil };
-int LM_selected_locale = 0;
+ssize_t LM_selected_locale = 0;
 
 int hexntoi(char *str, size_t n) {
     size_t i;
@@ -110,11 +110,12 @@ LANGID LM_selected_langid() {
 }
 
 HKL LM_langid_to_hkl(LANGID langid) {
-    size_t i;
+    ssize_t i;
     fori (i, 0, LM_locales.count) {
         LM_Locale *loc = LM_locales.elts + i;
         if (loc->lang == langid) {
             return loc->hkl;
         }
     }
+    return nil;
 }

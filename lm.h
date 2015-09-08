@@ -9,12 +9,12 @@ typedef struct {
 } LM_Locale;
 
 typedef struct {
-    int size;
-    int count;
+    size_t size;
+    ssize_t count;
     LM_Locale *elts;
 } LM_LocalesBuffer;
 
-extern int LM_selected_locale;
+extern ssize_t LM_selected_locale;
 extern LM_LocalesBuffer LM_locales;
 extern HWND LM_hwnd;
 

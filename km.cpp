@@ -42,6 +42,7 @@ void KM_shift_event(KM *km, bool down, SC sc) {
                     km->shifts[j-1] = km->shifts[j];
                 }
                 km->in_effect = km->locked || km->latch || (km->shifts_count -= 1);
+                dput("{/:%d}", km->in_effect);
                 break;
             } else {
                 found = true;

@@ -12,12 +12,15 @@
 #endif // NOGUI
 
 char *default_argv[] = {
-    "@#F3:!toggle",
+    "@#F2:!toggle",
     "@#qZ:!dim_screen",
 
     "levels:1,2,3,4,5,6",
     "sc027:!l5_shift",
     "sc03A:!control",
+
+    "level:1",
+    "qApostrophe:=,,=:",
 
     "level:5",
 
