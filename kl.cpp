@@ -161,7 +161,11 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     }
 
     UCHAR mods = lk.mods;
-    if (mods == KLM_WCHAR) {
+    if (mods == KLM_SC) {
+        dput("%csc%02lx=%02x ", (down ? '_' : '^'), ev->scanCode, lk.binding);
+        keybd_event(0, lk.binding, KEYEVENTF_SCANCODE | (down ? 0 : KEYEVENTF_KEYUP), 0);
+        return StopThisEvent();
+    } else if (mods == KLM_WCHAR) {
         if (down) {
             WCHAR wc = lk.binding;
             dput(" send U+%04x ", wc);
@@ -268,6 +272,13 @@ void KL_bind(SC sc, UINT lvl, UINT mods, SC binding) {
     lk.mods = mods;
     lk.binding = binding1;
     (*KL_bind_kly)[lvl][sc] = lk;
+}
+
+void KL_temp_sc(SC sc, SC binding) {
+    dput("t sc%02x=%02x ", sc, binding);
+    LK lk = { true, KLM_SC, binding };
+    KL_kly[0][sc] = lk;
+    KL_kly[1][sc] = lk;
 }
 
 typedef struct {
@@ -384,8 +395,8 @@ void KL_bind_init() {
 }
 
 void KL_init() {
-    ZeroMemory(KL_kly, sizeof(KL_kly));
-    ZeroMemory(KL_phys, sizeof(KL_phys));
+    ZeroBuf(KL_kly);
+    ZeroBuf(KL_phys);
 
     KM_init(&KL_km_shift);
     KM_init(&KL_km_control);

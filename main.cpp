@@ -6,6 +6,7 @@
 #include "lm.h"
 #include "ka.h"
 #include "kn.h"
+#include "kr.h"
 
 #ifndef NOGUI
 # include "ui.h"
@@ -127,6 +128,20 @@ char *default_argv[] = {
     "qH:u044d,u042d",
     "qX:u0445,u0425",
 
+    "res 1920 1080",
+    "title DEAD OR ALIVE 5",
+    "qE=qM",
+    "qJ=qA",
+    "qI=qW",
+    "qL=qD",
+    "qK=qS",
+    "qS=qL",
+    "qD=qK",
+    "Space=qJ",
+    "qA=qI",
+    "qW=qU",
+    "qC=qO",
+    "qX=qN",
 };
 
 void main_loop() {
@@ -162,6 +177,7 @@ int main(int argc, char *argv[]) {
     KL_activate();
 
     EH_activate();
+    KR_activate();
 
 #ifndef NOGUI
     UI_init();

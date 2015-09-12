@@ -43,6 +43,7 @@
     } while (0)
 
 #define ZeroBuf(ary) ZeroMemory((ary), sizeof((ary)))
+#define ZeroPnt(pnt) ZeroMemory((pnt), sizeof(*(pnt)))
 
 typedef unsigned char VK;
 typedef unsigned short SC;

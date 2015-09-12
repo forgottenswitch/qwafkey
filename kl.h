@@ -33,6 +33,7 @@ void KL_toggle();
 void KL_activate();
 void KL_deactivate();
 void KL_bind(SC sc, UINT lvl, UINT mods, SC binding);
+void KL_temp_sc(SC sc, SC binding);
 
 void KL_add_lang(LANGID lang);
 void KL_activate_lang(LANGID lang);

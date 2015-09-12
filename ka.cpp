@@ -1,6 +1,7 @@
 #include "ka.h"
 #include "lm.h"
 #include "kl.h"
+#include "kr.h"
 #include "scancodes.h"
 
 #define ka(name) void name(KA_PARAMS)
@@ -59,6 +60,18 @@ ka(KA_l2_latch) {
     KM_latch_event(&KL_km_shift, down, sc);
 }
 
+ka(KA_kr_toggle) {
+    if (!down)
+        return;
+    KR_toggle();
+}
+
+ka(KA_kr_toggle_clear) {
+    if (!down)
+        return;
+    KR_toggle_clear();
+}
+
 ka(KA_dim_screen) {
     if (!down)
         return;
@@ -86,6 +99,8 @@ KA_Pair KA_fns[] = {
     ka(KA_l5_lock),
     ka(KA_l3_latch),
     ka(KA_l2_latch),
+    ka(KA_kr_toggle),
+    ka(KA_kr_toggle_clear),
     ka(KA_dim_screen),
 };
 #undef ka

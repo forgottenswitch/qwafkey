@@ -4,6 +4,7 @@
 #include "ui.h"
 #endif // NOGUI
 
+#ifdef DEBUG
 char HK_to_s_buf[255];
 
 char *HK_to_s(UINT mods, VK vk) {
@@ -18,12 +19,13 @@ char *HK_to_s(UINT mods, VK vk) {
         s[0] = vk;
         s++;
     } else {
-        s += snprintf(s, 128, "vk%03d", vk);
+        s += snprintf(s, 128, "vk%02x", vk);
     }
     #undef m
     s = '\0';
     return &(HK_to_s_buf[0]);
 }
+#endif
 
 void HK_register(int id, UINT mods, VK vk) {
     dput("Register HK%d+%02d (%s): ", HK_0, (id - HK_0), HK_to_s(mods, vk));
@@ -62,5 +64,5 @@ void HK_KA_call(UINT hk_id) {
 }
 
 void HK_init() {
-    ZeroMemory(HK_KA_ary, sizeof(HK_KA_ary));
+    ZeroBuf(HK_KA_ary);
 }

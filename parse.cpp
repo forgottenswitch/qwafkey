@@ -1,9 +1,9 @@
-#include "stdafx.h"
+#include "parse.h"
 #include "kl.h"
 #include "ka.h"
 #include "kn.h"
 #include "hk.h"
-#include "parse.h"
+#include "kr.h"
 
 #ifndef MOD_NOREPEAT
 # define MOD_NOREPEAT 0x4000
@@ -534,6 +534,74 @@ bool read_line(READ_PARMS) {
     return (**input != '\0');
 }
 
+char *read_window_title(READ_PARMS) {
+    static char buf[KR_MAXTITLE];
+    size_t buflen = 0;
+    char *str = *input, c;
+    buf[0] = '\0';
+    while ((c = *str) && (c != '\n') && (c != '\r') && (buflen < len(buf))) {
+        buf[buflen] = c;
+        buflen++;
+        str++;
+    }
+    buf[buflen] = '\0';
+    read_to_bol(input);
+    return buf;
+}
+
+bool read_title(READ_PARMS) {
+    char *str = *input;
+    if (read_word(&str, "title")) {
+        read_colon(&str);
+        read_char(&str, ' ');
+        char *title = read_window_title(&str);
+        if (*title) {
+            KR_set_bind_title(title);
+            RET(str, true);
+        }
+    }
+    return false;
+}
+
+bool read_remap(READ_PARMS) {
+    char *str = *input;
+    int sc;
+    if ((sc = read_sc(&str)) || (sc = read_sc_alias(&str))) {
+        if (read_char(&str, '=')) {
+            int sc1;
+            if ((sc1 = read_sc(&str)) || (sc1 = read_sc_alias(&str))) {
+                KR_bind(sc, sc1);
+                RET(str, true);
+            }
+        } else if (read_char(&str, '<') && read_char(&str, '>')) {
+            int sc1;
+            if ((sc1 = read_sc(&str)) || (sc1 = read_sc_alias(&str))) {
+                KR_bind(sc, sc1);
+                KR_bind(sc1, sc);
+                RET(str, true);
+            }
+        }
+    }
+    return false;
+}
+
+bool read_res(READ_PARMS) {
+    char *str = *input;
+    if (read_word(&str, "res")) {
+        read_spc(&str);
+        size_t x, y;
+        if (get_size_t(&str, &x, read_N_decimal)) {
+            while (read_char(&str, 'x') || read_spc(&str)) {}
+            if (get_size_t(&str, &y, read_N_decimal)) {
+                dput("+r{%d,%d} ", x, y);
+                KR_add_res(x, y);
+                RET(str, true);
+            }
+        }
+    }
+    return false;
+}
+
 #undef READ_PARMS
 
 void parse_args(int argc, char *argv[], int argb) {
@@ -547,7 +615,10 @@ void parse_args(int argc, char *argv[], int argb) {
         if (!(read_bind(&arg) ||
               read_hotk(&arg) ||
               read_lang(&arg) ||
-              read_levs(&arg)
+              read_levs(&arg) ||
+              read_res(&arg) ||
+              read_title(&arg) ||
+              read_remap(&arg)
         )) {
             dput("unrecognized arg %d: %s\n", argi, arg);
         }
@@ -565,6 +636,9 @@ void parse_str(char *str) {
            read_hotk(&str) ||
            read_lang(&str) ||
            read_levs(&str) ||
+           read_res(&str) ||
+           read_title(&str) ||
+           read_remap(&str) ||
            read_line(&str)
     ) {
         parse_lineno += 1;
