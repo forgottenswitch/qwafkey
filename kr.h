@@ -18,7 +18,7 @@ void KR_toggle_clear();
 void KR_on_task_switch(HWND hwnd, char *wndclass);
 void KR_set_bind_title(char *title);
 void KR_set_bind_class(char *wndclass);
-void KR_bind(SC sc, SC binding);
+void KR_bind(SC sc, SC binding, USHORT mods);
 void KR_add_res(USHORT x, USHORT y);
 
 #endif // KR_H_INCLUDED

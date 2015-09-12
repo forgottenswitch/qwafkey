@@ -131,6 +131,7 @@ char *default_argv[] = {
     "class Photo_Lightweight_Viewer",
     "qL=Right",
     "qJ=Left",
+    "qApostrophe=!close_window",
 
     "res 1920 1080",
     "title DEAD OR ALIVE 5",
@@ -146,6 +147,7 @@ char *default_argv[] = {
     "qW=qU",
     "qC=qO",
     "qX=qN",
+    "@#qX:!close_window",
 };
 
 void main_loop() {

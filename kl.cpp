@@ -274,9 +274,15 @@ void KL_bind(SC sc, UINT lvl, UINT mods, SC binding) {
     (*KL_bind_kly)[lvl][sc] = lk;
 }
 
-void KL_temp_sc(SC sc, SC binding) {
-    dput("t sc%02x=%02x ", sc, binding);
-    LK lk = { true, KLM_SC, binding };
+void KL_temp_sc(SC sc, SC mods, SC binding) {
+    if (mods == KLM_KA) {
+        dput("t sc%02x=ka%d ", sc, binding);
+    } else if (mods == KLM_SC) {
+        dput("t sc%02x=%02x ", sc, binding);
+    } else {
+        dput("t sc%02x={%d/%d} ", sc, binding, mods);
+    }
+    LK lk = { true, (UCHAR)mods, binding };
     KL_kly[0][sc] = lk;
     KL_kly[1][sc] = lk;
 }

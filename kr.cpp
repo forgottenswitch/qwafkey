@@ -48,6 +48,7 @@ bool KR_match_res(HWND hwnd) {
 
 typedef struct {
     USHORT sc;
+    USHORT mods;
     USHORT binding;
 } KR_Bind;
 
@@ -83,7 +84,7 @@ void KR_apply_app(KR_App *app) {
     fori (i, 0, bc) {
         b = binds[i];
         if (b.sc) {
-            KL_temp_sc(b.sc, b.binding);
+            KL_temp_sc(b.sc, b.mods, b.binding);
         }
     }
 }
@@ -221,7 +222,7 @@ void KR_set_bind_class(char *wndclass) {
     KR_app->window_class_len = cls_len;
 }
 
-void KR_bind(SC sc, SC binding) {
+void KR_bind(SC sc, SC binding, USHORT mods) {
     if (KR_app == nil) {
         dput("remap sc%03x=>%03x : no title; ", sc, binding);
         return;
@@ -233,7 +234,7 @@ void KR_bind(SC sc, SC binding) {
     if (KR_app->binds_count >= KR_app->binds_size) {
         KR_app->binds = (KR_Bind*)realloc(KR_app->binds, (KR_app->binds_size *= 1.5) * sizeof(KR_Bind));
     }
-    KR_Bind b = { sc, binding };
+    KR_Bind b = { sc, mods, binding };
     KR_app->binds[KR_app->binds_count] = b;
     KR_app->binds_count += 1;
 }

@@ -75,9 +75,16 @@ ka(KA_kr_toggle_clear) {
 ka(KA_dim_screen) {
     if (!down)
         return;
-    dputs("dim_screen");
+    dput("dim_screen ");
     Sleep(500);
     SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, (LPARAM)2);
+}
+
+ka(KA_close_window) {
+    if (!down)
+        return;
+    dput("close_window ");
+    SendMessage(GetForegroundWindow(), WM_CLOSE, 0, 0);
 }
 
 #undef ka
@@ -102,6 +109,7 @@ KA_Pair KA_fns[] = {
     ka(KA_kr_toggle),
     ka(KA_kr_toggle_clear),
     ka(KA_dim_screen),
+    ka(KA_close_window),
 };
 #undef ka
 

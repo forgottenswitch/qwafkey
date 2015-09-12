@@ -584,14 +584,16 @@ bool read_remap(READ_PARMS) {
         if (read_char(&str, '=')) {
             int sc1;
             if ((sc1 = read_sc(&str)) || (sc1 = read_sc_alias(&str))) {
-                KR_bind(sc, sc1);
+                KR_bind(sc, sc1, KLM_SC);
                 RET(str, true);
+            } else if ((sc1 = read_ka(&str))) {
+                KR_bind(sc, sc1, KLM_KA);
             }
         } else if (read_char(&str, '<') && read_char(&str, '>')) {
             int sc1;
             if ((sc1 = read_sc(&str)) || (sc1 = read_sc_alias(&str))) {
-                KR_bind(sc, sc1);
-                KR_bind(sc1, sc);
+                KR_bind(sc, sc1, KLM_SC);
+                KR_bind(sc1, sc, KLM_SC);
                 RET(str, true);
             }
         }
