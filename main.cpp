@@ -128,6 +128,10 @@ char *default_argv[] = {
     "qH:u044d,u042d",
     "qX:u0445,u0425",
 
+    "class Photo_Lightweight_Viewer",
+    "qL=Right",
+    "qJ=Left",
+
     "res 1920 1080",
     "title DEAD OR ALIVE 5",
     "qE=qM",
@@ -153,10 +157,8 @@ void main_loop() {
             break;
         switch (msg.message) {
         case WM_HOTKEY:
-            VK vk = HIWORD(msg.lParam);
-            WORD mods = LOWORD(msg.lParam);
             UINT id = (UINT) msg.wParam;
-            dput("HK %02d (%s); ", (id - HK_0), HK_to_s(mods, vk));
+            dput("HK %02d (%s); ", (id - HK_0), HK_to_s(LOWORD(msg.lParam), HIWORD(msg.lParam)));
             HK_KA_call(id);
             break;
         }

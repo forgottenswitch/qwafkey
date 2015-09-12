@@ -66,8 +66,9 @@ void OS_activate_prev_layout(HWND hwnd) {
     PostMessage(hwnd, WM_INPUTLANGCHANGEREQUEST, INPUTLANGCHANGE_BACKWARD, 0);
 }
 
-bool OS_is_console(HWND hwnd) {
-  char winclass[256];
-  GetClassName(hwnd, winclass, sizeof(winclass));
-  return !strncmp(winclass, "ConsoleWindowClass", sizeof(winclass) - 1);
+char *OS_get_window_class(HWND hwnd) {
+  static char buf[256];
+  GetClassName(hwnd, buf, sizeof(buf));
+  last(buf) = '\0';
+  return buf;
 }

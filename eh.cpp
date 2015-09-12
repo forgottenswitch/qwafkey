@@ -19,9 +19,10 @@ void EH_CALLBACK EH_proc(
     DWORD thread_id = GetWindowThreadProcessId(hwnd, nil);
     WORD langid = LANGID_Primary(GetKeyboardLayout(thread_id));
     LANGID lm_langid = LM_selected_langid();
-    dput("\n%s switch { lang:%08x:%x;%x } ", (langid==0 ? "console" : "task"), lm_langid, langid, KL_active);
+    char *wincls = OS_get_window_class(hwnd);
+    dput("\n%s switch |%s|{ lang:%08x:%x;%x } ", (langid==0 ? "console" : "task"), wincls, lm_langid, langid, KL_active);
     LM_hwnd = hwnd;
-    if (OS_is_console(hwnd)) {
+    if (!strcmp(wincls, "ConsoleWindowClass")) {
         dput("<console/>");
         LM_activate_nth_locale(0);
         LM_activate_selected_locale();
@@ -29,7 +30,7 @@ void EH_CALLBACK EH_proc(
         if (KL_active && lm_langid != langid) {
             LM_activate_selected_locale();
         }
-        KR_on_task_switch(hwnd);
+        KR_on_task_switch(hwnd, wincls);
     }
 }
 

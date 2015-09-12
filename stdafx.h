@@ -94,7 +94,7 @@ void OS_print_last_error();
 void OS_activate_layout(HWND hwnd, HKL hkl);
 void OS_activate_next_layout(HWND hwnd);
 void OS_activate_prev_layout(HWND hwnd);
-bool OS_is_console(HWND hwnd);
+char *OS_get_window_class(HWND hwnd);
 
 #define LANGID_Primary LOWORD
 #define LANGID_Device HIWORD

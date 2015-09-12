@@ -563,6 +563,20 @@ bool read_title(READ_PARMS) {
     return false;
 }
 
+bool read_class(READ_PARMS) {
+    char *str = *input;
+    if (read_word(&str, "class")) {
+        read_colon(&str);
+        read_char(&str, ' ');
+        char *cls = read_window_title(&str);
+        if (*cls) {
+            KR_set_bind_class(cls);
+            RET(str, true);
+        }
+    }
+    return false;
+}
+
 bool read_remap(READ_PARMS) {
     char *str = *input;
     int sc;
@@ -613,12 +627,13 @@ void parse_args(int argc, char *argv[], int argb) {
         read_spc(&arg);
         dput("%20s| ", arg);
         if (!(read_bind(&arg) ||
-              read_hotk(&arg) ||
-              read_lang(&arg) ||
-              read_levs(&arg) ||
-              read_res(&arg) ||
-              read_title(&arg) ||
-              read_remap(&arg)
+                read_hotk(&arg) ||
+                read_lang(&arg) ||
+                read_levs(&arg) ||
+                read_res(&arg) ||
+                read_title(&arg) ||
+                read_class(&arg) ||
+                read_remap(&arg)
         )) {
             dput("unrecognized arg %d: %s\n", argi, arg);
         }
@@ -632,14 +647,15 @@ void parse_str(char *str) {
     ZeroBuf(Bind_lvls);
     KL_bind_init();
     while (read_whitespace(&str) ||
-           read_bind(&str) ||
-           read_hotk(&str) ||
-           read_lang(&str) ||
-           read_levs(&str) ||
-           read_res(&str) ||
-           read_title(&str) ||
-           read_remap(&str) ||
-           read_line(&str)
+            read_bind(&str) ||
+            read_hotk(&str) ||
+            read_lang(&str) ||
+            read_levs(&str) ||
+            read_res(&str) ||
+            read_title(&str) ||
+            read_class(&str) ||
+            read_remap(&str) ||
+            read_line(&str)
     ) {
         parse_lineno += 1;
     }

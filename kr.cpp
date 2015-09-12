@@ -54,6 +54,8 @@ typedef struct {
 typedef struct {
     char window_title[KR_MAXTITLE];
     size_t window_title_len;
+    char window_class[KR_MAXCLASS];
+    size_t window_class_len;
     size_t binds_count;
     size_t binds_size;
     KR_Bind *binds;
@@ -71,7 +73,11 @@ void KR_add_app() {
 }
 
 void KR_apply_app(KR_App *app) {
-    dput("app |%s| ", app->window_title);
+    if (app->window_class_len) {
+        dput("cls|%s| ", app->window_class);
+    } else if (app->window_title_len) {
+        dput("tit|%s| ", app->window_title);
+    }
     size_t i, bc = app->binds_count;
     KR_Bind *binds = app->binds, b;
     fori (i, 0, bc) {
@@ -101,9 +107,24 @@ size_t KR_hwnd_to_id(HWND hwnd) {
             size_t title_len = app->window_title_len;
             dput("t(%d)|%s| ", title_len, title);
             if (!strnicmp(buf, title, title_len)) {
-                dput("ok app%d ", i);
+                dput("ok t app%d ", i);
                 return i+1;
             }
+        }
+    }
+    return 0;
+}
+
+size_t KR_wndcls_to_id(char *wndcls) {
+    size_t i;
+    fori (i, 0, KR_apps_count) {
+        KR_App *app = KR_apps + i;
+        char *cls = app->window_class;
+        size_t cls_len = app->window_class_len;
+        dput("c(%d)|%s| ", cls_len, cls);
+        if (cls_len && !strnicmp(wndcls, cls, cls_len)) {
+            dput("ok c app%d ", i);
+            return i+1;
         }
     }
     return 0;
@@ -133,7 +154,7 @@ void KR_toggle_clear() {
     }
 }
 
-void KR_on_task_switch(HWND hwnd) {
+void KR_on_task_switch(HWND hwnd, char *wndclass) {
     Sleep(500);
     if (!KR_active || !KR_match_res(hwnd)) {
         goto clear;
@@ -148,7 +169,11 @@ void KR_on_task_switch(HWND hwnd) {
         return;
     }
     clear:
-    KR_clear();
+    if ((id = KR_wndcls_to_id(wndclass))) {
+        KR_apply(id);
+    } else {
+        KR_clear();
+    }
     return;
 }
 
@@ -182,6 +207,18 @@ void KR_set_bind_title(char *title) {
     strncpy(KR_app->window_title, title, title_len+1);
     KR_app->window_title[title_len] = '\0';
     KR_app->window_title_len = title_len;
+}
+
+void KR_set_bind_class(char *wndclass) {
+    KR_add_app();
+    KR_app = KR_apps + KR_apps_count - 1;
+    size_t cls_len = strlen(wndclass);
+    if (cls_len >= KR_MAXCLASS) {
+        cls_len = KR_MAXCLASS - 1;
+    }
+    strncpy(KR_app->window_class, wndclass, cls_len+1);
+    KR_app->window_class[cls_len] = '\0';
+    KR_app->window_class_len = cls_len;
 }
 
 void KR_bind(SC sc, SC binding) {
