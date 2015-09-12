@@ -114,6 +114,34 @@ ka(KA_close_window) {
     SendMessage(GetForegroundWindow(), WM_CLOSE, 0, 0);
 }
 
+void ka_10_presses(VK vk1) {
+    static const ssize_t N = 11;
+    INPUT inps[2*N], *inp;
+    int i, tick_count = GetTickCount();
+    fori (i, 0, (2*N - 1)) {
+        inp = inps + i;
+        inp->type = INPUT_KEYBOARD;
+        inp->ki.wVk = vk1;
+        inp->ki.dwFlags = (i % 2 ? 0 : KEYEVENTF_KEYUP);
+        inp->ki.dwExtraInfo = 0;
+        inp->ki.wScan = 0;
+        inp->ki.time = tick_count;
+    }
+    SendInput(2*N, inps, sizeof(INPUT));
+}
+
+ka(KA_left10) {
+    if (!down)
+        return;
+    ka_10_presses(VK_LEFT);
+}
+
+ka(KA_right10) {
+    if (!down)
+        return;
+    ka_10_presses(VK_RIGHT);
+}
+
 #undef ka
 
 typedef struct {
@@ -139,6 +167,8 @@ KA_Pair KA_fns[] = {
     ka(KA_kr_on_pt),
     ka(KA_kr_off_pt),
     ka(KA_kr_off),
+    ka(KA_left10),
+    ka(KA_right10),
 };
 #undef ka
 

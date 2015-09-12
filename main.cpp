@@ -135,6 +135,8 @@ char *default_argv[] = {
     "qApostrophe=!close_window",
     "qJ=Right",
     "qO=Left",
+    "qY=!left10",
+    "qU=!right10",
 
     "class CabinetWClass",
     "qSlash=!kr_off",
@@ -149,6 +151,8 @@ char *default_argv[] = {
     "qU=Backspace",
     "Space=PgDn",
     "qB=PgUp",
+    "qN=PgDn",
+    "qY=PgUp",
 
     "res 1920 1080",
     "title DEAD OR ALIVE 5",
