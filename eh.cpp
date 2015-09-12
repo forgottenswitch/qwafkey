@@ -30,7 +30,7 @@ void EH_CALLBACK EH_proc(
         if (KL_active && lm_langid != langid) {
             LM_activate_selected_locale();
         }
-        KR_on_task_switch(hwnd, wincls);
+        KR_on_task_switch(hwnd, wincls, false);
     }
 }
 

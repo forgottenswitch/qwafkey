@@ -66,10 +66,23 @@ ka(KA_kr_toggle) {
     KR_toggle();
 }
 
-ka(KA_kr_toggle_clear) {
-    if (!down)
-        return;
-    KR_toggle_clear();
+ka(KA_kr_on_pt) {
+    if (down) {
+        KR_activate();
+        keybd_event(0, sc, KEYEVENTF_SCANCODE, 0);
+    } else {
+        keybd_event(0, sc, KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP, 0);
+    }
+}
+
+ka(KA_kr_off_pt) {
+    if (down) {
+        KR_clear();
+        KR_resume(true);
+        keybd_event(0, sc, KEYEVENTF_SCANCODE, 0);
+    } else {
+        keybd_event(0, sc, KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP, 0);
+    }
 }
 
 ka(KA_dim_screen) {
@@ -107,9 +120,10 @@ KA_Pair KA_fns[] = {
     ka(KA_l3_latch),
     ka(KA_l2_latch),
     ka(KA_kr_toggle),
-    ka(KA_kr_toggle_clear),
     ka(KA_dim_screen),
     ka(KA_close_window),
+    ka(KA_kr_on_pt),
+    ka(KA_kr_off_pt),
 };
 #undef ka
 

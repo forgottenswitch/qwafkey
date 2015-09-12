@@ -15,6 +15,7 @@
 char *default_argv[] = {
     "@#F2:!toggle",
     "@#qZ:!dim_screen",
+    "@#qX:!kr_toggle",
 
     "levels:1,2,3,4,5,6",
     "sc027:!l5_shift",
@@ -131,6 +132,8 @@ char *default_argv[] = {
     "class Photo_Lightweight_Viewer",
     "qL=Right",
     "qJ=Left",
+    "qSlash=!kr_off_pt",
+    "qM=!kr_on_pt",
     "qApostrophe=!close_window",
 
     "res 1920 1080",
@@ -147,7 +150,6 @@ char *default_argv[] = {
     "qW=qU",
     "qC=qO",
     "qX=qN",
-    "@#qX:!close_window",
 };
 
 void main_loop() {
@@ -171,15 +173,14 @@ int main(int argc, char *argv[]) {
     KN_init();
     KL_init();
     KA_init();
+    KR_init();
+
     parse_args(len(default_argv), default_argv, 0);
     parse_args(argc, argv, 1);
 
     KL_activate_lang(LANG_NEUTRAL);
-
     LM_init();
-
     KL_activate();
-
     EH_activate();
     KR_activate();
 

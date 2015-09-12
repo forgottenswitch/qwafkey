@@ -556,6 +556,7 @@ bool read_title(READ_PARMS) {
         read_char(&str, ' ');
         char *title = read_window_title(&str);
         if (*title) {
+            KR_add_app();
             KR_set_bind_title(title);
             RET(str, true);
         }
@@ -570,6 +571,7 @@ bool read_class(READ_PARMS) {
         read_char(&str, ' ');
         char *cls = read_window_title(&str);
         if (*cls) {
+            KR_add_app();
             KR_set_bind_class(cls);
             RET(str, true);
         }

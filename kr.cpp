@@ -1,6 +1,7 @@
 #include "kr.h"
 #include "kl.h"
 #include "lm.h"
+#include "ka.h"
 
 bool KR_active;
 size_t KR_id = 0;
@@ -53,46 +54,79 @@ typedef struct {
 } KR_Bind;
 
 typedef struct {
-    char window_title[KR_MAXTITLE];
-    size_t window_title_len;
-    char window_class[KR_MAXCLASS];
-    size_t window_class_len;
     size_t binds_count;
     size_t binds_size;
     KR_Bind *binds;
 } KR_App;
 
+typedef struct {
+    char str[KR_MAXTITLE];
+    size_t len;
+    KR_App *app;
+} KR_Title;
+
+typedef struct {
+    char str[KR_MAXCLASS];
+    size_t len;
+    KR_App *app;
+} KR_Wndcls;
+
 size_t KR_apps_count = 0, KR_apps_size = 0;
 KR_App *KR_apps = (KR_App*)malloc((KR_apps_size = 20) * sizeof(KR_App));
+
+size_t KR_titles_count = 0, KR_titles_size = 0;
+KR_Title *KR_titles = (KR_Title*)malloc((KR_titles_size = 20) * sizeof(KR_Title));
+
+size_t KR_wndcs_count = 0, KR_wndcs_size = 0;
+KR_Wndcls *KR_wndcs = (KR_Wndcls*)malloc((KR_wndcs_size = 20) * sizeof(KR_Wndcls));
+
+KR_App *KR_app = nil;
 
 void KR_add_app() {
     if ((KR_apps_count+=1) > KR_apps_size) {
         KR_apps = (KR_App*)realloc(KR_apps, (KR_apps_size *= 1.5) * sizeof(KR_App));
     }
-    KR_App *ka = KR_apps + KR_apps_count;
+    KR_App *ka = KR_apps + KR_apps_count - 1;
     ZeroPnt(ka);
+    KR_app = ka;
 }
 
-void KR_apply_app(KR_App *app) {
-    if (app->window_class_len) {
-        dput("cls|%s| ", app->window_class);
-    } else if (app->window_title_len) {
-        dput("tit|%s| ", app->window_title);
+void KR_add_title() {
+    if ((KR_titles_count+=1) > KR_titles_size) {
+        KR_titles = (KR_Title*)realloc(KR_titles, (KR_titles_size *= 1.5) * sizeof(KR_Title));
     }
+    KR_Title *ti = KR_titles + KR_titles_count - 1;
+    ZeroPnt(ti);
+}
+
+void KR_add_wndcs() {
+    if ((KR_wndcs_count+=1) > KR_wndcs_size) {
+        KR_wndcs = (KR_Wndcls*)realloc(KR_wndcs, (KR_wndcs_size *= 1.5) * sizeof(KR_Wndcls));
+    }
+    KR_Wndcls *cls = KR_wndcs + KR_wndcs_count - 1;
+    ZeroPnt(cls);
+}
+
+size_t KR_ka_kr_on_pt;
+
+void KR_apply_app(KR_App *app, bool on_pt_only) {
     size_t i, bc = app->binds_count;
     KR_Bind *binds = app->binds, b;
     fori (i, 0, bc) {
         b = binds[i];
         if (b.sc) {
+            if (on_pt_only && b.binding != KR_ka_kr_on_pt) {
+                continue;
+            }
             KL_temp_sc(b.sc, b.mods, b.binding);
         }
     }
 }
 
-void KR_apply(size_t id) {
+void KR_apply(size_t id, bool on_pt_only) {
     dput("kr_apply %d ", id);
     KR_id = id;
-    KR_apply_app(KR_apps + id - 1);
+    KR_apply_app(KR_apps + id - 1, on_pt_only);
 }
 
 size_t KR_hwnd_to_id(HWND hwnd) {
@@ -102,12 +136,10 @@ size_t KR_hwnd_to_id(HWND hwnd) {
         dput("title(%d) |%s| ", buflen, buf);
         buflen--;
         size_t i;
-        fori (i, 0, KR_apps_count) {
-            KR_App *app = KR_apps + i;
-            char *title = app->window_title;
-            size_t title_len = app->window_title_len;
-            dput("t(%d)|%s| ", title_len, title);
-            if (!strnicmp(buf, title, title_len)) {
+        fori (i, 0, KR_titles_count) {
+            KR_Title *ti = KR_titles + i;
+            dput("t(%d)|%s| ", ti->len, ti->str);
+            if (ti->len && !strnicmp(buf, ti->str, ti->len)) {
                 dput("ok t app%d ", i);
                 return i+1;
             }
@@ -118,12 +150,10 @@ size_t KR_hwnd_to_id(HWND hwnd) {
 
 size_t KR_wndcls_to_id(char *wndcls) {
     size_t i;
-    fori (i, 0, KR_apps_count) {
-        KR_App *app = KR_apps + i;
-        char *cls = app->window_class;
-        size_t cls_len = app->window_class_len;
-        dput("c(%d)|%s| ", cls_len, cls);
-        if (cls_len && !strnicmp(wndcls, cls, cls_len)) {
+    fori (i, 0, KR_wndcs_count) {
+        KR_Wndcls *cls = KR_wndcs + i;
+        dput("c(%d)|%s| ", cls->len, cls->str);
+        if (cls->len && !strnicmp(wndcls, cls->str, cls->len)) {
             dput("ok c app%d ", i);
             return i+1;
         }
@@ -137,32 +167,20 @@ void KR_clear() {
     LM_activate_selected_locale();
 }
 
-void KR_resume() {
-    dput("kr_resume ");
-    HWND hwnd = GetActiveWindow();
-    size_t id = KR_hwnd_to_id(hwnd);
-    if (!id) {
-        return;
-    }
-    KR_apply(id);
+void KR_resume(bool on_pt_only) {
+    dput("kr_resume(%d) ", on_pt_only);
+    HWND hwnd = GetForegroundWindow();
+    KR_on_task_switch(hwnd, OS_get_window_class(hwnd), on_pt_only);
 }
 
-void KR_toggle_clear() {
-    if (KR_id) {
-        KR_clear();
-    } else {
-        KR_resume();
-    }
-}
-
-void KR_on_task_switch(HWND hwnd, char *wndclass) {
+void KR_on_task_switch(HWND hwnd, char *wndclass, bool on_pt_only) {
     Sleep(500);
     if (!KR_active || !KR_match_res(hwnd)) {
-        goto clear;
+        goto wndcls;
     }
     size_t id;
     if ((id = KR_hwnd_to_id(hwnd))) {
-        KR_apply(id);
+        KR_apply(id, false);
         return;
     } else if (KR_id) {
         goto clear;
@@ -170,56 +188,56 @@ void KR_on_task_switch(HWND hwnd, char *wndclass) {
         return;
     }
     clear:
+    KR_clear();
+    wndcls:
     if ((id = KR_wndcls_to_id(wndclass))) {
-        KR_apply(id);
-    } else {
-        KR_clear();
+        KR_apply(id, on_pt_only);
     }
     return;
 }
 
 void KR_activate() {
+    dput("kr_on ");
     KR_active = true;
-    KR_resume();
+    KR_resume(false);
 }
 
 void KR_deactivate() {
+    dput("kr_off ");
     KR_active = false;
     KR_clear();
 }
 
 void KR_toggle() {
     if (KR_active) {
-        KR_activate();
-    } else {
         KR_deactivate();
+    } else {
+        KR_activate();
     }
 }
 
-KR_App *KR_app = nil;
-
 void KR_set_bind_title(char *title) {
-    KR_add_app();
-    KR_app = KR_apps + KR_apps_count - 1;
+    KR_add_title();
+    KR_Title *ti = KR_titles + KR_titles_count - 1;
     size_t title_len = strlen(title);
     if (title_len >= KR_MAXTITLE) {
         title_len = KR_MAXTITLE - 1;
     }
-    strncpy(KR_app->window_title, title, title_len+1);
-    KR_app->window_title[title_len] = '\0';
-    KR_app->window_title_len = title_len;
+    strncpy(ti->str, title, title_len+1);
+    ti->str[title_len] = '\0';
+    ti->len = title_len;
 }
 
 void KR_set_bind_class(char *wndclass) {
-    KR_add_app();
-    KR_app = KR_apps + KR_apps_count - 1;
+    KR_add_wndcs();
+    KR_Wndcls *cls = KR_wndcs + KR_wndcs_count - 1;
     size_t cls_len = strlen(wndclass);
     if (cls_len >= KR_MAXCLASS) {
         cls_len = KR_MAXCLASS - 1;
     }
-    strncpy(KR_app->window_class, wndclass, cls_len+1);
-    KR_app->window_class[cls_len] = '\0';
-    KR_app->window_class_len = cls_len;
+    strncpy(cls->str, wndclass, cls_len+1);
+    cls->str[cls_len] = '\0';
+    cls->len = cls_len;
 }
 
 void KR_bind(SC sc, SC binding, USHORT mods) {
@@ -237,4 +255,8 @@ void KR_bind(SC sc, SC binding, USHORT mods) {
     KR_Bind b = { sc, mods, binding };
     KR_app->binds[KR_app->binds_count] = b;
     KR_app->binds_count += 1;
+}
+
+void KR_init() {
+    KR_ka_kr_on_pt = KA_name_to_id("kr_on_pt");
 }
