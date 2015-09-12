@@ -68,6 +68,9 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     if (flags & LLKHF_EXTENDED)
         sc |= 0x100;
     if (faked || sc >= KPN) {
+        if (!faked) {
+            dput("{sc%02lx,vk%02lx%c} ", ev->scanCode, ev->vkCode, (down ? '_' : '^'));
+        }
         return PassThisEvent();
     }
 

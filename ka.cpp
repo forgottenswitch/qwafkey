@@ -68,7 +68,10 @@ ka(KA_kr_toggle) {
 
 ka(KA_kr_on_pt) {
     if (down) {
-        KR_activate();
+        dput("kr_on_pt(%d,%d) ", KR_active, KR_id);
+        if (!KR_active || !KR_id) {
+            KR_activate();
+        }
         keybd_event(0, sc, KEYEVENTF_SCANCODE, 0);
     } else {
         keybd_event(0, sc, KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP, 0);
@@ -77,11 +80,22 @@ ka(KA_kr_on_pt) {
 
 ka(KA_kr_off_pt) {
     if (down) {
-        KR_clear();
-        KR_resume(true);
+        if (KR_active) {
+            KR_clear();
+            KR_resume(true);
+        }
         keybd_event(0, sc, KEYEVENTF_SCANCODE, 0);
     } else {
         keybd_event(0, sc, KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP, 0);
+    }
+}
+
+ka(KA_kr_off) {
+    if (down) {
+        if (KR_active) {
+            KR_clear();
+            KR_resume(true);
+        }
     }
 }
 
@@ -124,6 +138,7 @@ KA_Pair KA_fns[] = {
     ka(KA_close_window),
     ka(KA_kr_on_pt),
     ka(KA_kr_off_pt),
+    ka(KA_kr_off),
 };
 #undef ka
 

@@ -125,7 +125,9 @@ void KR_apply_app(KR_App *app, bool on_pt_only) {
 
 void KR_apply(size_t id, bool on_pt_only) {
     dput("kr_apply %d ", id);
-    KR_id = id;
+    if (!on_pt_only) {
+        KR_id = id;
+    }
     KR_apply_app(KR_apps + id - 1, on_pt_only);
 }
 

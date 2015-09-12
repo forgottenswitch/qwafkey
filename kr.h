@@ -7,6 +7,7 @@
 #define KR_MAXCLASS 32
 
 extern bool KR_active;
+extern size_t KR_id;
 
 void KR_activate();
 void KR_deactivate();
