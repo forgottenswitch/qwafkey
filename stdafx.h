@@ -63,24 +63,8 @@ typedef struct {
 #define KLM_WCHAR 32
 #define KLM_KA 64
 
-#define KLM_L3 16
-#define KLM_L5 32
+#define KLM_PHYS_TEMP 16
 
-#define KLM_TEMP 16
-
-/*
-
-.mods field: bitwise mask
-  MOD_ALT 1
-  MOD_CONTROL 2
-  MOD_SHIFT 4
-  KLM_WCHAR 16 - for sending characters
-   not sendable by a single keypress
-  KLM_MOD - the bound key is a modifier
-
-.binding field: either virtual key-code or WCHAR
-
-*/
 typedef struct {
     unsigned char active;
     unsigned char mods;

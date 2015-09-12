@@ -88,7 +88,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             case MOD_ALT:
                 KM_shift_event(&KL_km_alt, down, sc);
                 break;
-            case KLM_TEMP:
+            case KLM_PHYS_TEMP:
                 KL_phys_mods[sc] = 0;
                 goto mods_end;
             }
