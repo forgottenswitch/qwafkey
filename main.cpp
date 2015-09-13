@@ -185,6 +185,10 @@ char *default_argv[] = {
     "q2=vk_Delete",
     "q5=vk_PgUp",
     "q6=vk_PgDown",
+
+    "class ZDoomMainWindow",
+    "F2=!zdoom_quicksave",
+    "F3=!zdoom_quickload",
 };
 
 void main_loop() {

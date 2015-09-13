@@ -137,7 +137,7 @@ ka(KA_toggle_on_top) {
     SetWindowPos(hwnd, (topmost ? (HWND)HWND_NOTOPMOST : (HWND)HWND_TOPMOST), r.left, r.top, r.right - r.left, r.bottom - r.top, 0);
 }
 
-void ka_10_presses(VK vk1) {
+void KA_10_presses(VK vk1) {
     static const ssize_t N = 11;
     INPUT inps[2*N], *inp;
     int i, tick_count = GetTickCount();
@@ -156,13 +156,13 @@ void ka_10_presses(VK vk1) {
 ka(KA_left10) {
     if (!down)
         return;
-    ka_10_presses(VK_LEFT);
+    KA_10_presses(VK_LEFT);
 }
 
 ka(KA_right10) {
     if (!down)
         return;
-    ka_10_presses(VK_RIGHT);
+    KA_10_presses(VK_RIGHT);
 }
 
 ka(KA_msys2_shell) {
@@ -170,6 +170,28 @@ ka(KA_msys2_shell) {
         return;
     dput("MSYS2 shell... ");
     OS_run_command("cmd /A /Q /K \"C:/msys64/msys2_shell.bat\"");
+}
+
+void KA_zdoom_vky(SC sc) {
+    keybd_event(0, sc, 0, 0);
+    keybd_event(0, sc, KEYEVENTF_KEYUP, 0);
+    Sleep(75);
+    keybd_event('Y', 0, 0, 0);
+    keybd_event('Y', 0, KEYEVENTF_KEYUP, 0);
+}
+
+ka(KA_zdoom_quicksave) {
+    dput("zqs ");
+    if (!down)
+        return;
+    KA_zdoom_vky(SC_F6);
+}
+
+ka(KA_zdoom_quickload) {
+    dput("zql ");
+    if (!down)
+        return;
+    KA_zdoom_vky(SC_F9);
 }
 
 #undef ka
@@ -202,6 +224,8 @@ KA_Pair KA_fns[] = {
     ka(KA_left10),
     ka(KA_right10),
     ka(KA_msys2_shell),
+    ka(KA_zdoom_quicksave),
+    ka(KA_zdoom_quickload),
 };
 #undef ka
 
