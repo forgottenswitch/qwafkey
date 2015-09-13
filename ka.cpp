@@ -12,6 +12,16 @@ ka(KA_toggle) {
     KL_toggle();
 }
 
+ka(KA_restart) {
+    if (!down)
+        return;
+    TCHAR buf[256];
+    GetModuleFileName(0, buf, len(buf));
+    last(buf) = '\0';
+    OS_run_executable(buf);
+    exit(0);
+}
+
 ka(KA_next_layout) {
     if (!down)
         return;
@@ -114,6 +124,19 @@ ka(KA_close_window) {
     SendMessage(GetForegroundWindow(), WM_CLOSE, 0, 0);
 }
 
+ka(KA_toggle_on_top) {
+    if (!down)
+        return;
+    HWND hwnd = GetForegroundWindow();
+    WINDOWINFO wi;
+    GetWindowInfo(hwnd, &wi);
+    bool topmost = wi.dwExStyle & WS_EX_TOPMOST;
+    dput("top{%d} ", topmost);
+    RECT r;
+    GetWindowRect(hwnd, &r);
+    SetWindowPos(hwnd, (topmost ? (HWND)HWND_NOTOPMOST : (HWND)HWND_TOPMOST), r.left, r.top, r.right - r.left, r.bottom - r.top, 0);
+}
+
 void ka_10_presses(VK vk1) {
     static const ssize_t N = 11;
     INPUT inps[2*N], *inp;
@@ -142,6 +165,13 @@ ka(KA_right10) {
     ka_10_presses(VK_RIGHT);
 }
 
+ka(KA_msys2_shell) {
+    if (!down)
+        return;
+    dput("MSYS2 shell... ");
+    OS_run_command("cmd /A /Q /K \"C:/msys64/msys2_shell.bat\"");
+}
+
 #undef ka
 
 typedef struct {
@@ -152,6 +182,7 @@ typedef struct {
 #define ka(name) { name, #name }
 KA_Pair KA_fns[] = {
     ka(KA_toggle),
+    ka(KA_restart),
     ka(KA_next_layout),
     ka(KA_prev_layout),
     ka(KA_next_os_layout),
@@ -164,11 +195,13 @@ KA_Pair KA_fns[] = {
     ka(KA_kr_toggle),
     ka(KA_dim_screen),
     ka(KA_close_window),
+    ka(KA_toggle_on_top),
     ka(KA_kr_on_pt),
     ka(KA_kr_off_pt),
     ka(KA_kr_off),
     ka(KA_left10),
     ka(KA_right10),
+    ka(KA_msys2_shell),
 };
 #undef ka
 

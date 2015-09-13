@@ -72,3 +72,21 @@ char *OS_get_window_class(HWND hwnd) {
   last(buf) = '\0';
   return buf;
 }
+
+void OS_run_command(TCHAR *cmd) {
+    dput("cmd|%s| ", cmd);
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(STARTUPINFO));
+    ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+    CreateProcess(nil, cmd, 0, 0, 0, 0, 0, nil, &si, &pi);
+}
+
+void OS_run_executable(TCHAR *exe) {
+    dput("exe|%s| ", exe);
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(STARTUPINFO));
+    ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+    CreateProcess(exe, nil, 0, 0, 0, 0, 0, nil, &si, &pi);
+}

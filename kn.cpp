@@ -21,7 +21,10 @@ KN_Pair KN_pairs[] = {
     k1(VK_HOME),
     k1(VK_END),
     k1(VK_PRIOR),
+    k2(VK_PRIOR, "pgup"),
     k1(VK_NEXT),
+    k2(VK_NEXT, "pgdn"),
+    k2(VK_NEXT, "pgdown"),
     k1(VK_UP),
     k1(VK_DOWN),
     k1(VK_LEFT),
@@ -79,7 +82,7 @@ VK KN_name_to_vk(char *name) {
     size_t i;
     fori (i, 0, len(KN_pairs)) {
         KN_Pair *p = KN_pairs + i;
-        if (!_strcmpi(p->name, name)) {
+        if (!_strcmpi(p->name, name) || (!_strnicmp("VK_", name, 3) && !_strcmpi(p->name, name+3))) {
             return p->vk;
         }
     }

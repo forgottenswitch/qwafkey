@@ -79,6 +79,8 @@ void OS_activate_layout(HWND hwnd, HKL hkl);
 void OS_activate_next_layout(HWND hwnd);
 void OS_activate_prev_layout(HWND hwnd);
 char *OS_get_window_class(HWND hwnd);
+void OS_run_command(TCHAR *cmd);
+void OS_run_executable(TCHAR *exe);
 
 #define LANGID_Primary LOWORD
 #define LANGID_Device HIWORD

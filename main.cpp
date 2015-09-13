@@ -14,12 +14,16 @@
 
 char *default_argv[] = {
     "@#F2:!toggle",
+    "@#F3:!restart",
     "@#qZ:!dim_screen",
     "@#qX:!kr_toggle",
+    "@#qO:!toggle_on_top",
+    "@#Enter:!msys2_shell",
 
     "levels:1,2,3,4,5,6",
     "sc027:!l5_shift",
     "sc03A:!control",
+    "space:= "
 
     "level:1",
     "qApostrophe:=,,=:",
@@ -57,7 +61,7 @@ char *default_argv[] = {
     "qE:=(,=@",
     "qR:==,=#",
     "qT:Tab",
-    "qA:=/,=,",
+    "qA:=/,=`",
     "qD:={,=}",
     "qF:=[,=]",
     "qG:=),=*",
@@ -65,13 +69,16 @@ char *default_argv[] = {
     "qX:=$,=~",
     "qC:=\\,=|",
     "qV:=\",='",
-    "qB:=;,=`",
+    "qB:=;,=,",
 
     "levels:1,2,3,4",
     "qComma:!l3_latch",
 
     "level:3",
     "qJ:=_",
+    "qX:=~,=$",
+    "qC:=\\,=|",
+    "qB:=;,=,",
     "qM:!next_layout",
     "qSlash:!next_os_layout",
 
@@ -80,10 +87,10 @@ char *default_argv[] = {
     "qE:=a,=A",
     "qR:=f,=F",
     "qT:=g,=G",
-    "qA:=a,=A",
+    "qA:=v,=V",
     "qD:=e,=E",
     "qF:=r,=R",
-    "qG:=t,=G",
+    "qG:=t,=T",
     "qV:=d,=D",
     "qI:=o,=O",
     "qO:=p,=P",
@@ -164,10 +171,20 @@ char *default_argv[] = {
     "qS=qL",
     "qD=qK",
     "Space=qJ",
-    "qA=qI",
-    "qW=qU",
+    "qW=qI",
+    "qA=qU",
     "qC=qO",
     "qX=qN",
+
+    "title DARK SOULS",
+    "q7=vk_Left",
+    "q8=vk_Down",
+    "q9=vk_Up",
+    "q0=vk_Right",
+    "q1=vk_Insert",
+    "q2=vk_Delete",
+    "q5=vk_PgUp",
+    "q6=vk_PgDown",
 };
 
 void main_loop() {

@@ -590,6 +590,10 @@ bool read_remap(READ_PARMS) {
                 RET(str, true);
             } else if ((sc1 = read_ka(&str))) {
                 KR_bind(sc, sc1, KLM_KA);
+                RET(str, true);
+            } else if ((sc1 = read_vk(&str)) || (sc1 = read_vk_alias(&str))) {
+                KR_bind(sc, sc1, 0);
+                RET(str, true);
             }
         } else if (read_char(&str, '<') && read_char(&str, '>')) {
             int sc1;

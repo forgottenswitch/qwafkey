@@ -179,7 +179,10 @@ void KR_resume(bool on_pt_only) {
 
 void KR_on_task_switch(HWND hwnd, char *wndclass, bool on_pt_only) {
     Sleep(500);
-    if (!KR_active || !KR_match_res(hwnd)) {
+    if (!KL_active || !KR_active || !KR_match_res(hwnd)) {
+        if (KR_id) {
+            goto clear;
+        }
         goto wndcls;
     }
     KR_App *app;
@@ -249,7 +252,7 @@ void KR_bind(SC sc, SC binding, USHORT mods) {
         dput("remap sc%03x=>%03x : no title; ", sc, binding);
         return;
     }
-    dput("remap sc%03x=>%03x ", sc, binding);
+    dput("remap sc%03x=>%03x/x%02x ", sc, binding, mods);
     if (!KR_app->binds) {
         KR_app->binds = (KR_Bind*)malloc((KR_app->binds_size = 8) * sizeof(KR_Bind));
     }

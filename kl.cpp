@@ -283,7 +283,7 @@ void KL_temp_sc(SC sc, SC mods, SC binding) {
     } else if (mods == KLM_SC) {
         dput("t sc%02x=%02x ", sc, binding);
     } else {
-        dput("t sc%02x={%d/%d} ", sc, binding, mods);
+        dput("t sc%02x={%02x/%02x} ", sc, binding, mods);
     }
     LK lk = { true, (UCHAR)mods, binding };
     KL_kly[0][sc] = lk;
