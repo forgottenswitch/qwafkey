@@ -63,7 +63,7 @@ typedef struct {
 #define KLM_WCHAR 32
 #define KLM_KA 64
 
-#define KLM_PHYS_TEMP 16
+#define KLM_PHYS_TEMP KLM_SC
 
 typedef struct {
     unsigned char active;

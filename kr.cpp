@@ -97,6 +97,7 @@ void KR_add_title() {
     }
     KR_Title *ti = KR_titles + KR_titles_count - 1;
     ZeroPnt(ti);
+    ti->app = KR_apps + KR_apps_count - 1;
 }
 
 void KR_add_wndcs() {
@@ -105,6 +106,7 @@ void KR_add_wndcs() {
     }
     KR_Wndcls *cls = KR_wndcs + KR_wndcs_count - 1;
     ZeroPnt(cls);
+    cls->app = KR_apps + KR_apps_count - 1;
 }
 
 size_t KR_ka_kr_on_pt;
@@ -123,15 +125,15 @@ void KR_apply_app(KR_App *app, bool on_pt_only) {
     }
 }
 
-void KR_apply(size_t id, bool on_pt_only) {
-    dput("kr_apply %d ", id);
+void KR_apply(KR_App *app, bool on_pt_only) {
+    dput("kr_apply");
     if (!on_pt_only) {
-        KR_id = id;
+        KR_id = 1;
     }
-    KR_apply_app(KR_apps + id - 1, on_pt_only);
+    KR_apply_app(app, on_pt_only);
 }
 
-size_t KR_hwnd_to_id(HWND hwnd) {
+KR_App *KR_hwnd_to_app(HWND hwnd) {
     char buf[256];
     int buflen = GetWindowTextA(hwnd, buf, len(buf));
     if (buflen > 0) {
@@ -143,21 +145,21 @@ size_t KR_hwnd_to_id(HWND hwnd) {
             dput("t(%d)|%s| ", ti->len, ti->str);
             if (ti->len && !strnicmp(buf, ti->str, ti->len)) {
                 dput("ok t app%d ", i);
-                return i+1;
+                return ti->app;
             }
         }
     }
     return 0;
 }
 
-size_t KR_wndcls_to_id(char *wndcls) {
+KR_App *KR_wndcls_to_app(char *wndcls) {
     size_t i;
     fori (i, 0, KR_wndcs_count) {
         KR_Wndcls *cls = KR_wndcs + i;
         dput("c(%d)|%s| ", cls->len, cls->str);
         if (cls->len && !strnicmp(wndcls, cls->str, cls->len)) {
             dput("ok c app%d ", i);
-            return i+1;
+            return cls->app;
         }
     }
     return 0;
@@ -180,9 +182,9 @@ void KR_on_task_switch(HWND hwnd, char *wndclass, bool on_pt_only) {
     if (!KR_active || !KR_match_res(hwnd)) {
         goto wndcls;
     }
-    size_t id;
-    if ((id = KR_hwnd_to_id(hwnd))) {
-        KR_apply(id, false);
+    KR_App *app;
+    if ((app = KR_hwnd_to_app(hwnd))) {
+        KR_apply(app, false);
         return;
     } else if (KR_id) {
         goto clear;
@@ -192,8 +194,8 @@ void KR_on_task_switch(HWND hwnd, char *wndclass, bool on_pt_only) {
     clear:
     KR_clear();
     wndcls:
-    if ((id = KR_wndcls_to_id(wndclass))) {
-        KR_apply(id, on_pt_only);
+    if ((app = KR_wndcls_to_app(wndclass))) {
+        KR_apply(app, on_pt_only);
     }
     return;
 }
