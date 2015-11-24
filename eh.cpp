@@ -3,12 +3,6 @@
 #include "kl.h"
 #include "kr.h"
 
-#ifdef __MINGW32__
-# define EH_CALLBACK
-#else
-# define EH_CALLBACK CALLBACK
-#endif // __MINGW32__
-
 HWINEVENTHOOK EH_handle;
 
 void EH_CALLBACK EH_proc(

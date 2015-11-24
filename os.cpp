@@ -9,6 +9,10 @@
 # define MAPVK_VSC_TO_VK_EX 3
 #endif // MAPVK_VK_TO_CHAR
 
+HINSTANCE OS_current_module_handle() {
+    return GetModuleHandle(0);
+}
+
 KP OS_wchar_to_sc(WCHAR w) {
     KP ret;
     SHORT vks = VkKeyScan((TCHAR)w);

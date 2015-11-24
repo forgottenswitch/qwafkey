@@ -81,11 +81,18 @@ void OS_activate_prev_layout(HWND hwnd);
 char *OS_get_window_class(HWND hwnd);
 void OS_run_command(TCHAR *cmd);
 void OS_run_executable(TCHAR *exe);
+HINSTANCE OS_current_module_handle();
 
 #define LANGID_Primary LOWORD
 #define LANGID_Device HIWORD
 
 #define HK_0 32000
+
+#ifdef __MINGW32__
+# define EH_CALLBACK
+#else
+# define EH_CALLBACK CALLBACK
+#endif // __MINGW32__
 
 #endif // STDAFX_H_INCLUDED
 

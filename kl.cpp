@@ -22,7 +22,12 @@ UCHAR KL_phys[MAXSC];
 UCHAR KL_phys_mods[MAXSC];
 
 void KL_activate() {
-    KL_handle = SetWindowsHookEx(WH_KEYBOARD_LL, KL_proc, nil, 0);
+    KL_handle = SetWindowsHookEx(WH_KEYBOARD_LL, KL_proc, OS_current_module_handle(), 0);
+    if (KL_handle == nil) {
+        dputs("\n\nSetWindowsHookEx failed!");
+        OS_print_last_error();
+        dputs("\n");
+    }
     KL_active = true;
 #ifndef NOGUI
     UI_TR_update();
