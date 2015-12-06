@@ -128,7 +128,9 @@ int read_mods(READ_PARMS) {
             mods |= MOD_WIN;
             break;
         case '@':
-            mods |= MOD_NOREPEAT;
+            if (OS_newer_than_Vista()) {
+                mods |= MOD_NOREPEAT;
+            }
             break;
         default:
             RET(str, mods);

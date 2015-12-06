@@ -94,3 +94,7 @@ void OS_run_executable(TCHAR *exe) {
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
     CreateProcess(exe, nil, 0, 0, 0, 0, 0, nil, &si, &pi);
 }
+
+bool OS_newer_than_Vista() {
+    return false;
+}

@@ -33,6 +33,7 @@ void HK_register(int id, UINT mods, VK vk) {
     if (ret == 1) {
         dput("OK ");
     } else {
+        dput("{id=%x,mods=%x,vk=%02x}", id, mods, vk);
         OS_print_last_error();
     }
 }

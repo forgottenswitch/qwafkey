@@ -82,6 +82,7 @@ char *OS_get_window_class(HWND hwnd);
 void OS_run_command(TCHAR *cmd);
 void OS_run_executable(TCHAR *exe);
 HINSTANCE OS_current_module_handle();
+bool OS_newer_than_Vista();
 
 #define LANGID_Primary LOWORD
 #define LANGID_Device HIWORD
