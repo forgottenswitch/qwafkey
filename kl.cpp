@@ -21,6 +21,8 @@ KLY KL_kly;
 UCHAR KL_phys[MAXSC];
 UCHAR KL_phys_mods[MAXSC];
 
+VK KL_mods_vks[MAXSC];
+
 void KL_activate() {
     KL_handle = SetWindowsHookEx(WH_KEYBOARD_LL, KL_proc, OS_current_module_handle(), 0);
     if (KL_handle == nil) {
@@ -267,12 +269,14 @@ void KL_bind(SC sc, UINT lvl, UINT mods, SC binding) {
     dput("bind sc%03x[%d]:", sc, lvl1);
     if (mods & KLM_WCHAR) {
         dput("u%04x ", binding);
-    } else if (mods & KLM_SC) {
-        dput("sc%03x=>vk%02x ", binding, binding1);
     } else if (mods & KLM_KA) {
         dput("ka%d ", binding);
     } else {
-        dput("vk%02x ", binding);
+        if (mods & KLM_SC) {
+            dput("sc%03x=>vk%02x ", binding, binding1);
+        } else {
+            dput("vk%02x ", binding);
+        }
     }
     if (!(lvl1 % 2) && !(mods & KLM_WCHAR) && !(mods & KLM_KA)) {
         dput("+(%x)", mods);
@@ -301,6 +305,8 @@ typedef struct {
     bool compiled;
     // Primary Language ID
     LANGID lang;
+    // Whether defines VKs for while modifiers are in effect
+    bool vks_lang;
     // Bindings
     KLY kly;
 } KLC;
@@ -316,6 +322,7 @@ void KL_add_lang(LANGID lang) {
     KLC *klc = KL_klcs + KL_klcs_count - 1;
     klc->compiled = false;
     klc->lang = lang;
+    klc->vks_lang = false;
 }
 
 KLY *KL_lang_to_kly(LANGID lang) {
@@ -338,6 +345,7 @@ KLC *KL_lang_to_klc(LANGID lang) {
     return nil;
 }
 
+LANGID KL_vks_lang = LANG_NEUTRAL;
 
 void KL_compile_klc(KLC *klc) {
     if (klc->lang == LANG_NEUTRAL)
@@ -346,6 +354,7 @@ void KL_compile_klc(KLC *klc) {
     ActivateKeyboardLayout(LM_langid_to_hkl(klc->lang), 0);
     KLY *kly = &(klc->kly);
     CopyMemory(KL_kly, KL_lang_to_kly(LANG_NEUTRAL), sizeof(KLY));
+    bool vks_lang = klc->vks_lang;
     int lv, sc;
     fori(lv, 0, KLVN) {
         fori(sc, 0, KPN) {
@@ -368,12 +377,16 @@ void KL_compile_klc(KLC *klc) {
                     if (kp.vk != 0xFF) {
                         dput("vk%02x/%d", kp.vk, kp.mods);
                         bool same_sc = (kp.mods == KLM_SC && kp.sc == sc);
-                        bool same_vk = (kp.mods == (MOD_SHIFT * (lv % 2)) && kp.vk == OS_sc_to_vk(sc));
+                        bool same_vk = (lv <= 1 && kp.mods == (MOD_SHIFT * (lv % 2)) && kp.vk == OS_sc_to_vk(sc));
                         if (same_sc || same_vk) {
                             lk.active = 0;
                             lk.binding = 0;
                             lk.mods = 0;
                         } else {
+                            if (lv == 0 && vks_lang && !(kp.mods & KLM_SC)) {
+                                dput("_M");
+                                KL_mods_vks[sc] = kp.vk;
+                            }
                             lk.mods = kp.mods;
                             lk.binding = kp.vk;
                         }
@@ -414,6 +427,16 @@ void KL_set_bind_lang(LANGID lang) {
         kly = KL_lang_to_kly(lang);
     }
     KL_bind_kly = kly;
+}
+
+void KL_set_vks_lang(LANGID lang) {
+    KL_vks_lang = lang;
+}
+
+void KL_define_vks() {
+    KLC *klc = KL_lang_to_klc(KL_vks_lang);
+    klc->vks_lang = true;
+    KL_compile_klc(klc);
 }
 
 void KL_bind_init() {

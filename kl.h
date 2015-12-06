@@ -38,6 +38,8 @@ void KL_temp_sc(SC sc, SC mods, SC binding);
 void KL_add_lang(LANGID lang);
 void KL_activate_lang(LANGID lang);
 void KL_set_bind_lang(LANGID lang);
+void KL_set_vks_lang(LANGID lang);
+void KL_define_vks();
 
 void KL_bind_init();
 void KL_bind_lvls_zero();

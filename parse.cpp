@@ -626,6 +626,20 @@ bool read_res(READ_PARMS) {
     return false;
 }
 
+bool read_vks_lang(READ_PARMS) {
+    char *str = *input;
+    if (read_word(&str, "vks_lang")) {
+        if (read_colon(&str)) {
+            int n;
+            if ((n = read_hex(&str))) {
+                KL_set_vks_lang(n);
+                RET(str, true);
+            }
+        }
+    }
+    return false;
+}
+
 #undef READ_PARMS
 
 void parse_args(int argc, char *argv[], int argb) {
@@ -643,7 +657,8 @@ void parse_args(int argc, char *argv[], int argb) {
                 read_res(&arg) ||
                 read_title(&arg) ||
                 read_class(&arg) ||
-                read_remap(&arg)
+                read_remap(&arg) ||
+                read_vks_lang(&arg)
         )) {
             dput("unrecognized arg %d: %s\n", argi, arg);
         }
@@ -665,6 +680,7 @@ void parse_str(char *str) {
             read_title(&str) ||
             read_class(&str) ||
             read_remap(&str) ||
+            read_vks_lang(&str) ||
             read_line(&str)
     ) {
         parse_lineno += 1;

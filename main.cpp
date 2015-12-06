@@ -71,6 +71,8 @@ char *default_argv[] = {
     "qV:=\",='",
     "qB:=;,=`",
 
+    "Space:= ,:= ",
+
     "levels:1,2,3,4",
     "qComma:!l3_latch",
 
@@ -98,6 +100,7 @@ char *default_argv[] = {
     "qJ:=n,=N",
     "qK:=i,=I",
     "qN:=j,=J",
+    "vks_lang:409",
 
     "lang:419",
     "level:1",
@@ -236,6 +239,7 @@ int main(int argc, char *argv[]) {
     parse_args(argc, argv, 1);
 
     KL_activate_lang(LANG_NEUTRAL);
+    KL_define_vks();
     LM_init();
     KL_activate();
     EH_activate();
