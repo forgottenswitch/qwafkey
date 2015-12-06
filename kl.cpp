@@ -367,8 +367,16 @@ void KL_compile_klc(KLC *klc) {
                     KP kp = OS_wchar_to_vk(w);
                     if (kp.vk != 0xFF) {
                         dput("vk%02x/%d", kp.vk, kp.mods);
-                        lk.mods = kp.mods;
-                        lk.binding = kp.vk;
+                        bool same_sc = (kp.mods == KLM_SC && kp.sc == sc);
+                        bool same_vk = (kp.mods == (MOD_SHIFT * (lv % 2)) && kp.vk == OS_sc_to_vk(sc));
+                        if (same_sc || same_vk) {
+                            lk.active = 0;
+                            lk.binding = 0;
+                            lk.mods = 0;
+                        } else {
+                            lk.mods = kp.mods;
+                            lk.binding = kp.vk;
+                        }
                     } else {
                         dput("u%04x", w);
                     }
