@@ -70,17 +70,9 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     // Only check here for injected presses and corresponding releases.
     bool faked;
     faked = (flags & LLKHF_INJECTED || (!(KL_phys[sc]) && !down));
-    if (flags & LLKHF_EXTENDED)
-        sc |= 0x100;
-    if (faked || sc >= KPN) {
-        if (!faked) {
-            dput("{sc%02lx,vk%02lx%c} ", ev->scanCode, ev->vkCode, (down ? '_' : '^'));
-        }
-        return PassThisEvent();
-    }
 
-    KL_phys[sc] = down;
-    {
+    if (!faked) {
+        KL_phys[sc] = down;
         BYTE mod = KL_phys_mods[sc];
         if (mod) {
             switch (mod) {
@@ -105,6 +97,15 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     }
     mods_end:
 
+    if (flags & LLKHF_EXTENDED)
+        sc |= 0x100;
+    if (faked || sc >= KPN) {
+        if (!faked) {
+            dput("{sc%02lx,vk%02lx%c} ", ev->scanCode, ev->vkCode, (down ? '_' : '^'));
+        }
+        return PassThisEvent();
+    }
+
     unsigned char lv = 0;
     if (KL_km_l3.in_effect) {
         lv = 2;
@@ -117,6 +118,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 
     LK lk = KL_kly[lv][sc];
     dput(" l%d,b%x", lv, lk.binding);
+    //dput(" [sc%03x%c]l%d,b%x", sc, (down?'_':'^'), lv, lk.binding);
 
     if (!lk.active) {
         dput(" na%s", (down ? "_ " : "^\n"));
@@ -361,12 +363,14 @@ void KL_compile_klc(KLC *klc) {
                 //dput("a(%03x:%d:%x/%x)", sc, lv+1, lk.binding, lk.mods);
                 if (lk.mods & KLM_WCHAR) {
                     WCHAR w = lk.binding;
-                    dput("sc%03x:%d->", sc, lv+1);
+                    dput("sc%03x'%c':%d->", sc, w, lv+1);
                     KP kp = OS_wchar_to_vk(w);
                     if (kp.vk != 0xFF) {
                         dput("vk%02x/%d", kp.vk, kp.mods);
                         lk.mods = kp.mods;
                         lk.binding = kp.vk;
+                    } else {
+                        dput("u%04x", w);
                     }
                     dput(";");
                 }
@@ -437,6 +441,9 @@ void KL_init() {
         case VK_LWIN: case VK_RWIN:
             mod = MOD_WIN;
             break;
+        }
+        if (mod) {
+            printf("[mods] sc%03x => vk%02x, mod %x\t", sc, vk, mod);
         }
         KL_phys_mods[sc] = mod;
     }
