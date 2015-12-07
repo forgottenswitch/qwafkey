@@ -118,6 +118,15 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         lv += 1;
     }
 
+    if (KL_km_alt.in_effect || KL_km_control.in_effect) {
+        VK vk = KL_mods_vks[sc];
+        if (vk) {
+            keybd_event(vk, 0, (down ? 0 : KEYEVENTF_KEYUP), 0);
+            dput(" SendVK%c(%02x,'%c')", (down ? '_' : '^'), vk, vk);
+            return StopThisEvent();
+        }
+    }
+
     LK lk = KL_kly[lv][sc];
     dput(" l%d,b%x", lv, lk.binding);
     //dput(" [sc%03x%c]l%d,b%x", sc, (down?'_':'^'), lv, lk.binding);
@@ -433,12 +442,44 @@ void KL_set_vks_lang(LANGID lang) {
     KL_vks_lang = lang;
 }
 
+void KL_define_one_vk(VK vk, KLY *kly) {
+    SC sc = OS_vk_to_sc(vk);
+    if (!sc) {
+        return;
+    }
+    LK lk = (*kly)[0][sc];
+    if (lk.active && lk.mods == 0) {
+        vk = lk.binding;
+    }
+    dput(" DefineVK(%02x, sc%03x)", vk, sc);
+    KL_mods_vks[sc] = vk;
+}
+
 void KL_define_vks() {
     KLC *klc = KL_lang_to_klc(KL_vks_lang);
+    KLY *kly = &(klc->kly);
     klc->vks_lang = true;
     if (!klc->compiled) {
         KL_compile_klc(klc);
     }
+    int vk;
+    // 0..9
+    fori (vk, 0x30, 0x3A) {
+        KL_define_one_vk(vk, kly);
+    }
+    // A..Z
+    fori (vk, 0x41, 0x5B) {
+        KL_define_one_vk(vk, kly);
+    }
+    // Tilde, comma, period, brackets, semicolon, quote, slash
+    KL_define_one_vk(VK_OEM_1, kly);
+    KL_define_one_vk(VK_OEM_2, kly);
+    KL_define_one_vk(VK_OEM_3, kly);
+    KL_define_one_vk(VK_OEM_4, kly);
+    KL_define_one_vk(VK_OEM_5, kly);
+    KL_define_one_vk(VK_OEM_6, kly);
+    KL_define_one_vk(VK_OEM_7, kly);
+    KL_define_one_vk(VK_OEM_8, kly);
 }
 
 void KL_bind_init() {
