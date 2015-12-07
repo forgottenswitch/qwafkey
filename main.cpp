@@ -239,11 +239,11 @@ int main(int argc, char *argv[]) {
     parse_args(argc, argv, 1);
 
     KL_activate_lang(LANG_NEUTRAL);
-    KL_define_vks();
     LM_init();
     KL_activate();
     EH_activate();
     KR_activate();
+    KL_define_vks();
 
 #ifndef NOGUI
     UI_init();

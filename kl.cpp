@@ -436,7 +436,9 @@ void KL_set_vks_lang(LANGID lang) {
 void KL_define_vks() {
     KLC *klc = KL_lang_to_klc(KL_vks_lang);
     klc->vks_lang = true;
-    KL_compile_klc(klc);
+    if (!klc->compiled) {
+        KL_compile_klc(klc);
+    }
 }
 
 void KL_bind_init() {
