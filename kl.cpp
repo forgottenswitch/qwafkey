@@ -13,6 +13,7 @@ HHOOK KL_handle;
 KM KL_km_shift;
 KM KL_km_control;
 KM KL_km_alt;
+KM KL_km_win;
 KM KL_km_l3;
 KM KL_km_l5;
 
@@ -87,6 +88,9 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             case MOD_ALT:
                 KM_shift_event(&KL_km_alt, down, sc);
                 break;
+            case MOD_WIN:
+                KM_shift_event(&KL_km_win, down, sc);
+                break;
             case KLM_PHYS_TEMP:
                 KL_phys_mods[sc] = 0;
                 goto mods_end;
@@ -118,7 +122,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         lv += 1;
     }
 
-    if (KL_km_alt.in_effect || KL_km_control.in_effect) {
+    if (lv <= 1 && (KL_km_alt.in_effect || KL_km_control.in_effect || KL_km_win.in_effect)) {
         VK vk = KL_mods_vks[sc];
         if (vk) {
             keybd_event(vk, 0, (down ? 0 : KEYEVENTF_KEYUP), 0);
@@ -521,4 +525,8 @@ void KL_init() {
         }
         KL_phys_mods[sc] = mod;
     }
+#define mod_vk(mod, vk) do { sc = OS_vk_to_sc(vk); if (sc) { printf("[mods] sc%03x => vk%02x, mod %x\t", sc, vk, mod); KL_phys_mods[sc] = mod; }; } while (0)
+    mod_vk(MOD_WIN, VK_LWIN);
+    mod_vk(MOD_WIN, VK_RWIN);
+#undef mod_vk
 }
