@@ -2,9 +2,16 @@
 #include "lm.h"
 #include "kl.h"
 #include "kr.h"
+#include "dk.h"
 #include "scancodes.h"
 
 #define ka(name) void name(KA_PARAMS)
+
+ka(KA_Multi_key) { /*DK_dkn(0, down, sc);*/ }
+
+#define dkn(i) ka(KA_dkn_##i) { /*DK_dkn(i, down, sc);*/ }
+# include "ka_dk.h"
+#undef dkn
 
 ka(KA_toggle) {
     if (!down)
@@ -203,6 +210,9 @@ typedef struct {
 
 #define ka(name) { name, #name }
 KA_Pair KA_fns[] = {
+    #define dkn(i) ka(KA_dkn_##i),
+    # include "ka_dk.h"
+    #undef dkn
     ka(KA_toggle),
     ka(KA_restart),
     ka(KA_next_layout),

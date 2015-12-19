@@ -21,6 +21,9 @@
 #include <tchar.h>
 #include <windows.h>
 
+#include <stdbool.h>
+#include <inttypes.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,6 +33,7 @@
 #define nil NULL
 #define fori(i, from, to) for (i = from; i < to; i++)
 #define len(ary) (sizeof((ary))/sizeof((ary)[0]))
+#define lenof len
 #define last(ary) ary[len(ary)-1]
 #define between(v, min, max) ((min) <= (v) && (v) <= (max))
 #define isidx(i, ary) (between((i), 0, len((ary))))

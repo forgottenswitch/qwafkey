@@ -80,6 +80,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         if (mod) {
             switch (mod) {
             case MOD_SHIFT:
+                dput("<mod_shift>");
                 KM_shift_event(&KL_km_shift, down, sc);
                 break;
             case MOD_CONTROL:

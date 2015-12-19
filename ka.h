@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+#define KA_dkn_count 32
+
 #define KA_PARAMS bool down, SC sc
 typedef void (*KA_FUNC)(KA_PARAMS);
 
