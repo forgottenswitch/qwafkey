@@ -327,7 +327,7 @@ typedef struct {
 
 size_t KL_klcs_size = 0;
 size_t KL_klcs_count = 0;
-KLC *KL_klcs = (KLC*)calloc((KL_klcs_size = 4), sizeof(KLC));
+KLC *KL_klcs;
 
 void KL_add_lang(LANGID lang) {
     if ((KL_klcs_count+=1) > KL_klcs_size) {
@@ -494,6 +494,7 @@ void KL_bind_init() {
 void KL_init() {
     ZeroBuf(KL_kly);
     ZeroBuf(KL_phys);
+    KL_klcs = (KLC*)calloc((KL_klcs_size = 4), sizeof(KLC));
 
     KM_init(&KL_km_shift);
     KM_init(&KL_km_control);

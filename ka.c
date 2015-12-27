@@ -176,7 +176,8 @@ ka(KA_msys2_shell) {
     if (!down)
         return;
     dput("MSYS2 shell... ");
-    OS_run_command("cmd /A /Q /K \"C:/msys64/msys2_shell.bat\"");
+    char command[] = "cmd /A /Q /K \"C:/msys64/msys2_shell.bat\"";
+    OS_run_command(command);
 }
 
 void KA_zdoom_vky(SC sc) {
@@ -208,7 +209,7 @@ typedef struct {
     char* name;
 } KA_Pair;
 
-#define ka(name) { name, #name }
+#define ka(name) { name, (char*)#name }
 KA_Pair KA_fns[] = {
     #define dkn(i) ka(KA_dkn_##i),
     # include "ka_dk.h"

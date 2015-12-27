@@ -39,7 +39,7 @@ void LM_get_locales(bool set_selected) {
     GetKeyboardLayoutList(count, (HKL*)elts);
     HKL cur_hkl = GetKeyboardLayout(0);
     int i;
-    for (int i = count - 1; i >= 0; i--) {
+    for (i = count - 1; i >= 0; i--) {
         LM_Locale *l = (elts + i);
         HKL* elts_as_hkls = (HKL*) elts;
         HKL hkl = elts_as_hkls[i];

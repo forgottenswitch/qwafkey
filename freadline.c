@@ -7,7 +7,7 @@ void memcpyzn(void *dest, const void *src, size_t n, size_t max) {
 
 void read_line_buf_init(read_line_buf *buf) {
     buf->len = 0;
-    buf->s = malloc(buf->size = 255);
+    buf->s = (char*)malloc(buf->size = 255);
 }
 
 void read_line_buf_free(read_line_buf *buf) {

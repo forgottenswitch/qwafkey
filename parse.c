@@ -464,7 +464,7 @@ bool read_word(READ_PARMS, char *wrd) {
 
 bool read_lang(READ_PARMS) {
     char *str = *input;
-    if (read_word(&str, "lang")) {
+    if (read_word(&str, (char*)"lang")) {
         if (read_colon(&str)) {
             int n;
             if ((n = read_hex(&str))) {
@@ -492,7 +492,7 @@ bool read_levs(READ_PARMS) {
     char *str = *input;
     size_t n;
     bool zeroed = false;
-    if (read_word(&str, "level") && read_colon(&str)) {
+    if (read_word(&str, (char*)"level") && read_colon(&str)) {
         read_spc(&str);
         read_colon(&str);
         read_spc(&str);
@@ -506,7 +506,7 @@ bool read_levs(READ_PARMS) {
             };
         }
         RET(str, true);
-    } else if (read_word(&str, "levels")) {
+    } else if (read_word(&str, (char*)"levels")) {
         read_spc(&str);
         read_colon(&str);
         do {
@@ -553,7 +553,7 @@ char *read_window_title(READ_PARMS) {
 
 bool read_title(READ_PARMS) {
     char *str = *input;
-    if (read_word(&str, "title")) {
+    if (read_word(&str, (char*)"title")) {
         read_colon(&str);
         read_char(&str, ' ');
         char *title = read_window_title(&str);
@@ -568,7 +568,7 @@ bool read_title(READ_PARMS) {
 
 bool read_class(READ_PARMS) {
     char *str = *input;
-    if (read_word(&str, "class")) {
+    if (read_word(&str, (char*)"class")) {
         read_colon(&str);
         read_char(&str, ' ');
         char *cls = read_window_title(&str);
@@ -611,7 +611,7 @@ bool read_remap(READ_PARMS) {
 
 bool read_res(READ_PARMS) {
     char *str = *input;
-    if (read_word(&str, "res")) {
+    if (read_word(&str, (char*)"res")) {
         read_spc(&str);
         size_t x, y;
         if (get_size_t(&str, &x, read_N_decimal)) {
@@ -628,7 +628,7 @@ bool read_res(READ_PARMS) {
 
 bool read_vks_lang(READ_PARMS) {
     char *str = *input;
-    if (read_word(&str, "vks_lang")) {
+    if (read_word(&str, (char*)"vks_lang")) {
         if (read_colon(&str)) {
             int n;
             if ((n = read_hex(&str))) {

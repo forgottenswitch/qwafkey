@@ -72,13 +72,13 @@ typedef struct {
 } KR_Wndcls;
 
 size_t KR_apps_count = 0, KR_apps_size = 0;
-KR_App *KR_apps = (KR_App*)malloc((KR_apps_size = 20) * sizeof(KR_App));
+KR_App *KR_apps;
 
 size_t KR_titles_count = 0, KR_titles_size = 0;
-KR_Title *KR_titles = (KR_Title*)malloc((KR_titles_size = 20) * sizeof(KR_Title));
+KR_Title *KR_titles;
 
 size_t KR_wndcs_count = 0, KR_wndcs_size = 0;
-KR_Wndcls *KR_wndcs = (KR_Wndcls*)malloc((KR_wndcs_size = 20) * sizeof(KR_Wndcls));
+KR_Wndcls *KR_wndcs;
 
 KR_App *KR_app = nil;
 
@@ -265,5 +265,8 @@ void KR_bind(SC sc, SC binding, USHORT mods) {
 }
 
 void KR_init() {
+    KR_apps = (KR_App*)malloc((KR_apps_size = 20) * sizeof(KR_App));
+    KR_titles = (KR_Title*)malloc((KR_titles_size = 20) * sizeof(KR_Title));
+    KR_wndcs = (KR_Wndcls*)malloc((KR_wndcs_size = 20) * sizeof(KR_Wndcls));
     KR_ka_kr_on_pt = KA_name_to_id("kr_on_pt");
 }

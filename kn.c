@@ -6,7 +6,7 @@ typedef struct {
     char *name;
 } KN_Pair;
 
-#define kn(vk, name) { vk, name }
+#define kn(vk, name) { vk, (char*)name }
 #define k1(vk) kn(vk, #vk)
 #define k2(vk, name) kn(vk, #vk), kn(vk, name)
 KN_Pair KN_pairs[] = {
@@ -105,7 +105,7 @@ typedef struct {
     SC sc;
 } KN_LPair;
 
-#define k(name, sc) { name, sc }
+#define k(name, sc) { (char*)name, sc }
 KN_LPair KN_lpairs[] = {
     /* Common */
     k("Escape", SC_ESCAPE),

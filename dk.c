@@ -215,9 +215,9 @@ void DK_cns_push(char *name, int code) {
 }
 
 /* Check if character is a hexadecimal digit. */
-bool ishex(char c) {
+bool ishex(char c);/* {
     return between(c, '0', '9') || between(c, 'a', 'f') || between(c, 'A', 'F');
-}
+}*/
 
 /* Convert hexadecimal digit to integer value. */
 int hextoi(char c) {
@@ -669,7 +669,8 @@ void DK_read_compose_file(char *filename) {
 void DK_init() {
     DK_bindNode_toPivot(&DK_node);
     DK_cns = (DK_CharName*) malloc(sizeof(DK_CharName) * (DK_cns_alloc = 64));
-    DK_s = malloc((DK_s_alloc = 16*1024));
+    DK_s = (char*)malloc((DK_s_alloc = 16*1024));
     DK_cur_node = &DK_node;
-    DK_dksym_add(0, "Multi_key");
+    char multi_key[] = "Multi_key";
+    DK_dksym_add(0, multi_key);
 }
