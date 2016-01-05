@@ -21,6 +21,7 @@ char *default_argv[] = {
     s"@#qX:!kr_toggle",
     s"@#qO:!toggle_on_top",
     s"@#Enter:!msys2_shell",
+    s"@#qC:!lbutton_down",
 
     s"levels:1,2,3,4,5,6",
     s"sc027:!l5_shift",
@@ -167,22 +168,6 @@ char *default_argv[] = {
     s"qY=!left10",
     s"qU=!right10",
 
-    s"class CabinetWClass",
-    s"qSlash=!kr_off",
-    s"qPeriod=!kr_on_pt",
-    s"qApostrophe=!close_window",
-    s"qH=Left",
-    s"qJ=Down",
-    s"qK=Up",
-    s"qL=Right",
-    s"qI=Enter",
-    s"qM=Enter",
-    s"qU=Backspace",
-    s"Space=PgDn",
-    s"qB=PgUp",
-    s"qN=PgDn",
-    s"qY=PgUp",
-
     s"res 1920 1080",
     s"title DEAD OR ALIVE 5",
     s"qE=qM",
@@ -211,6 +196,18 @@ char *default_argv[] = {
     s"class ZDoomMainWindow",
     s"F2=!zdoom_quicksave",
     s"F3=!zdoom_quickload",
+
+    s"title TITAN SOULS",
+    s"qJ=Left",
+    s"qK=Down",
+    s"qI=sc48",
+    s"qL=vk_Right",
+    s"qA=qZ",
+    s"qW=qX",
+    s"qD=qC",
+    s"qM=Enter",
+    s"res 1024 768",
+
     #undef s
 };
 

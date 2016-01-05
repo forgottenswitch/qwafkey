@@ -202,6 +202,13 @@ ka(KA_zdoom_quickload) {
     KA_zdoom_vky(SC_F9);
 }
 
+ka(KA_lbutton_down) {
+    if (!down) { return; }
+    mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+    //keybd_event(VK_0, 0, 0, 0);
+    //keybd_event(VK_0, 0, KEYEVENTF_KEYUP, 0);
+}
+
 #undef ka
 
 typedef struct {
@@ -237,6 +244,7 @@ KA_Pair KA_fns[] = {
     ka(KA_msys2_shell),
     ka(KA_zdoom_quicksave),
     ka(KA_zdoom_quickload),
+    ka(KA_lbutton_down),
 };
 #undef ka
 

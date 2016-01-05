@@ -53,6 +53,9 @@ void KL_toggle() {
     }
 }
 
+#define duch() (down ? '_' : '^')
+#define frch() (faked ? 'F' : 'R')
+
 #define RawThisEvent() 0
 #define StopThisEvent() 1
 #define PassThisEvent() CallNextHookEx(NULL, aCode, wParam, lParam)
@@ -73,6 +76,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     // Only check here for injected presses and corresponding releases.
     bool faked;
     faked = (flags & LLKHF_INJECTED || (!(KL_phys[sc]) && !down));
+    dput("{sc%03xvk%02lx%c%c}", sc, ev->vkCode, frch(), duch());
 
     if (!faked) {
         KL_phys[sc] = down;
@@ -80,16 +84,19 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         if (mod) {
             switch (mod) {
             case MOD_SHIFT:
-                dput("<mod_shift>");
+                dput("{Shift%c} ", duch());
                 KM_shift_event(&KL_km_shift, down, sc);
                 break;
             case MOD_CONTROL:
+                dput("{Ctrl%c} ", duch());
                 KM_shift_event(&KL_km_control, down, sc);
                 break;
             case MOD_ALT:
+                dput("{Alt%c} ", duch());
                 KM_shift_event(&KL_km_alt, down, sc);
                 break;
             case MOD_WIN:
+                dput("{Win%c} ", duch());
                 KM_shift_event(&KL_km_win, down, sc);
                 break;
             case KLM_PHYS_TEMP:
@@ -108,7 +115,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         sc |= 0x100;
     if (faked || sc >= KPN) {
         if (!faked) {
-            dput("{sc%02lx,vk%02lx%c} ", ev->scanCode, ev->vkCode, (down ? '_' : '^'));
+            dput("{sc%03lx,vk%02lx%c} ", ev->scanCode, ev->vkCode, (down ? '_' : '^'));
         }
         return PassThisEvent();
     }
@@ -188,7 +195,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 
     UCHAR mods = lk.mods;
     if (mods == KLM_SC) {
-        dput("%csc%02lx=%02x ", (down ? '_' : '^'), ev->scanCode, lk.binding);
+        dput("%csc%03lx=%02x ", (down ? '_' : '^'), ev->scanCode, lk.binding);
         keybd_event(0, lk.binding, KEYEVENTF_SCANCODE | (down ? 0 : KEYEVENTF_KEYUP), 0);
         return StopThisEvent();
     } else if (mods == KLM_WCHAR) {
@@ -304,11 +311,11 @@ void KL_bind(SC sc, UINT lvl, UINT mods, SC binding) {
 
 void KL_temp_sc(SC sc, SC mods, SC binding) {
     if (mods == KLM_KA) {
-        dput("t sc%02x=ka%d ", sc, binding);
+        dput("t sc%03x=ka%d ", sc, binding);
     } else if (mods == KLM_SC) {
-        dput("t sc%02x=%02x ", sc, binding);
+        dput("t sc%03x=%02x ", sc, binding);
     } else {
-        dput("t sc%02x={%02x/%02x} ", sc, binding, mods);
+        dput("t sc%03x={%02x/%02x} ", sc, binding, mods);
     }
     LK lk = { true, (UCHAR)mods, binding };
     KL_kly[0][sc] = lk;
@@ -523,11 +530,11 @@ void KL_init() {
             break;
         }
         if (mod) {
-            printf("[mods] sc%03x => vk%02x, mod %x\t", sc, vk, mod);
+            dput("[mods] sc%03x => vk%02x, mod %x\t", sc, vk, mod);
         }
         KL_phys_mods[sc] = mod;
     }
-#define mod_vk(mod, vk) do { sc = OS_vk_to_sc(vk); if (sc) { printf("[mods] sc%03x => vk%02x, mod %x\t", sc, vk, mod); KL_phys_mods[sc] = mod; }; } while (0)
+#define mod_vk(mod, vk) do { sc = OS_vk_to_sc(vk); if (sc) { dput("[mods] sc%03x => vk%02x, mod %x\t", sc, vk, mod); KL_phys_mods[sc] = mod; }; } while (0)
     mod_vk(MOD_WIN, VK_LWIN);
     mod_vk(MOD_WIN, VK_RWIN);
 #undef mod_vk

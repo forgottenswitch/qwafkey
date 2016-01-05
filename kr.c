@@ -134,6 +134,7 @@ void KR_apply(KR_App *app, bool on_pt_only) {
 }
 
 KR_App *KR_hwnd_to_app(HWND hwnd) {
+    printf(" hwnd_to_app... ");
     char buf[256];
     int buflen = GetWindowTextA(hwnd, buf, len(buf));
     if (buflen > 0) {
