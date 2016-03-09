@@ -2,6 +2,13 @@
 #include "kl.h"
 #include "parse.h"
 
+/* lm.c -- layout/locale manager
+ *
+ * Functions for querying and activating of system input locales,
+ * that is, keyboard layouts.
+ *
+ * */
+
 LM_LocalesBuffer LM_locales = { 0, 0, nil };
 ssize_t LM_selected_locale = 0;
 

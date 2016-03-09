@@ -1,5 +1,5 @@
 /* This file is to be included by ka.c with dkn() macro predefined */
-/* dk.c needs KA_dkn_count, so it should define dkn(...) to nothing */
+/* dk.c needs just KA_dkn_count, so it should define dkn(...) to nothing */
 
 dkn(1)
 dkn(2)

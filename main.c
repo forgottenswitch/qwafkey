@@ -1,3 +1,11 @@
+/*
+ * main.c -- call all the initialize functions,
+ * bind default keys,
+ * call processing of command line arguments,
+ * then start message loop
+ * */
+
+
 #include "stdafx.h"
 #include "parse.h"
 #include "hk.h"

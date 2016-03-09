@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+/* freadline.h -- reading a line from file */
+
 typedef struct {
     char *s;
     size_t len;

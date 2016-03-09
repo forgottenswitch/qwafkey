@@ -5,6 +5,14 @@
 #include "dk.h"
 #include "scancodes.h"
 
+/* ka.c -- key actions
+ *
+ * Contains implementation of all the actions that could
+ * be assigned to keys, either globally, per-language, or per-application.
+ * Makes the actions accessible by name.
+ *
+ * */
+
 #define ka(name) void name(KA_PARAMS)
 
 ka(KA_Multi_key) { /*DK_dkn(0, down, sc);*/ }

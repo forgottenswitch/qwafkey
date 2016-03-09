@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+/* lm.h -- layout/locale manager */
+
 typedef struct {
     HKL hkl;
     LANGID lang;

@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+/* eh.h -- event hook */
+
 void EH_activate();
 void EH_deactivate();
 

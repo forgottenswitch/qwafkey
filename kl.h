@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "km.h"
 
+/* kl.h -- the low level keyboard hook */
+
 /*
 KPN is number of bingins on a level (binding is a mapping from SC to KP to perform)
 It should cover tilde,1..0,minus,plus,backslash,brackets,semicolon,apostrophe,comma,period,slash

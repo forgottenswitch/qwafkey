@@ -1,6 +1,8 @@
 #include "kn.h"
 #include "scancodes.h"
 
+/* kn.c -- key names database */
+
 typedef struct {
     VK vk;
     char *name;

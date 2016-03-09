@@ -3,6 +3,11 @@
 #include "lm.h"
 #include "hk.h"
 
+/* ui.c -- the graphical user interface,
+ * that is, the tray icon.
+ *
+ *  */
+
 /* main window */
 HWND UI_MW;
 
@@ -23,15 +28,15 @@ bool UI_TR_proc(DWORD action, char *tooltip_str) {
     NOTIFYICONDATA nid;
     nid.cbSize = sizeof nid;
     nid.hWnd = UI_MW;
-	nid.uID = UI_TR_ID;
-	nid.uFlags = NIF_ICON | NIF_MESSAGE;
-	nid.uCallbackMessage = UI_TRAY_MSG;
-	nid.hIcon = (KL_active ? UI_ICO_On : UI_ICO_Off);
-	if (tooltip_str) {
-		nid.uFlags |= NIF_TIP;
-		lstrcpyn(nid.szTip, tooltip_str, len(nid.szTip));
-	}
-	return (bool) Shell_NotifyIcon(action, &nid);
+    nid.uID = UI_TR_ID;
+    nid.uFlags = NIF_ICON | NIF_MESSAGE;
+    nid.uCallbackMessage = UI_TRAY_MSG;
+    nid.hIcon = (KL_active ? UI_ICO_On : UI_ICO_Off);
+    if (tooltip_str) {
+        nid.uFlags |= NIF_TIP;
+        lstrcpyn(nid.szTip, tooltip_str, len(nid.szTip));
+    }
+    return (bool) Shell_NotifyIcon(action, &nid);
 }
 
 bool UI_TR_update() {
@@ -55,7 +60,7 @@ enum {
 };
 
 void UI_TR_menu() {
-	SetForegroundWindow(UI_MW);
+    SetForegroundWindow(UI_MW);
     POINT mpt;
     HMENU m = CreatePopupMenu();
     AppendMenu(m, (KL_active ? 0 : MF_CHECKED), UI_TC_SUSPEND, UI_STR_Suspend);

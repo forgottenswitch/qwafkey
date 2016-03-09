@@ -1,6 +1,8 @@
 #ifndef KN_H_INCLUDED
 #define KN_H_INCLUDED
 
+/* kn.h -- key names */
+
 #include "stdafx.h"
 
 void KN_init();

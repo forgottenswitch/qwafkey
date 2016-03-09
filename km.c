@@ -1,5 +1,15 @@
 #include "km.h"
 
+/* km.c -- keyboard modifiers state
+ *
+ * Implements objects which track the state of keyboard modifier -- is it active or not.
+ *
+ * Modifiers could be: pressed (as with shift), toggled (as with caps lock), and
+ * latched (act as shift if any key gets released while the latch key is down,
+ * or as lock-for-next-key-only otherwise).
+ *
+ * */
+
 void KM_init(KM *km) {
     ZeroMemory(km, sizeof(KM));
 }

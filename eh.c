@@ -3,6 +3,15 @@
 #include "kl.h"
 #include "kr.h"
 
+/* eh.c -- event hook
+ *
+ * Allows for a function to be run each time the active task changes,
+ * that is, whenever a window belonging to an application different from
+ * the owner of currently focused window is focused.
+ * Requires Windows 2000.
+ *
+ * */
+
 HWINEVENTHOOK EH_handle;
 
 void EH_CALLBACK EH_proc(

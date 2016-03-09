@@ -5,6 +5,8 @@
 #include "hk.h"
 #include "kr.h"
 
+/* parse.c -- parsing and lexing of key binding assignments */
+
 #ifndef MOD_NOREPEAT
 # define MOD_NOREPEAT 0x4000
 #endif // MOD_NOREPEAT

@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+/* dk.h -- dead keys */
+
 /* forward declaration for recursive struct */
 typedef struct DK_Node DK_Node;
 

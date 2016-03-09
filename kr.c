@@ -3,6 +3,12 @@
 #include "lm.h"
 #include "ka.h"
 
+/* kr.c -- key remapper
+ *
+ * Allows for keybindings to be assigned per-application.
+ *
+ * */
+
 bool KR_active;
 size_t KR_id = 0;
 

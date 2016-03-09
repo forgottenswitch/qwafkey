@@ -7,6 +7,21 @@
 # include "ui.h"
 #endif // NOGUI
 
+/* kl.c -- the low level keyboard hook
+ *
+ * Allows for key presses and releases to be intercepted,
+ * and then either be blocked, passed, or altered.
+ * Requires Windows 95.
+ * The interception is toggled, and when off, the program does nothing.
+ *
+ * The alteration is performed using the lookup table,
+ * which is a compilation of global, language-specific,
+ * and application-specific tables.
+ *
+ * This file also contains all the table manipulation functions.
+ *
+ *  */
+
 bool KL_active = false;
 HHOOK KL_handle;
 

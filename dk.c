@@ -3,6 +3,17 @@
 #include "ka.h"
 #include "stdafx.h"
 
+/* dk.c -- dead keys
+ *
+ * Allows for key sequences resulting in exotic characters.
+ *
+ * Examples:
+ *  <compose><period><period> results in ellipsis character
+ *  <compose><plus><minus> results in plus-minus character
+ *  <dead_diaeresis>u results in "u" with diaeresis.
+ *
+ * */
+
 /*
 A starting size of children array for a pivot node.
 It is 2 as many nodes have just one descedant.

@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+/* ui.h -- the graphical user interface */
+
 extern HWND UI_MW;
 
 #define UI_TRAY_MSG (WM_APP + 1)

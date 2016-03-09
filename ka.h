@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+/* ka.h -- key actions */
+
 #define KA_dkn_count 32
 
 #define KA_PARAMS bool down, SC sc

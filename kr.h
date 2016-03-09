@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+/* kr.h -- key remapper; allows for keys to be assigned per-application */
+
 #define KR_MAXTITLE 64
 #define KR_MAXCLASS 32
 

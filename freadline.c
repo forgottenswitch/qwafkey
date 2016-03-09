@@ -1,5 +1,8 @@
 #include "freadline.h"
 
+/* freadline.c -- reading a line from file
+ * */
+
 void memcpyzn(void *dest, const void *src, size_t n, size_t max) {
     memcpy(dest, src, (n > max ? max : n));
     *(((char*) dest) + n) = 0;

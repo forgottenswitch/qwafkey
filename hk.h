@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+/* hk.h -- OS hotkeys */
+
 char *HK_to_s(UINT mods, VK vk);
 void HK_register(int id, UINT mods, VK vk);
 

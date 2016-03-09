@@ -4,6 +4,12 @@
 #include "ui.h"
 #endif // NOGUI
 
+/* hk.c -- OS hotkeys
+ *
+ * Manages global hotkeys.
+ *
+ * */
+
 #ifdef DEBUG
 char HK_to_s_buf[255];
 

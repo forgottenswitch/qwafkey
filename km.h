@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 
+/* km.h -- keyboard modifiers state */
+
 #define KM_MAXSHIFTS 4
 
 typedef struct {

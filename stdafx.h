@@ -1,6 +1,8 @@
 #ifndef STDAFX_H_INCLUDED
 #define STDAFX_H_INCLUDED
 
+/* stdafx.h -- common includes and definitions */
+
 #define _WIN32_WINNT 0x0501
 #define WINVER 0x500
 

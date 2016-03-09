@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "shellapi.h"
 
+/* os.c -- various WinAPI-like functions
+ * there is no os.h, as prototypes for these functions reside in stdafx.h
+ * */
+
 #ifndef MAPVK_VK_TO_VSC
 # define MAPVK_VK_TO_CHAR 2
 # define MAPVK_VK_TO_VSC 0
