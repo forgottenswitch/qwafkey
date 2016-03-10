@@ -14,6 +14,10 @@
  *
  * */
 
+/* The following two lines suppress all the debugging output from this file */
+#undef dput
+#define dput(...)
+
 /*
 A starting size of children array for a pivot node.
 It is 2 as many nodes have just one descedant.
@@ -451,6 +455,7 @@ Call SendInput() and reset the current node to root.
 void DK_send_code(SC ch) {
     DK_cur_node = &DK_node;
     printf("DKSend U+%04x;\n", ch);
+    KL_dk_send_wchar(ch);
 }
 
 /* Convert { 0, character code }, or { KLM_KA, key action id } back to key name. */
@@ -493,12 +498,13 @@ void DK_print_node(DK_Node *node, int ofs) {
     }
 }
 
-/*
-Find the node corresponding to DK_Key given in current Compose node.
-On failure, reset current node to root.
-On success, set the current node to a found one.
-*/
-void DK_descend(DK_Key key) {
+/* Find the node corresponding to DK_Key given in current Compose node.
+ * On failure, reset the current node to root.
+ * On success, set the current node to a found one.
+ * Return value is non-zero when more characters are expected,
+ * that is, when no symbol code has been sent.
+ * */
+bool DK_descend(DK_Key key) {
     dputs("DK_descend"); fflush(stdout);
     DK_Node *node = DK_cur_node;
     if (node == nil) {
@@ -516,14 +522,18 @@ void DK_descend(DK_Key key) {
             DK_cur_node = &DK_node;
         } else if (DK_is_pivotNode(node1)) {
             DK_cur_node = node1;
+            return true;
         } else {
             printf("descend bind => sendinput\n");
             DK_send_code(DK_bindNode_code(node1));
         }
     }
+    return false;
 }
 
-/* Take the action corresponding to n-th dead key being pressed: call DK_descend( { KLM_KA, n } ). */
+/* Take the action corresponding to n-th dead key being pressed:
+ *   call DK_descend( { KLM_KA, n } ).
+ * */
 void DK_dkn(UINT n, bool down, SC sc) {
     if (down) {
         dput("dkn:%d\n", n);
@@ -536,20 +546,27 @@ void DK_dkn(UINT n, bool down, SC sc) {
     }
 }
 
-/* Take the action corresponding to character being typed: call DK_descend( { 0, character code } ). */
-void DK_on_char(SC ch) {
+/* Take the action corresponding to character being typed:
+ *   call DK_descend( { 0, character code } ).
+ * Return value is non-zero when more characters are expected,
+ * that is, when no symbol code has been sent.
+ * */
+bool DK_on_char(SC ch) {
     DK_Node *node = DK_cur_node;
     if (node != nil) {
         if (DK_is_pivotNode(node)) {
             DK_Key key;
             key.type = 0;
             key.code = ch;
-            DK_descend(key);
+            return DK_descend(key);
         }
     }
+    return false;
 }
 
-/* Read "/usr/include/X11/keysymdef.h"-like file, assigning key names with DK_cns_push(). */
+/* Read "/usr/include/X11/keysymdef.h"-like file,
+ * assigning key names with DK_cns_push().
+ * */
 void DK_read_keydef_file(char *filename) {
     dput("DK_rk %ld %s\n", (long)lenof(DK_read_bufs), filename);
     FILE *f;
@@ -617,7 +634,9 @@ void DK_read_keydef_file(char *filename) {
     fclose(f);
 }
 
-/* Read "/usr/share/X11/locale/en_US.UTF-8/Compose"-like file, assigning the Compose sequences with DK_assign(). */
+/* Read "/usr/share/X11/locale/en_US.UTF-8/Compose"-like file,
+ * assigning Compose sequences with DK_assign().
+ * */
 void DK_read_compose_file(char *filename) {
     dput("DK_rf %ld %s\n", (long)lenof(DK_read_bufs), filename);
     FILE *f;
@@ -673,7 +692,7 @@ void DK_read_compose_file(char *filename) {
                 bool is_multi = !strncmp("Multi_key", DK_read_bufs[0], 9);
                 if (ki && (is_dead || is_multi)) {
                     if (is_multi)
-                        puts("multi_assign");
+                        dput("multi_assign\n");
                     DK_assign(ki);
                 }
                 break;

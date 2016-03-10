@@ -47,4 +47,6 @@ void KL_bind_init();
 void KL_bind_lvls_zero();
 void KL_bind_lvls_init();
 
+void KL_dk_send_wchar(WCHAR wc);
+
 #endif // KL_H_INCLUDED

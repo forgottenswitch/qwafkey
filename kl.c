@@ -2,6 +2,7 @@
 #include "ka.h"
 #include "km.h"
 #include "lm.h"
+#include "dk.h"
 #include "scancodes.h"
 #ifndef NOGUI
 # include "ui.h"
@@ -38,6 +39,7 @@ UCHAR KL_phys[MAXSC];
 UCHAR KL_phys_mods[MAXSC];
 
 VK KL_mods_vks[MAXSC];
+bool KL_dk_in_effect;
 
 void KL_activate() {
     KL_handle = SetWindowsHookEx(WH_KEYBOARD_LL, KL_proc, OS_current_module_handle(), 0);
@@ -66,6 +68,36 @@ void KL_toggle() {
     } else {
         KL_activate();
     }
+}
+
+void KL_dk_on_sc(SC sc) {
+    printf("{dk sc%03x}", sc);
+    WCHAR wc = OS_sc_to_wchar(sc);
+    KL_dk_in_effect = DK_on_char(wc);
+}
+
+void KL_dk_on_vk(VK vk) {
+    printf("{dk vk%02x}", vk);
+    WCHAR wc = OS_vk_to_wchar(vk);
+    KL_dk_in_effect = DK_on_char(wc);
+    printf("kl_in_eff:%d;", KL_dk_in_effect);
+}
+
+void KL_dk_on_wchar(WCHAR wc) {
+    printf("{dk u%04x}", wc);
+    KL_dk_in_effect = DK_on_char(wc);
+}
+
+void KL_dk_send_wchar(WCHAR wc) {
+    KL_dk_in_effect = 0;
+    INPUT inp;
+    inp.type = INPUT_KEYBOARD;
+    inp.ki.wVk = 0;
+    inp.ki.dwFlags = KEYEVENTF_UNICODE;
+    inp.ki.dwExtraInfo = 0;
+    inp.ki.wScan = wc;
+    inp.ki.time = GetTickCount();
+    SendInput(1, &inp, sizeof(INPUT));;
 }
 
 #define duch() (down ? '_' : '^')
@@ -178,11 +210,19 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     dput(" l%d,b%x", lv, lk.binding);
     //dput(" [sc%03x%c]l%d,b%x", sc, (down?'_':'^'), lv, lk.binding);
 
+    /* Processing of key when in dead key sequence */
+    #define MaybeDeadKeyVK() \
+        if (KL_dk_in_effect) { \
+            if (down) { KL_dk_on_vk(ev->vkCode); }; \
+            return StopThisEvent(); \
+        };
+
     /* If there is no alteration ... */
     if (!lk.active) {
         dput(" na%s", (down ? "_ " : "^\n"));
         if (lv < 2) { /* ... just let the event fire when none or shift is in effect */
             dput("[12]");
+            MaybeDeadKeyVK();
             return PassThisEvent();
         } else if (lv < 4) { /* ... when level3 is in effect ... */
             dput("[34]");
@@ -190,10 +230,14 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             char lctrl = (KL_phys[SC_LCONTROL] ? 0 : 1), lctrl1=-lctrl;
             char ralt = (KL_phys[SC_RMENU] ? 0 : 1), ralt1=-ralt;
             size_t inpl = lctrl*2 + ralt*2;
+            MaybeDeadKeyVK();
             if (!inpl) {
                 return PassThisEvent();
             }
-            /* ... release (?) all the controls and alts while sending the event otherwise */
+            /* ... release all controls and alts while sending the event otherwise
+             * (this is not to let the OS use the AltGr binding (its own level3/4) if any,
+             * as it would not be appropriate)
+             * */
             inpl++;
             size_t i;
             DWORD time = GetTickCount();
@@ -230,6 +274,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             return StopThisEvent();
         }
     }
+    #undef MaybeDeadKeyVK
 
     /* If there is an alteration,
      * determine its type:
@@ -241,28 +286,47 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     UCHAR mods = lk.mods;
     if (mods == KLM_SC) { /* ... if scancode, just alter the scancode */
         dput("%csc%03lx=%02x ", (down ? '_' : '^'), ev->scanCode, lk.binding);
-        keybd_event(0, lk.binding, KEYEVENTF_SCANCODE | (down ? 0 : KEYEVENTF_KEYUP), 0);
+        /* processing of scan code when in dead key sequence */
+        if (KL_dk_in_effect) {
+            if (down) { KL_dk_on_sc(lk.binding); };
+        } else {
+            keybd_event(0, lk.binding, KEYEVENTF_SCANCODE | (down ? 0 : KEYEVENTF_KEYUP), 0);
+        }
         return StopThisEvent();
     } else if (mods == KLM_WCHAR) { /* ... if a character, SendInput it */
         if (down) {
             WCHAR wc = lk.binding;
             dput(" send U+%04x ", wc);
-            INPUT inp;
-            inp.type = INPUT_KEYBOARD;
-            inp.ki.wVk = 0;
-            inp.ki.dwFlags = KEYEVENTF_UNICODE;
-            inp.ki.dwExtraInfo = 0;
-            inp.ki.wScan = wc;
-            inp.ki.time = GetTickCount();
-            SendInput(1, &inp, sizeof(INPUT));
+            /* processing of character when in dead key sequence */
+            if (KL_dk_in_effect) {
+                KL_dk_on_wchar(wc);
+            } else {
+                INPUT inp;
+                inp.type = INPUT_KEYBOARD;
+                inp.ki.wVk = 0;
+                inp.ki.dwFlags = KEYEVENTF_UNICODE;
+                inp.ki.dwExtraInfo = 0;
+                inp.ki.wScan = wc;
+                inp.ki.time = GetTickCount();
+                SendInput(1, &inp, sizeof(INPUT));
+            }
         }
     } else if (mods & KLM_KA) { /* ... if key action, call it */
         dput(" ka_call ka%d(%d){", lk.binding, down);
+        if (lk.binding < KA_dkn_count) {
+            KL_dk_in_effect = true;
+        }
         KA_call(lk.binding, down, sc);
         dput("}%s", (down ? "_" : "^\n"));
-    } else { /* ... if virtual key code, temporarily bring shift, control and alt
-       * into the state required by alteration, and send the virtual key code.
-       *  */
+    }
+    /* ... if virtual key code, temporarily bring shift, control and alt
+     * into the state required by alteration, and send the virtual key code.
+     * */
+    /* processing of virtual keycode when in dead key sequence */
+    else if (KL_dk_in_effect) {
+        if (down) { KL_dk_on_vk(lk.binding); };
+    }
+    else {
         bool shift_was_down = KL_km_shift.in_effect;
         bool need_shift = (mods & MOD_SHIFT);
         char mod_shift = (KL_km_shift.in_effect ? (need_shift ? 0 : -1) : (need_shift ? 1 : 0)), mod_shift0 = mod_shift;

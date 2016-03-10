@@ -98,6 +98,8 @@ char *default_argv[] = {
     s"qB:=;,=,",
     s"qM:!next_layout",
     s"qSlash:!next_os_layout",
+    s"qN:!compose",
+    s"qU:!dead_diaeresis",
 
     s"lang:409",
     s"levels:1,2",

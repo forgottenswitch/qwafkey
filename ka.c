@@ -15,9 +15,8 @@
 
 #define ka(name) void name(KA_PARAMS)
 
-ka(KA_Multi_key) { /*DK_dkn(0, down, sc);*/ }
-
-#define dkn(i) ka(KA_dkn_##i) { /*DK_dkn(i, down, sc);*/ }
+ka(KA_compose) { DK_dkn(0, down, sc); }
+#define dkn(i) ka(KA_dkn_##i) { DK_dkn(i, down, sc); }
 # include "ka_dk.h"
 #undef dkn
 
@@ -226,20 +225,24 @@ typedef struct {
 
 #define ka(name) { name, (char*)#name }
 KA_Pair KA_fns[] = {
+    ka(KA_compose),
     #define dkn(i) ka(KA_dkn_##i),
     # include "ka_dk.h"
     #undef dkn
+
     ka(KA_toggle),
     ka(KA_restart),
     ka(KA_next_layout),
     ka(KA_prev_layout),
     ka(KA_next_os_layout),
     ka(KA_prev_os_layout),
+
     ka(KA_control),
     ka(KA_l5_shift),
     ka(KA_l5_lock),
     ka(KA_l3_latch),
     ka(KA_l2_latch),
+
     ka(KA_kr_toggle),
     ka(KA_dim_screen),
     ka(KA_close_window),
@@ -258,7 +261,7 @@ KA_Pair KA_fns[] = {
 
 void KA_update_dk_names(void) {
     int i;
-    fori (i, 0, KA_dkn_count) {
+    fori (i, 1, KA_dkn_count) {
         char *name = DK_index_to_name(i);
         if (!name) { break; }
         KA_fns[i].name = name;

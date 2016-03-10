@@ -654,6 +654,7 @@ bool read_dk_file(READ_PARMS) {
             if (i < sizeof(filename)-1) { filename[i++] = *str++; }
         }
         filename[i] = 0;
+        printf("reading keysym file |%s|... ", filename);
         DK_read_keydef_file(filename);
         KA_update_dk_names();
         RET(str, true);
@@ -664,6 +665,7 @@ bool read_dk_file(READ_PARMS) {
             if (i < sizeof(filename)-1) { filename[i++] = *str++; }
         }
         filename[i] = 0;
+        printf("reading compose file |%s|... ", filename);
         DK_read_compose_file(filename);
         RET(str, true);
     }

@@ -42,7 +42,7 @@ char *fread_line(FILE *f, read_line_buf *buf) {
         buf->s = s;
         fseek(f, -i, SEEK_CUR);
     } while (1);
-    printf("RL |||%s|||\n", s);
+    //printf("RL |||%s|||\n", s);
     return s;
 }
 
