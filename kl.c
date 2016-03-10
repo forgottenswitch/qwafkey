@@ -70,22 +70,48 @@ void KL_toggle() {
     }
 }
 
+/* Translates virtual keycode and scan code to UCS-2 character.
+ * Bit 15 of scancode indicates whether the key is pressed.
+ * */
+BYTE KL_vksc_kbdstate[256];
+WCHAR KL_vksc_to_wchar(VK vk, SC sc) {
+    static WCHAR buf[4] = { 0, 0, 0, 0 };
+    if (KL_km_shift.in_effect) {
+        KL_vksc_kbdstate[VK_SHIFT] = 1;
+        KL_vksc_kbdstate[VK_LSHIFT] = 1;
+        KL_vksc_kbdstate[VK_RSHIFT] = 1;
+    } else {
+        KL_vksc_kbdstate[VK_SHIFT] = 0;
+        KL_vksc_kbdstate[VK_LSHIFT] = 0;
+        KL_vksc_kbdstate[VK_RSHIFT] = 0;
+    }
+    int n = ToUnicode(vk, sc, KL_vksc_kbdstate, buf, lenof(buf), 0);
+    if (n != 1) {
+        printf("[vksc %02x,%03x => [%02x, %02x]]", vk, sc, buf[0], buf[1]);
+        return 0;
+    }
+    printf("[vksc %02x,%03x => u%04x]", vk, sc, buf[0]);
+    return buf[0];
+}
+
 void KL_dk_on_sc(SC sc) {
     printf("{dk sc%03x}", sc);
-    WCHAR wc = OS_sc_to_wchar(sc);
-    KL_dk_in_effect = DK_on_char(wc);
+    WCHAR wc = KL_vksc_to_wchar(0, sc & 0x7F);
+    if (wc) { KL_dk_in_effect = DK_on_char(wc); }
+    else { KL_dk_in_effect = 0; }
 }
 
 void KL_dk_on_vk(VK vk) {
     printf("{dk vk%02x}", vk);
-    WCHAR wc = OS_vk_to_wchar(vk);
-    KL_dk_in_effect = DK_on_char(wc);
-    printf("kl_in_eff:%d;", KL_dk_in_effect);
+    WCHAR wc = KL_vksc_to_wchar(vk, 0);
+    if (wc) { KL_dk_in_effect = DK_on_char(wc); }
+    else { KL_dk_in_effect = 0; }
 }
 
 void KL_dk_on_wchar(WCHAR wc) {
     printf("{dk u%04x}", wc);
-    KL_dk_in_effect = DK_on_char(wc);
+    if (wc) { KL_dk_in_effect = DK_on_char(wc); }
+    else { KL_dk_in_effect = 0; }
 }
 
 void KL_dk_send_wchar(WCHAR wc) {
