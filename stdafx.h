@@ -53,7 +53,8 @@
 
 typedef unsigned char VK;
 typedef unsigned short SC;
-#define MAXSC 512
+#define SC_COUNT 512
+#define VK_COUNT 256
 
 #define VK_ch(ch) LOBYTE(VkKeyScan(ch))
 
@@ -80,8 +81,6 @@ typedef struct {
 KP OS_wchar_to_vk(WCHAR tc);
 VK OS_sc_to_vk(SC sc);
 SC OS_vk_to_sc(SC sc);
-WCHAR OS_vk_to_wchar(VK vk);
-WCHAR OS_sc_to_wchar(SC sc);
 void OS_print_last_error();
 void OS_activate_layout(HWND hwnd, HKL hkl);
 void OS_activate_next_layout(HWND hwnd);

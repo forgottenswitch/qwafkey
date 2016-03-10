@@ -44,19 +44,6 @@ SC OS_vk_to_sc(SC sc) {
     return MapVirtualKey(sc, MAPVK_VK_TO_VSC);
 }
 
-WCHAR OS_vk_to_wchar(VK vk) {
-    WCHAR wc = MapVirtualKey(vk, MAPVK_VK_TO_CHAR);
-    dput("[vk%02x=>U%04x]", vk, wc);
-    return wc;
-}
-
-WCHAR OS_sc_to_wchar(SC sc) {
-    VK vk = MapVirtualKey(sc, MAPVK_VSC_TO_VK);
-    WCHAR wc = MapVirtualKey(vk, MAPVK_VK_TO_CHAR);
-    dput("[sc%03x=>vk%02x=>U%04x]", sc, vk, wc);
-    return wc;
-}
-
 
 void OS_print_last_error() {
     DWORD error_code = GetLastError();

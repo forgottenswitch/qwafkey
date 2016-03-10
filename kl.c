@@ -35,10 +35,16 @@ KM KL_km_l5;
 
 KLY KL_kly;
 
-UCHAR KL_phys[MAXSC];
-UCHAR KL_phys_mods[MAXSC];
+/* vk/sc-to-wchar tables */
+typedef WCHAR KLVKW[2][VK_COUNT];
+typedef WCHAR KLSCW[2][SC_COUNT];
+KLVKW KL_vkw;
+KLSCW KL_scw;
 
-VK KL_mods_vks[MAXSC];
+UCHAR KL_phys[SC_COUNT];
+UCHAR KL_phys_mods[SC_COUNT];
+
+VK KL_mods_vks[SC_COUNT];
 bool KL_dk_in_effect;
 
 void KL_activate() {
@@ -70,40 +76,16 @@ void KL_toggle() {
     }
 }
 
-/* Translates virtual keycode and scan code to UCS-2 character.
- * Bit 15 of scancode indicates whether the key is pressed.
- * */
-BYTE KL_vksc_kbdstate[256];
-WCHAR KL_vksc_to_wchar(VK vk, SC sc) {
-    static WCHAR buf[4] = { 0, 0, 0, 0 };
-    if (KL_km_shift.in_effect) {
-        KL_vksc_kbdstate[VK_SHIFT] = 1;
-        KL_vksc_kbdstate[VK_LSHIFT] = 1;
-        KL_vksc_kbdstate[VK_RSHIFT] = 1;
-    } else {
-        KL_vksc_kbdstate[VK_SHIFT] = 0;
-        KL_vksc_kbdstate[VK_LSHIFT] = 0;
-        KL_vksc_kbdstate[VK_RSHIFT] = 0;
-    }
-    int n = ToUnicode(vk, sc, KL_vksc_kbdstate, buf, lenof(buf), 0);
-    if (n != 1) {
-        printf("[vksc %02x,%03x => [%02x, %02x]]", vk, sc, buf[0], buf[1]);
-        return 0;
-    }
-    printf("[vksc %02x,%03x => u%04x]", vk, sc, buf[0]);
-    return buf[0];
-}
-
-void KL_dk_on_sc(SC sc) {
+void KL_dk_on_sc(SC sc, int level) {
     printf("{dk sc%03x}", sc);
-    WCHAR wc = KL_vksc_to_wchar(0, sc & 0x7F);
+    WCHAR wc = ((unsigned short)(sc) >= KPN) ? 0 : KL_scw[level % 2][sc];
     if (wc) { KL_dk_in_effect = DK_on_char(wc); }
     else { KL_dk_in_effect = 0; }
 }
 
-void KL_dk_on_vk(VK vk) {
+void KL_dk_on_vk(VK vk, int level) {
     printf("{dk vk%02x}", vk);
-    WCHAR wc = KL_vksc_to_wchar(vk, 0);
+    WCHAR wc = KL_vkw[level % 2][(unsigned char)(vk)];
     if (wc) { KL_dk_in_effect = DK_on_char(wc); }
     else { KL_dk_in_effect = 0; }
 }
@@ -239,7 +221,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     /* Processing of key when in dead key sequence */
     #define MaybeDeadKeyVK() \
         if (KL_dk_in_effect) { \
-            if (down) { KL_dk_on_vk(ev->vkCode); }; \
+            if (down) { KL_dk_on_vk(ev->vkCode, lv); }; \
             return StopThisEvent(); \
         };
 
@@ -314,7 +296,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         dput("%csc%03lx=%02x ", (down ? '_' : '^'), ev->scanCode, lk.binding);
         /* processing of scan code when in dead key sequence */
         if (KL_dk_in_effect) {
-            if (down) { KL_dk_on_sc(lk.binding); };
+            if (down) { KL_dk_on_sc(lk.binding, lv); };
         } else {
             keybd_event(0, lk.binding, KEYEVENTF_SCANCODE | (down ? 0 : KEYEVENTF_KEYUP), 0);
         }
@@ -350,7 +332,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
      * */
     /* processing of virtual keycode when in dead key sequence */
     else if (KL_dk_in_effect) {
-        if (down) { KL_dk_on_vk(lk.binding); };
+        if (down) { KL_dk_on_vk(lk.binding, lv); };
     }
     else {
         bool shift_was_down = KL_km_shift.in_effect;
@@ -467,6 +449,9 @@ typedef struct {
     bool vks_lang;
     // Bindings
     KLY kly;
+    // vk/sc-to-wchar tables
+    KLVKW vkw;
+    KLSCW scw;
 } KLC;
 
 size_t KL_klcs_size = 0;
@@ -475,7 +460,7 @@ KLC *KL_klcs;
 
 void KL_add_lang(LANGID lang) {
     if ((KL_klcs_count+=1) > KL_klcs_size) {
-        KL_klcs = (KLC*)realloc(KL_klcs, (KL_klcs_size *= 1.5) * sizeof(KLC));
+        KL_klcs = (KLC*) realloc(KL_klcs, (KL_klcs_size *= 1.5) * sizeof(KLC));
     }
     KLC *klc = KL_klcs + KL_klcs_count - 1;
     klc->compiled = false;
@@ -504,6 +489,7 @@ KLC *KL_lang_to_klc(LANGID lang) {
 }
 
 LANGID KL_vks_lang = LANG_NEUTRAL;
+BYTE KL_vksc_kbdstate[256];
 
 void KL_compile_klc(KLC *klc) {
     if (klc->lang == LANG_NEUTRAL)
@@ -557,7 +543,41 @@ void KL_compile_klc(KLC *klc) {
             }
         }
     }
+    fori (lv, 0, 2) {
+        /* Set the shift state according to level */
+        if (lv % 2) {
+            KL_vksc_kbdstate[VK_SHIFT] = 1;
+            KL_vksc_kbdstate[VK_LSHIFT] = 1;
+            KL_vksc_kbdstate[VK_RSHIFT] = 1;
+        } else {
+            KL_vksc_kbdstate[VK_SHIFT] = 0;
+            KL_vksc_kbdstate[VK_LSHIFT] = 0;
+            KL_vksc_kbdstate[VK_RSHIFT] = 0;
+        }
+        int vk;
+        dput("\n");
+        fori (vk, 0, VK_COUNT) {
+            WCHAR wc = 0, buf[4] = { 0, 0, 0, 0 };
+            /* Translate virtual keycode and shift state into UCS-2 character. */
+            int n = ToUnicode(vk, 0, KL_vksc_kbdstate, buf, lenof(buf), 0);
+            if (n == 1) { wc = buf[0]; };
+            dput("[vk%d%c%02x]", vk, lv ? '+' : ' ', buf[0]);
+            KL_vkw[lv][vk] = wc;
+        }
+        dput("\n");
+        fori (sc, 0, KPN) {
+            WCHAR wc = 0, buf[4] = { 0, 0, 0, 0 };
+            /* Translate scancode and shift state into UCS-2 character. */
+            VK vk = OS_sc_to_vk(sc);
+            int n = ToUnicode(vk, 0, KL_vksc_kbdstate, buf, lenof(buf), 0);
+            if (n == 1) { wc = buf[0]; }
+            dput("[sc%03x=>vk%02x%c%02x]", sc, vk, lv ? '+' : ' ', buf[0]);
+            KL_scw[lv][sc] = wc;
+        }
+    }
     CopyMemory(kly, KL_kly, sizeof(KLY));
+    CopyMemory(&(klc->vkw), KL_vkw, sizeof(KLVKW));
+    CopyMemory(&(klc->scw), KL_scw, sizeof(KLSCW));
     klc->compiled = true;
     ActivateKeyboardLayout(cur_hkl, 0);
 }
@@ -571,6 +591,8 @@ void KL_activate_lang(LANGID lang) {
     }
     if (lang_klc->compiled) {
         CopyMemory(KL_kly, lang_klc->kly, sizeof(KLY));
+        CopyMemory(KL_vkw, lang_klc->vkw, sizeof(KLVKW));
+        CopyMemory(KL_scw, lang_klc->scw, sizeof(KLSCW));
     } else {
         dput("compile ");
         KL_compile_klc(lang_klc);
