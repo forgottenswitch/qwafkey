@@ -52,6 +52,9 @@ void DK_on_char(SC ch);
 
 void DK_print_key_names();
 
+int DK_name_to_index(char *name);
+char *DK_index_to_name(int i);
+
 DK_Node *DK_pivotNode_fetch(DK_Node * const node, DK_Key key, bool pivot);
 void DK_descend(DK_Key key);
 void DK_print_node(DK_Node *node, int ofs);

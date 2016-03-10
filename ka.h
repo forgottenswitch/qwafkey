@@ -14,4 +14,6 @@ void KA_init();
 int KA_call(UINT id, KA_PARAMS);
 int KA_name_to_id(char *name);
 
+void KA_update_dk_names(void);
+
 #endif // KA_H_INCLUDED

@@ -23,6 +23,10 @@
 
 char *default_argv[] = {
     #define s (char*)
+
+    s"keysym_file keysymdef.h",
+    s"compose_file Compose",
+
     s"@#F2:!toggle",
     s"@#F3:!restart",
     s"@#qZ:!dim_screen",
@@ -242,6 +246,7 @@ int main(int argc, char *argv[]) {
     KL_init();
     KA_init();
     KR_init();
+    DK_init();
 
     parse_args(len(default_argv), default_argv, 0);
     parse_args(argc, argv, 1);
@@ -252,7 +257,6 @@ int main(int argc, char *argv[]) {
     EH_activate();
     KR_activate();
     KL_define_vks();
-    DK_init();
 
 #ifndef NOGUI
     UI_init();

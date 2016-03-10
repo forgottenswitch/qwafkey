@@ -343,6 +343,21 @@ int DK_name_to_dksym(char *name) {
     return -1;
 }
 
+int DK_name_to_index(char *name) {
+    size_t i;
+    fori (i, 0, DK_dks_count) {
+        if (!strncmp(name, DK_ofs_to_s(DK_dks[i].name_ofs), DK_charbuf_SIZE)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+char *DK_index_to_name(int i) {
+    if (i >= DK_dks_count) { return nil; }
+    return DK_ofs_to_s(DK_dks[i].name_ofs);
+}
+
 /* Convert key name to either { 0, character code }, or { KLM_KA, key action id }. */
 DK_Key DK_Key_from_charbuf(char *str) {
 #define dput_ret() printf("{%d,%04x}", ret.type, ret.code)
@@ -539,6 +554,7 @@ void DK_read_keydef_file(char *filename) {
     dput("DK_rk %ld %s\n", (long)lenof(DK_read_bufs), filename);
     FILE *f;
     f = fopen(filename, "r");
+    if (!f) { fprintf(stderr, "error opening keydef file |%s|\n", filename); return; }
     size_t nl = 0;
     char *s;
     read_line_buf buf;
@@ -606,6 +622,7 @@ void DK_read_compose_file(char *filename) {
     dput("DK_rf %ld %s\n", (long)lenof(DK_read_bufs), filename);
     FILE *f;
     f = fopen(filename, "r");
+    if (!f) { fprintf(stderr, "error opening compose file |%s|\n", filename); return; }
     size_t nl = 0;
     char *s;
     read_line_buf buf;

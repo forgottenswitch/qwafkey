@@ -256,6 +256,15 @@ KA_Pair KA_fns[] = {
 };
 #undef ka
 
+void KA_update_dk_names(void) {
+    int i;
+    fori (i, 0, KA_dkn_count) {
+        char *name = DK_index_to_name(i);
+        if (!name) { break; }
+        KA_fns[i].name = name;
+    }
+}
+
 int KA_call(UINT id, KA_PARAMS) {
     if (id >= len(KA_fns))
         return -1;

@@ -4,6 +4,7 @@
 #include "kn.h"
 #include "hk.h"
 #include "kr.h"
+#include "dk.h"
 
 /* parse.c -- parsing and lexing of key binding assignments */
 
@@ -642,6 +643,33 @@ bool read_vks_lang(READ_PARMS) {
     return false;
 }
 
+bool read_dk_file(READ_PARMS) {
+    static char filename[256];
+    int i = 0;
+    char *str = *input;
+    if (read_word(&str, (char*)"keysym_file")) {
+        read_spc(&str);
+        char *name = str;
+        while (*str && *str != '\n' && *str != '\r') {
+            if (i < sizeof(filename)-1) { filename[i++] = *str++; }
+        }
+        filename[i] = 0;
+        DK_read_keydef_file(filename);
+        KA_update_dk_names();
+        RET(str, true);
+    } else if (read_word(&str, (char*)"compose_file")) {
+        read_spc(&str);
+        char *name = str;
+        while (*str && *str != '\n' && *str != '\r' && i < sizeof(filename)) {
+            if (i < sizeof(filename)-1) { filename[i++] = *str++; }
+        }
+        filename[i] = 0;
+        DK_read_compose_file(filename);
+        RET(str, true);
+    }
+    return false;
+}
+
 #undef READ_PARMS
 
 void parse_args(int argc, char *argv[], int argb) {
@@ -660,7 +688,8 @@ void parse_args(int argc, char *argv[], int argb) {
                 read_title(&arg) ||
                 read_class(&arg) ||
                 read_remap(&arg) ||
-                read_vks_lang(&arg)
+                read_vks_lang(&arg) ||
+                read_dk_file(&arg)
         )) {
             dput("unrecognized arg %d: %s\n", argi, arg);
         }
@@ -683,6 +712,7 @@ void parse_str(char *str) {
             read_class(&str) ||
             read_remap(&str) ||
             read_vks_lang(&str) ||
+            read_dk_file(&str) ||
             read_line(&str)
     ) {
         parse_lineno += 1;
