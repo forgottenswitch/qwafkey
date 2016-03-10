@@ -75,8 +75,9 @@ void KL_toggle() {
 #define StopThisEvent() 1
 #define PassThisEvent() CallNextHookEx(NULL, aCode, wParam, lParam)
 LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
-    if (aCode != HC_ACTION)
-        return PassThisEvent();
+    if (aCode != HC_ACTION) { return PassThisEvent(); }
+
+    /* Gather the values of interest */
     PKBDLLHOOKSTRUCT ev = (PKBDLLHOOKSTRUCT) lParam;
     DWORD flags = ev->flags;
     SC sc = (SC) ev->scanCode;
@@ -93,6 +94,9 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     faked = (flags & LLKHF_INJECTED || (!(KL_phys[sc]) && !down));
     dput("{sc%03xvk%02lx%c%c}", sc, ev->vkCode, frch(), duch());
 
+    /* Track the modifiers state: shift, control, alt, win, level3, level5
+     * (the latter two are not present in the OS)
+     *  */
     if (!faked) {
         KL_phys[sc] = down;
         BYTE mod = KL_phys_mods[sc];
@@ -126,8 +130,16 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     }
     mods_end:
 
-    if (flags & LLKHF_EXTENDED)
+    /* Set the 'extended' bit in scancode if it should be set */
+    if (flags & LLKHF_EXTENDED) {
         sc |= 0x100;
+    }
+
+    /* Do not process any simulated key events,
+     * or events which most likely are hardware-dependent
+     * (such as multimedia buttons, power buttons, etc.);
+     * just let them through.
+     * */
     if (faked || sc >= KPN) {
         if (!faked) {
             dput("{sc%03lx,vk%02lx%c} ", ev->scanCode, ev->vkCode, (down ? '_' : '^'));
@@ -135,6 +147,8 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         return PassThisEvent();
     }
 
+    /* Compute the layout level currently in effect
+     * (using the modifier tracking data) */
     unsigned char lv = 0;
     if (KL_km_l3.in_effect) {
         lv = 2;
@@ -145,8 +159,13 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         lv += 1;
     }
 
+    /* If any of control, alt, or win is currently in effect,
+     * alter the key being send using the special when-a-modifier-is-in-effect
+     * lookup table.
+     * */
     if (lv <= 1 && (KL_km_alt.in_effect || KL_km_control.in_effect || KL_km_win.in_effect)) {
         VK vk = KL_mods_vks[sc];
+        /* the when-modifier alteration */
         if (vk) {
             keybd_event(vk, 0, (down ? 0 : KEYEVENTF_KEYUP), 0);
             dput(" SendVK%c(%02x,'%c')", (down ? '_' : '^'), vk, vk);
@@ -154,16 +173,18 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         }
     }
 
+    /* Acquire a key binding (the alteration to be performed) */
     LK lk = KL_kly[lv][sc];
     dput(" l%d,b%x", lv, lk.binding);
     //dput(" [sc%03x%c]l%d,b%x", sc, (down?'_':'^'), lv, lk.binding);
 
+    /* If there is no alteration ... */
     if (!lk.active) {
         dput(" na%s", (down ? "_ " : "^\n"));
-        if (lv < 2) {
+        if (lv < 2) { /* ... just let the event fire when none or shift is in effect */
             dput("[12]");
             return PassThisEvent();
-        } else if (lv < 4) {
+        } else if (lv < 4) { /* ... when level3 is in effect ... */
             dput("[34]");
             INPUT inp[5], *curinp = inp;
             char lctrl = (KL_phys[SC_LCONTROL] ? 0 : 1), lctrl1=-lctrl;
@@ -172,6 +193,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             if (!inpl) {
                 return PassThisEvent();
             }
+            /* ... release (?) all the controls and alts while sending the event otherwise */
             inpl++;
             size_t i;
             DWORD time = GetTickCount();
@@ -202,18 +224,26 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             }
             SendInput(inpl, inp, sizeof(INPUT));
             return StopThisEvent();
+        /* ... block the event if level5 is in effect */
         } else {
             dput("[56]");
             return StopThisEvent();
         }
     }
 
+    /* If there is an alteration,
+     * determine its type:
+     *   scancode (KLM_SC),
+     *   UCS-2 character (KLM_WCHAR),
+     *   key action from ka.c (KLM_KA),
+     *   virtual keycode (none of the above)
+     *  */
     UCHAR mods = lk.mods;
-    if (mods == KLM_SC) {
+    if (mods == KLM_SC) { /* ... if scancode, just alter the scancode */
         dput("%csc%03lx=%02x ", (down ? '_' : '^'), ev->scanCode, lk.binding);
         keybd_event(0, lk.binding, KEYEVENTF_SCANCODE | (down ? 0 : KEYEVENTF_KEYUP), 0);
         return StopThisEvent();
-    } else if (mods == KLM_WCHAR) {
+    } else if (mods == KLM_WCHAR) { /* ... if a character, SendInput it */
         if (down) {
             WCHAR wc = lk.binding;
             dput(" send U+%04x ", wc);
@@ -226,11 +256,13 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             inp.ki.time = GetTickCount();
             SendInput(1, &inp, sizeof(INPUT));
         }
-    } else if (mods & KLM_KA) {
+    } else if (mods & KLM_KA) { /* ... if key action, call it */
         dput(" ka_call ka%d(%d){", lk.binding, down);
         KA_call(lk.binding, down, sc);
         dput("}%s", (down ? "_" : "^\n"));
-    } else {
+    } else { /* ... if virtual key code, temporarily bring shift, control and alt
+       * into the state required by alteration, and send the virtual key code.
+       *  */
         bool shift_was_down = KL_km_shift.in_effect;
         bool need_shift = (mods & MOD_SHIFT);
         char mod_shift = (KL_km_shift.in_effect ? (need_shift ? 0 : -1) : (need_shift ? 1 : 0)), mod_shift0 = mod_shift;
