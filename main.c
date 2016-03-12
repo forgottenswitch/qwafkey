@@ -245,11 +245,14 @@ void main_loop() {
 
 char *UserProfileDir;
 char *ConfigDir;
+char *ProgramDir;
 
 int main(int argc, char *argv[]) {
     UserProfileDir = OS_user_profile_directory();
     ConfigDir = str_concat_path(UserProfileDir, ProgramName, NULL);
-    printf("cfgdir:%s|\n", ConfigDir);
+    dput("cfgdir:%s|\n", ConfigDir);
+    ProgramDir = OS_program_directory();
+    dput("exedir:%s|\n", ProgramDir);
 
     KN_init();
     KL_init();

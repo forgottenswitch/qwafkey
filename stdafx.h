@@ -99,6 +99,7 @@ void OS_run_executable(TCHAR *exe);
 HINSTANCE OS_current_module_handle();
 bool OS_newer_than_Vista();
 char *OS_user_profile_directory();
+char *OS_program_directory();
 
 #define LANGID_Primary LOWORD
 #define LANGID_Device HIWORD

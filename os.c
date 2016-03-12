@@ -106,3 +106,15 @@ bool OS_newer_than_Vista() {
 char *OS_user_profile_directory(void) {
     return getenv("USERPROFILE");
 }
+
+char *OS_program_directory(void) {
+    char *s = _pgmptr;
+    char *s1 = strrchr(s, '\\');
+    if (!s1) { s1 = s + strlen(s); }
+    int l = s1 - s;
+    char *s2 = malloc(l+1);
+    int i;
+    fori (i, 0, l) { s2[i] = s[i]; }
+    s2[l] = 0;
+    return s2;
+}
