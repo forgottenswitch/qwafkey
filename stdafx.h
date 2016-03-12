@@ -32,6 +32,8 @@
 
 #include "resource.h"
 
+#define ProgramName "lw"
+
 #define nil NULL
 #define fori(i, from, to) for (i = from; i < to; i++)
 #define len(ary) (sizeof((ary))/sizeof((ary)[0]))
@@ -78,6 +80,12 @@ typedef struct {
     unsigned short binding;
 } LK;
 
+extern TCHAR *ConfigDir;
+
+WCHAR *wcs_concat(WCHAR *str, ...);
+WCHAR *wcs_concat_path(WCHAR *str, ...);
+char *str_concat_path(char *str, ...);
+
 KP OS_wchar_to_vk(WCHAR tc);
 VK OS_sc_to_vk(SC sc);
 SC OS_vk_to_sc(SC sc);
@@ -90,6 +98,7 @@ void OS_run_command(TCHAR *cmd);
 void OS_run_executable(TCHAR *exe);
 HINSTANCE OS_current_module_handle();
 bool OS_newer_than_Vista();
+char *OS_user_profile_directory();
 
 #define LANGID_Primary LOWORD
 #define LANGID_Device HIWORD

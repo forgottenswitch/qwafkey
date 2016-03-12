@@ -102,3 +102,7 @@ void OS_run_executable(TCHAR *exe) {
 bool OS_newer_than_Vista() {
     return false;
 }
+
+char *OS_user_profile_directory(void) {
+    return getenv("USERPROFILE");
+}
