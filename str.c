@@ -125,6 +125,7 @@ char *fread_to_eof(FILE *stream, char null_bytes_replacement) {
     maxpos = ftell(stream);
     l = maxpos - pos;
     s = malloc(l+1);
+    fseek(stream, pos, SEEK_SET);
     fread(s, 1, l, stream);
     fori (pos, 0, l) { if (!s[pos]) { s[pos] = null_bytes_replacement; }; }
     s[l] = 0;

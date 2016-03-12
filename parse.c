@@ -159,8 +159,8 @@ bool read_colon(READ_PARMS) {
 
 bool read_newline(READ_PARMS) {
     char *str = *input;
-    if (read_char(&str, '\r') &&
-        read_char(&str, '\n')) {
+    read_char(&str, '\r');
+    if (read_char(&str, '\n')) {
         RET(str, true);
     }
     return false;
@@ -179,50 +179,10 @@ bool read_spc(READ_PARMS) {
     return false;
 }
 
-void read_to_bol(READ_PARMS) {
+void read_to_eol(READ_PARMS) {
     char *str = *input, c;
-    while ((c = *str) && (c != '\n')) str++;
-    str++;
+    while ((c = *str) && (c != '\n')) { str++; }
     *input = str;
-}
-
-bool read_empty_line(READ_PARMS) {
-    char *str = *input;
-    read_spc(&str);
-    if ((str[0] == '\r') && (str[1] == '\n')) {
-        RET(str + 2, true);
-    }
-    return false;
-}
-
-bool read_comment(READ_PARMS) {
-    char *str = *input, c = *str;
-    if (c == ';') {
-        read_to_bol(&str);
-        RET(str, true);
-    } else if ((c == '/') && (str[1] == '/')) {
-        read_to_bol(&str);
-        RET(str, true);
-    } else if ((c == '/') && (str[1] == '*')) {
-        str+=2;
-        while ((c = str[0]) && !((c == '*') && (str[1] == '/'))) {
-            str++;
-        }
-        RET(str, true);
-    }
-    return false;
-}
-
-bool read_whitespace(READ_PARMS) {
-    char *str = *input;
-    bool moved = false;
-    while (read_spc(&str) || read_comment(&str) || read_newline(&str)) {
-        moved = true;
-    }
-    if (moved) {
-        RET(str, true);
-    }
-    return false;
 }
 
 int read_sc_alias(READ_PARMS) {
@@ -533,12 +493,6 @@ bool read_levs(READ_PARMS) {
     return false;
 }
 
-bool read_line(READ_PARMS) {
-    dput("unrecognized line %d\n", parse_lineno);
-    read_to_bol(input);
-    return (**input != '\0');
-}
-
 char *read_window_title(READ_PARMS) {
     static char buf[KR_MAXTITLE];
     size_t buflen = 0;
@@ -550,7 +504,7 @@ char *read_window_title(READ_PARMS) {
         str++;
     }
     buf[buflen] = '\0';
-    read_to_bol(input);
+    read_to_eol(input);
     return buf;
 }
 
@@ -672,6 +626,18 @@ bool read_dk_file(READ_PARMS) {
 
 #undef READ_PARMS
 
+#define read_statement(arg) \
+    (read_bind(arg) ||\
+    read_hotk(arg) ||\
+    read_lang(arg) ||\
+    read_levs(arg) ||\
+    read_res(arg) ||\
+    read_title(arg) ||\
+    read_class(arg) ||\
+    read_remap(arg) ||\
+    read_vks_lang(arg) ||\
+    read_dk_file(arg))
+
 void parse_args(int argc, char *argv[], int argb) {
     int argi;
     ZeroBuf(Bind_lvls);
@@ -680,17 +646,7 @@ void parse_args(int argc, char *argv[], int argb) {
         char *arg = argv[argi];
         read_spc(&arg);
         dput("%20s| ", arg);
-        if (!(read_bind(&arg) ||
-                read_hotk(&arg) ||
-                read_lang(&arg) ||
-                read_levs(&arg) ||
-                read_res(&arg) ||
-                read_title(&arg) ||
-                read_class(&arg) ||
-                read_remap(&arg) ||
-                read_vks_lang(&arg) ||
-                read_dk_file(&arg)
-        )) {
+        if (!read_statement(&arg)) {
             dput("unrecognized arg %d: %s\n", argi, arg);
         }
         dput("\n");
@@ -702,19 +658,21 @@ void parse_str(char *str) {
     parse_colno = 0;
     ZeroBuf(Bind_lvls);
     KL_bind_init();
-    while (read_whitespace(&str) ||
-            read_bind(&str) ||
-            read_hotk(&str) ||
-            read_lang(&str) ||
-            read_levs(&str) ||
-            read_res(&str) ||
-            read_title(&str) ||
-            read_class(&str) ||
-            read_remap(&str) ||
-            read_vks_lang(&str) ||
-            read_dk_file(&str) ||
-            read_line(&str)
-    ) {
-        parse_lineno += 1;
+    while (*str) {
+        parse_lineno++;
+        read_spc(&str);
+        {
+            char *s0 = str, *s1 = str;
+            read_to_eol(&s1);
+            dput("line%03d:%.*s|\n", parse_lineno, (int)(s1 - s0), s0);
+        }
+        if (!(read_statement(&str))) {
+            char c = *str;
+            if (c != '#' && c != '\n' && c != '\r') {
+                dput("Unrecognized line %d\n", parse_lineno);
+            }
+            read_to_eol(&str);
+        }
+        read_newline(&str);
     }
 }
