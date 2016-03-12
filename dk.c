@@ -1,6 +1,7 @@
 #include "dk.h"
 #include "freadline.h"
 #include "ka.h"
+#include "kl.h"
 #include "stdafx.h"
 
 /* dk.c -- dead keys
@@ -111,10 +112,9 @@ DK_Node *DK_pivotNode_fetch(DK_Node * const node, DK_Key key, bool pivot) {
     /* get a free slot */
     len = !len ? 2 : len+1;
     if (alloc < len) {
-        size_t bytes = sizeof(DK_Node) * alloc;
         size_t alloc1 = alloc * 3 / 2;
         size_t bytes1 = sizeof(DK_Node) * alloc1;
-        dput("DK_pivot_fetch %ld -> %ld, %ld -> %ld\n", (long)alloc, (long)alloc1, (long)bytes, (long)bytes1);
+        dput("DK_pivot_fetch %ld -> %ld, %ld -> %ld\n", (long)alloc, (long)alloc1, (long)(sizeof(DK_Node) * alloc), (long)bytes1);
         nodes = (DK_Node*) realloc(nodes, bytes1);
         DK_pivotNode_nodes(node) = nodes;
         DK_pivotNode_alloc(node) = alloc1;
@@ -179,8 +179,7 @@ void DK_print_key_names() {
     size_t i;
     dputs("");
     fori (i, 0, DK_cns_count) {
-        DK_CharName cn = DK_cns[i];
-        dput("%s:U+%04x ", DK_ofs_to_s(cn.name_ofs), cn.code);
+        dput("%s:U+%04x ", DK_ofs_to_s(DK_cns[i].name_ofs), DK_cns[i].code);
     }
     dputs("");
 }
@@ -357,7 +356,7 @@ int DK_name_to_index(char *name) {
     return -1;
 }
 
-char *DK_index_to_name(int i) {
+char *DK_index_to_name(size_t i) {
     if (i >= DK_dks_count) { return nil; }
     return DK_ofs_to_s(DK_dks[i].name_ofs);
 }
@@ -691,8 +690,7 @@ void DK_read_compose_file(char *filename) {
                 bool is_dead = !strncmp("dead_", DK_read_bufs[0], 5);
                 bool is_multi = !strncmp("Multi_key", DK_read_bufs[0], 9);
                 if (ki && (is_dead || is_multi)) {
-                    if (is_multi)
-                        dput("multi_assign\n");
+                    if (is_multi) { dput("multi_assign\n"); }
                     DK_assign(ki);
                 }
                 break;

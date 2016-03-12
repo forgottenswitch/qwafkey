@@ -1,4 +1,5 @@
 #include "kn.h"
+#include "kl.h"
 #include "scancodes.h"
 
 /* kn.c -- key names database */
@@ -228,8 +229,8 @@ KN_LPair KN_lpairs[] = {
 SC KN_lname_to_sc(char *name) {
     char *colon = strchr(name, ':');
     char *asgn = strchr(name, '=');
-    size_t colon_pos = (colon == nil ? strlen(name) : colon - name);
-    size_t asgn_pos = (asgn == nil ? strlen(name) : asgn - name);
+    size_t colon_pos = (colon == nil ? strlen(name) : (size_t)(colon - name));
+    size_t asgn_pos = (asgn == nil ? strlen(name) : (size_t)(asgn - name));
     size_t maxpos = (colon_pos > asgn_pos ? asgn_pos : colon_pos);
     size_t i;
     fori (i, 0, len(KN_lpairs)) {

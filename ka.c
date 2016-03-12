@@ -260,7 +260,7 @@ KA_Pair KA_fns[] = {
 #undef ka
 
 void KA_update_dk_names(void) {
-    int i;
+    size_t i;
     fori (i, 1, KA_dkn_count) {
         char *name = DK_index_to_name(i);
         if (!name) { break; }

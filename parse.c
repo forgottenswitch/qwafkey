@@ -101,7 +101,7 @@ int read_ka(READ_PARMS) {
             char buf[256];
             size_t i = 0;
             buf[0] = c;
-            while (isidx(i, buf) && isidentchar((c = *(str++)))) {
+            while (i < len(buf) && isidentchar((c = *(str++)))) {
                 buf[i++] = c;
             }
             buf[i++] = '\0';
@@ -388,7 +388,7 @@ bool read_bind(READ_PARMS) {
             do {
                 read_spc(&str);
                 if (get_bind(&str, &bind, read_binding)) {
-                    if (isidx(binds_count, binds)) {
+                    if (binds_count < len(binds)) {
                         binds[binds_count] = bind;
                     }
                     binds_count++;
@@ -502,7 +502,7 @@ bool read_levs(READ_PARMS) {
         if (get_size_t(&str, &n, read_N_decimal)) {
             dput("lvl(%d) ", n);
             n--;
-            if (isidx(n, Bind_lvls)) {
+            if (n < len(Bind_lvls)) {
                 ZeroBuf(Bind_lvls);
                 Bind_sole_lvl = true;
                 Bind_lvls[n] = true;
@@ -517,7 +517,7 @@ bool read_levs(READ_PARMS) {
             if (get_size_t(&str, &n, read_N_decimal)) {
                 dput("lvn(%d) ", n);
                 n--;
-                if (isidx(n, Bind_lvls)) {
+                if (n < len(Bind_lvls)) {
                     if (!zeroed) {
                         ZeroBuf(Bind_lvls);
                         zeroed = true;
@@ -645,11 +645,10 @@ bool read_vks_lang(READ_PARMS) {
 
 bool read_dk_file(READ_PARMS) {
     static char filename[256];
-    int i = 0;
+    size_t i = 0;
     char *str = *input;
     if (read_word(&str, (char*)"keysym_file")) {
         read_spc(&str);
-        char *name = str;
         while (*str && *str != '\n' && *str != '\r') {
             if (i < sizeof(filename)-1) { filename[i++] = *str++; }
         }
@@ -660,7 +659,6 @@ bool read_dk_file(READ_PARMS) {
         RET(str, true);
     } else if (read_word(&str, (char*)"compose_file")) {
         read_spc(&str);
-        char *name = str;
         while (*str && *str != '\n' && *str != '\r' && i < sizeof(filename)) {
             if (i < sizeof(filename)-1) { filename[i++] = *str++; }
         }
