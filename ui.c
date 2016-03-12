@@ -180,3 +180,25 @@ DWORD WINAPI UI_thread_proc(LPVOID arg_unused) {
 void UI_spawn() {
     UI_thread = CreateThread(nil, 8*1024, UI_thread_proc, nil, 0, &UI_thread_id);
 }
+
+char DefaultConfigFileContents[] = "# An example "ProgramName" config file\n";
+
+void UI_ask_for_creating_config_file(char *path) {
+    int x;
+    char title[] = ProgramName" configuration file";
+    char *message;
+    message = str_concat(ProgramName" configuration file ", path, " is missing.\n"
+                         "Would you like to create it? (It would open in Notepad)", NULL);
+    x = MessageBox(NULL, message, title, MB_YESNO);
+    if (x == IDYES) {
+        CreateDirectory(ConfigDir, NULL);
+        FILE *f = fopen(path, "w");
+        fwrite(DefaultConfigFileContents, 1, strlen(DefaultConfigFileContents), f);
+        fclose(f);
+        char *cmd;
+        cmd = str_concat("notepad \"", path, "\"", NULL);
+        OS_run_command(cmd);
+        free(cmd);
+    }
+    free(message);
+}

@@ -88,3 +88,45 @@ char *str_concat_path(char *str, ...) {
     s[l] = 0;
     return s;
 }
+
+char *str_concat(char *str, ...) {
+    va_list ap, ap1;
+    char *s, *str1;
+    size_t l = strlen(str);
+
+    va_start(ap, str);
+    va_copy(ap1, ap);
+    while (1) {
+        str1 = va_arg(ap, char*);
+        if (!str1) { break; }
+        l += strlen(str1);
+    }
+    va_end(ap);
+
+    size_t i = 0;
+    s = malloc(l+1);
+    while (*str) { s[i++] = *str++; }
+    while (1) {
+        str1 = va_arg(ap1, char*);
+        if (!str1) { break; }
+        while (*str1) { s[i++] = *str1++; }
+    }
+    va_end(ap1);
+    s[l] = 0;
+    return s;
+}
+
+char *fread_to_eof(FILE *stream, char null_bytes_replacement) {
+    char *s;
+    size_t pos, maxpos, l;
+
+    pos = ftell(stream);
+    fseek(stream, 0, SEEK_END);
+    maxpos = ftell(stream);
+    l = maxpos - pos;
+    s = malloc(l+1);
+    fread(s, 1, l, stream);
+    fori (pos, 0, l) { if (!s[pos]) { s[pos] = null_bytes_replacement; }; }
+    s[l] = 0;
+    return s;
+}

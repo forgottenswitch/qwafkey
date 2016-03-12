@@ -260,6 +260,26 @@ int main(int argc, char *argv[]) {
     KR_init();
     DK_init();
 
+    {
+        char *path;
+        FILE *f;
+
+        path = str_concat_path(ConfigDir, "config.txt");
+        f = fopen(path, "r");
+        if (f) {
+            dput("reading config file |%s|...\n", path);
+            char *s = fread_to_eof(f, '\n');
+            parse_str(s);
+            free(s);
+            fclose(f);
+        } else {
+            dput("no config file |%s| found\n", path);
+            #ifndef NOGUI
+            UI_ask_for_creating_config_file(path);
+            #endif
+        }
+        free(path);
+    }
     parse_args(len(default_argv), default_argv, 0);
     parse_args(argc, argv, 1);
 
