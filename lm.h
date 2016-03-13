@@ -20,7 +20,7 @@ extern ssize_t LM_selected_locale;
 extern LM_LocalesBuffer LM_locales;
 extern HWND LM_hwnd;
 
-void LM_init();
+void LM_get_locales(bool set_selected);
 void LM_activate_nth_locale(size_t idx);
 void LM_activate_selected_locale();
 void LM_activate_next_locale();

@@ -208,7 +208,8 @@ void UI_maybe_show_errors_for_config_file(char *path) {
     if (!parse_failed_lines_count) { return; }
     char *message = str_concat("Unrecognized lines in config file ",
                                path, ":\n\n", parse_failed_lines, NULL);
-    int x = MessageBox(NULL, message, ProgramName, MB_ABORTRETRYIGNORE | MB_ICONERROR);
+    int x = MessageBox(NULL, message, ProgramName,
+                       MB_ICONERROR | MB_ABORTRETRYIGNORE | MB_DEFBUTTON2);
     if (x == IDABORT) { exit(1); }
     else if (x == IDRETRY) { restart_the_program(); }
     free(message);

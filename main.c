@@ -16,6 +16,7 @@
 #include "kn.h"
 #include "kr.h"
 #include "dk.h"
+#include "lm.h"
 
 #ifndef NOGUI
 # include "ui.h"
@@ -247,6 +248,9 @@ char *UserProfileDir;
 char *ConfigDir;
 char *ProgramDir;
 
+void read_main_config_file();
+void read_lang_config_files();
+
 int main(int argc, char *argv[]) {
     UserProfileDir = OS_user_profile_directory();
     ConfigDir = str_concat_path(UserProfileDir, ProgramName, NULL);
@@ -260,32 +264,16 @@ int main(int argc, char *argv[]) {
     KR_init();
     DK_init();
 
-    {
-        char *path;
-        FILE *f;
-
-        path = str_concat_path(ConfigDir, "config.txt");
-        f = fopen(path, "r");
-        if (f) {
-            dput("reading config file |%s|...\n", path);
-            char *s = fread_to_eof(f, '\n');
-            parse_str(s);
-            UI_maybe_show_errors_for_config_file(path);
-            free(s);
-            fclose(f);
-        } else {
-            dput("no config file |%s| found\n", path);
-            #ifndef NOGUI
-            UI_ask_for_creating_config_file(path);
-            #endif
-        }
-        free(path);
-    }
+    read_main_config_file();
     parse_args(len(default_argv), default_argv, 0);
     parse_args(argc, argv, 1);
 
     KL_activate_lang(LANG_NEUTRAL);
-    LM_init();
+    dputs("LM_init locales...");
+    LM_get_locales(true);
+    read_lang_config_files();
+    dputs("LM_init activate...");
+    LM_activate_selected_locale();
     KL_activate();
     EH_activate();
     KR_activate();
@@ -299,6 +287,59 @@ int main(int argc, char *argv[]) {
 
     main_loop();
     return 0;
+}
+
+#ifdef NOGUI
+# define UI_ask_for_creating_config_file(...)
+# define UI_maybe_show_errors_for_config_file(...)
+#endif
+
+void read_main_config_file(void) {
+    char *path;
+    FILE *f;
+
+    puts("read main cfg...");
+    path = str_concat_path(ConfigDir, "config.txt", NULL);
+    printf("main cfg:%s|\n", path);
+    f = fopen(path, "r");
+    if (f) {
+        printf("reading config file |%s|...\n", path);
+        char *s = fread_to_eof(f, '\n');
+        parse_str(s);
+        UI_maybe_show_errors_for_config_file(path);
+        free(s);
+        fclose(f);
+    } else {
+        printf("no config file |%s| found\n", path);
+        UI_ask_for_creating_config_file(path);
+    }
+    free(path);
+}
+
+void read_lang_config_files(void) {
+    ssize_t i, maxi = LM_locales.count;
+    if (maxi > 0) {
+        fori (i, 0, maxi) {
+            LM_Locale loc = LM_locales.elts[i];
+            LANGID lang = loc.lang;
+            char lang_config_filename[16];
+            snprintf(lang_config_filename, sizeof(lang_config_filename)-1,
+                     "lang_%04x.txt", lang);
+            char *path = str_concat_path(ConfigDir, lang_config_filename, NULL);
+            FILE *f = fopen(path, "r");
+            if (f) {
+                dput("reading lang config file |%s| ...\n", path);
+                char *s = fread_to_eof(f, '\n');
+                parse_str(s);
+                UI_maybe_show_errors_for_config_file(path);
+                free(s);
+                fclose(f);
+            } else {
+                dput("no lang config file |%s| found\n", path);
+            }
+            free(path);
+        }
+    }
 }
 
 void restart_the_program(void) {

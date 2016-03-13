@@ -79,13 +79,6 @@ void LM_get_locales(bool set_selected) {
     LM_locales.elts = elts;
 }
 
-void LM_init() {
-    dputs("LM_init locales...");
-    LM_get_locales(true);
-    dputs("LM_init activate...");
-    LM_activate_selected_locale();
-}
-
 HWND LM_hwnd = 0;
 
 void LM_activate_nth_locale(size_t idx) {
