@@ -56,10 +56,10 @@ qG:=),=*
 qZ:=%
 qX:=$,=~
 qC:=\\,=|
-qV:=\='
+qV:=",='
 qB:=;,=`
 
-Space:= ,:=
+Space:= ,:= 
 
 levels:1,2,3,4
 qComma:!l3_latch

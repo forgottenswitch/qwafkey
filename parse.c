@@ -59,10 +59,11 @@ int read_Z_decimal(READ_PARMS) {
     }
     while (isspc(*str)) str++;
     if (isdecimal((c = *str))) {
-        int n = c - '0';
-        while (isdecimal((c = *(str+=1)))) {
+        int n = 0;
+        while (isdecimal((c = *str))) {
             n *= 10;
             n += c - '0';
+            str++;
         }
         RET(str, sign * n);
     }
@@ -82,10 +83,11 @@ int read_hex(READ_PARMS) {
     }
     while (isspc(*str)) str++;
     if (ishex((c = *str))) {
-        int n = hexdigtoi(c);
-        while (ishex((c = *(str+=1)))) {
+        int n = 0;
+        while (ishex((c = *str))) {
             n *= 16;
             n += hexdigtoi(c);
+            str++;
         }
         RET(str, sign * n);
     }
@@ -99,13 +101,16 @@ int read_ka(READ_PARMS) {
         str++;
         if (isidentchar0((c = *str))) {
             char buf[256];
-            size_t i = 0;
             buf[0] = c;
-            while (i < lenof(buf) && isidentchar((c = *(str++)))) {
+            size_t i = 1;
+            str++;
+            while (i < lenof(buf) && isidentchar((c = *str))) {
                 buf[i++] = c;
+                str++;
             }
-            buf[i++] = '\0';
+            buf[i] = '\0';
             id = KA_name_to_id(buf);
+            printf("read_ka(%s):str=|%.16s|\n", buf, str);
             RET(str, id);
         }
     }
@@ -455,10 +460,9 @@ bool read_levs(READ_PARMS) {
     char *str = *input;
     size_t n;
     bool zeroed = false;
-    if (read_word(&str, (char*)"level") && read_colon(&str)) {
+    if (read_word(&str, (char*)"level")) {
         read_spc(&str);
         read_colon(&str);
-        read_spc(&str);
         if (get_size_t(&str, &n, read_N_decimal)) {
             printf("lvl(%d) ", n);
             n--;

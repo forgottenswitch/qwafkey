@@ -124,6 +124,7 @@ char *str_concat(char *str, ...) {
 
 size_t str_remove_cr(char *s) {
     size_t distance = 0;
+    char *s0 = s;
     char c;
     while ((c = *s)) {
         if (c == '\r') { break; }
@@ -135,6 +136,7 @@ size_t str_remove_cr(char *s) {
         s++;
     }
     s[-distance] = 0;
+    return s - distance - s0;
 }
 
 char *fread_to_eof(FILE *stream, char null_bytes_replacement) {
@@ -151,7 +153,7 @@ char *fread_to_eof(FILE *stream, char null_bytes_replacement) {
     fori (pos, 0, l) { if (!s[pos]) { s[pos] = null_bytes_replacement; }; }
     s[l] = 0;
     l = str_remove_cr(s);
-    s = realloc(s, l);
+    s = realloc(s, l+1);
     //printf("fread_eof:<<EOF\n%s\nEOF\n", s);
     return s;
 }
