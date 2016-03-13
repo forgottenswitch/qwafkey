@@ -29,11 +29,7 @@ ka(KA_toggle) {
 ka(KA_restart) {
     if (!down)
         return;
-    TCHAR buf[256];
-    GetModuleFileName(0, buf, len(buf));
-    last(buf) = '\0';
-    OS_run_executable(buf);
-    exit(0);
+    restart_the_program();
 }
 
 ka(KA_next_layout) {

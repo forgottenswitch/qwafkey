@@ -653,23 +653,44 @@ void parse_args(int argc, char *argv[], int argb) {
     }
 }
 
+char *parse_failed_lines;
+size_t parse_failed_lines_len, parse_failed_lines_maxlen;
+int parse_failed_lines_count;
+
+void parse_add_failed_line(char *line) {
+    if (!parse_failed_lines) {
+        parse_failed_lines = malloc((parse_failed_lines_maxlen = 511) + 1);
+    }
+    size_t i, l = strlen(line);
+    while (parse_failed_lines_len + l + 1 > parse_failed_lines_maxlen) {
+        parse_failed_lines = realloc(parse_failed_lines, (parse_failed_lines_maxlen *= 1.5) + 1);
+    }
+    fori (i, 0, l) { parse_failed_lines[parse_failed_lines_len + i] = line[i]; }
+    parse_failed_lines[parse_failed_lines_len + l] = '\n';
+    parse_failed_lines[parse_failed_lines_len + l + 1] = 0;
+}
+
 void parse_str(char *str) {
     parse_lineno = 0;
     parse_colno = 0;
     ZeroBuf(Bind_lvls);
     KL_bind_init();
+    parse_failed_lines_count = 0;
+    free(parse_failed_lines);
     while (*str) {
         parse_lineno++;
         read_spc(&str);
-        {
-            char *s0 = str, *s1 = str;
-            read_to_eol(&s1);
-            dput("line%03d:%.*s|\n", parse_lineno, (int)(s1 - s0), s0);
-        }
+        char *s0 = str, *s1 = str;
+        read_to_eol(&s1);
+        dput("line%03d:%.*s|\n", parse_lineno, (int)(s1 - s0), s0);
         if (!(read_statement(&str))) {
             char c = *str;
             if (c != '#' && c != '\n' && c != '\r') {
                 dput("Unrecognized line %d\n", parse_lineno);
+                char line[64];
+                snprintf(line, sizeof(line)-1, "line %03d: %.*s", parse_lineno, (int)(s1-s0), s0);
+                parse_add_failed_line(line);
+                parse_failed_lines_count++;
             }
             read_to_eol(&str);
         }

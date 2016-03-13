@@ -270,6 +270,7 @@ int main(int argc, char *argv[]) {
             dput("reading config file |%s|...\n", path);
             char *s = fread_to_eof(f, '\n');
             parse_str(s);
+            UI_maybe_show_errors_for_config_file(path);
             free(s);
             fclose(f);
         } else {
@@ -298,4 +299,12 @@ int main(int argc, char *argv[]) {
 
     main_loop();
     return 0;
+}
+
+void restart_the_program(void) {
+    TCHAR buf[MAX_PATH];
+    GetModuleFileName(0, buf, len(buf));
+    last(buf) = '\0';
+    OS_run_executable(buf);
+    exit(0);
 }

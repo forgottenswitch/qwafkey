@@ -20,5 +20,6 @@ void UI_TR_delete();
 bool UI_TR_update();
 
 void UI_ask_for_creating_config_file(char *path);
+void UI_maybe_show_errors_for_config_file(char *path);
 
 #endif // UI_H_INCLUDED

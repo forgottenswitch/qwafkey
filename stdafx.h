@@ -82,6 +82,8 @@ typedef struct {
 
 extern TCHAR *ConfigDir;
 
+void restart_the_program(void);
+
 WCHAR *wcs_concat(WCHAR *str, ...);
 WCHAR *wcs_concat_path(WCHAR *str, ...);
 char *str_concat_path(char *str, ...);

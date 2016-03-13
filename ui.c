@@ -2,6 +2,7 @@
 #include "kl.h"
 #include "lm.h"
 #include "hk.h"
+#include "parse.h"
 
 /* ui.c -- the graphical user interface,
  * that is, the tray icon.
@@ -200,5 +201,15 @@ void UI_ask_for_creating_config_file(char *path) {
         OS_run_command(cmd);
         free(cmd);
     }
+    free(message);
+}
+
+void UI_maybe_show_errors_for_config_file(char *path) {
+    if (!parse_failed_lines_count) { return; }
+    char *message = str_concat("Unrecognized lines in config file ",
+                               path, ":\n\n", parse_failed_lines, NULL);
+    int x = MessageBox(NULL, message, ProgramName, MB_ABORTRETRYIGNORE | MB_ICONERROR);
+    if (x == IDABORT) { exit(1); }
+    else if (x == IDRETRY) { restart_the_program(); }
     free(message);
 }
