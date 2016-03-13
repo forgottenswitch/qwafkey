@@ -91,6 +91,7 @@ WCHAR *wcs_concat_path(WCHAR *str, ...);
 char *str_concat_path(char *str, ...);
 char *str_concat(char *str, ...);
 char *fread_to_eof(FILE *stream, char null_bytes_replacement);
+size_t str_remove_cr(char *s);
 
 KP OS_wchar_to_vk(WCHAR tc);
 VK OS_sc_to_vk(SC sc);

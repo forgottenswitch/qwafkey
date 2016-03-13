@@ -97,7 +97,7 @@ void read_default_main_config_file(void) {
     current_parsing_directory = ProgramDir;
     path = str_concat_path(ProgramDir, "config.txt", NULL);
     printf("default main cfg:%s|\n", path);
-    f = fopen(path, "r");
+    f = fopen(path, "rb");
     if (f) {
         printf("reading config file |%s|...\n", path);
         char *s = fread_to_eof(f, '\n');
@@ -140,7 +140,7 @@ void read_main_config_file(void) {
     puts("read main cfg...");
     path = str_concat_path(ConfigDir, "config.txt", NULL);
     printf("main cfg:%s|\n", path);
-    f = fopen(path, "r");
+    f = fopen(path, "rb");
     if (f) {
         printf("reading config file |%s|...\n", path);
         char *s = fread_to_eof(f, '\n');
@@ -179,7 +179,7 @@ void read_default_config_file_for_lang(LANGID lang) {
     current_parsing_directory = ProgramDir;
     path = str_concat_path(ProgramDir, lang_config_filename(lang), NULL);
     printf("default lang %04x cfg:%s|\n", lang, path);
-    f = fopen(path, "r");
+    f = fopen(path, "rb");
     if (f) {
         printf("reading config file |%s|...\n", path);
         char *s = fread_to_eof(f, '\n');
@@ -200,7 +200,7 @@ void read_lang_config_files(void) {
             LM_Locale loc = LM_locales.elts[i];
             LANGID lang = loc.lang;
             char *path = str_concat_path(ConfigDir, lang_config_filename(lang), NULL);
-            FILE *f = fopen(path, "r");
+            FILE *f = fopen(path, "rb");
             if (f) {
                 printf("reading lang config file |%s| ...\n", path);
                 char *s = fread_to_eof(f, '\n');

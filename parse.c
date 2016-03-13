@@ -704,7 +704,7 @@ void parse_str(char *str) {
         read_spc(&str);
         char *s0 = str, *s1 = str;
         read_to_eol(&s1);
-        printf("line%03d:%.*s|\n", parse_lineno, (int)(s1 - s0), s0);
+        printf("\nline%03d %.*s| ", parse_lineno, (int)(s1 - s0), s0);
         if (!(read_statement(&str))) {
             char c = *str;
             if (c != '#' && c != '\n' && c != '\r') {

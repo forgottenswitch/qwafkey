@@ -122,6 +122,21 @@ char *str_concat(char *str, ...) {
     return s;
 }
 
+size_t str_remove_cr(char *s) {
+    size_t distance = 0;
+    char c;
+    while ((c = *s)) {
+        if (c == '\r') { break; }
+        s++;
+    }
+    while ((c = *s)) {
+        if (c == '\r') { distance++; s++; continue; }
+        s[-distance] = c;
+        s++;
+    }
+    s[-distance] = 0;
+}
+
 char *fread_to_eof(FILE *stream, char null_bytes_replacement) {
     char *s;
     size_t pos, maxpos, l;
@@ -135,5 +150,8 @@ char *fread_to_eof(FILE *stream, char null_bytes_replacement) {
     fread(s, 1, l, stream);
     fori (pos, 0, l) { if (!s[pos]) { s[pos] = null_bytes_replacement; }; }
     s[l] = 0;
+    l = str_remove_cr(s);
+    s = realloc(s, l);
+    //printf("fread_eof:<<EOF\n%s\nEOF\n", s);
     return s;
 }
