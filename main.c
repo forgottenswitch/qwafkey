@@ -290,9 +290,30 @@ int main(int argc, char *argv[]) {
 }
 
 #ifdef NOGUI
-# define UI_ask_for_creating_config_file(...)
+# define UI_ask_for_creating_config_file(...) 0
 # define UI_maybe_show_errors_for_config_file(...)
 #endif
+
+void read_default_main_config_file(void) {
+    char *path;
+    FILE *f;
+
+    puts("read default main cfg...");
+    path = str_concat_path(ProgramDir, "config.txt", NULL);
+    printf("default main cfg:%s|\n", path);
+    f = fopen(path, "r");
+    if (f) {
+        printf("reading config file |%s|...\n", path);
+        char *s = fread_to_eof(f, '\n');
+        parse_str(s);
+        UI_maybe_show_errors_for_config_file(path);
+        free(s);
+        fclose(f);
+    } else {
+        printf("no config file |%s| found\n", path);
+    }
+    free(path);
+}
 
 void read_main_config_file(void) {
     char *path;
@@ -305,13 +326,45 @@ void read_main_config_file(void) {
     if (f) {
         printf("reading config file |%s|...\n", path);
         char *s = fread_to_eof(f, '\n');
+        if (!parse_str_has_nodefault(s)) {
+            read_default_main_config_file();
+        }
         parse_str(s);
         UI_maybe_show_errors_for_config_file(path);
         free(s);
         fclose(f);
     } else {
         printf("no config file |%s| found\n", path);
-        UI_ask_for_creating_config_file(path);
+        if (UI_ask_for_creating_config_file(path)) {
+            read_main_config_file();
+        }
+    }
+    free(path);
+}
+
+char *lang_config_filename(LANGID lang) {
+    static char filename[16];
+    snprintf(filename, sizeof(filename)-1, "lang_%04x.txt", lang);
+    return filename;
+}
+
+void read_default_config_file_for_lang(LANGID lang) {
+    char *path;
+    FILE *f;
+
+    printf("read default lang %04x cfg...", lang);
+    path = str_concat_path(ProgramDir, lang_config_filename(lang), NULL);
+    printf("default lang %04x cfg:%s|\n", lang, path);
+    f = fopen(path, "r");
+    if (f) {
+        printf("reading config file |%s|...\n", path);
+        char *s = fread_to_eof(f, '\n');
+        parse_str(s);
+        UI_maybe_show_errors_for_config_file(path);
+        free(s);
+        fclose(f);
+    } else {
+        printf("no config file |%s| found\n", path);
     }
     free(path);
 }
@@ -322,20 +375,21 @@ void read_lang_config_files(void) {
         fori (i, 0, maxi) {
             LM_Locale loc = LM_locales.elts[i];
             LANGID lang = loc.lang;
-            char lang_config_filename[16];
-            snprintf(lang_config_filename, sizeof(lang_config_filename)-1,
-                     "lang_%04x.txt", lang);
-            char *path = str_concat_path(ConfigDir, lang_config_filename, NULL);
+            char *path = str_concat_path(ConfigDir, lang_config_filename(lang), NULL);
             FILE *f = fopen(path, "r");
             if (f) {
                 dput("reading lang config file |%s| ...\n", path);
                 char *s = fread_to_eof(f, '\n');
+                if (!parse_str_has_nodefault(s)) {
+                    read_default_config_file_for_lang(lang);
+                }
                 parse_str(s);
                 UI_maybe_show_errors_for_config_file(path);
                 free(s);
                 fclose(f);
             } else {
                 dput("no lang config file |%s| found\n", path);
+                read_default_config_file_for_lang(lang);
             }
             free(path);
         }

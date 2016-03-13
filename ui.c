@@ -184,7 +184,7 @@ void UI_spawn() {
 
 char DefaultConfigFileContents[] = "# An example "ProgramName" config file\n";
 
-void UI_ask_for_creating_config_file(char *path) {
+bool UI_ask_for_creating_config_file(char *path) {
     int x;
     char title[] = ProgramName" configuration file";
     char *message;
@@ -202,6 +202,7 @@ void UI_ask_for_creating_config_file(char *path) {
         free(cmd);
     }
     free(message);
+    return (x == IDYES);
 }
 
 void UI_maybe_show_errors_for_config_file(char *path) {

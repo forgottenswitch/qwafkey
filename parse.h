@@ -10,5 +10,6 @@ int parse_failed_lines_count;
 
 void parse_args(int argc, char *argv[], int argb);
 void parse_str(char *str);
+bool parse_str_has_nodefault(char *str);
 
 #endif // PARSE_H_INCLUDED

@@ -523,6 +523,14 @@ bool read_title(READ_PARMS) {
     return false;
 }
 
+bool read_nodefault(READ_PARMS) {
+    char *str = *input;
+    if (read_word(&str, (char*)"nodefault")) {
+        RET(str, true);
+    }
+    return false;
+}
+
 bool read_class(READ_PARMS) {
     char *str = *input;
     if (read_word(&str, (char*)"class")) {
@@ -636,7 +644,8 @@ bool read_dk_file(READ_PARMS) {
     read_class(arg) ||\
     read_remap(arg) ||\
     read_vks_lang(arg) ||\
-    read_dk_file(arg))
+    read_dk_file(arg) ||\
+    read_nodefault(arg))
 
 void parse_args(int argc, char *argv[], int argb) {
     int argi;
@@ -692,8 +701,20 @@ void parse_str(char *str) {
                 parse_add_failed_line(line);
                 parse_failed_lines_count++;
             }
-            read_to_eol(&str);
         }
+        read_to_eol(&str);
         read_newline(&str);
     }
+}
+
+bool parse_str_has_nodefault(char *str) {
+    while (*str) {
+        read_spc(&str);
+        if (read_nodefault(&str)) {
+            return true;
+        }
+        read_to_eol(&str);
+        read_newline(&str);
+    }
+    return false;
 }
