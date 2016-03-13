@@ -201,12 +201,13 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 
     /* If any of control, alt, or win is currently in effect,
      * alter the key being send using the special when-a-modifier-is-in-effect
-     * lookup table.
+     * lookup table, except when this would cancel a key action.
      * */
     if (lv <= 1 && (KL_km_alt.in_effect || KL_km_control.in_effect || KL_km_win.in_effect)) {
         VK vk = KL_mods_vks[sc];
         /* the when-modifier alteration */
-        if (vk) {
+        LK lk = KL_kly[lv][sc];
+        if (vk && !(lk.active && lk.mods && KLM_KA)) {
             keybd_event(vk, 0, (down ? 0 : KEYEVENTF_KEYUP), 0);
             printf(" SendVK%c(%02x,'%c')", (down ? '_' : '^'), vk, vk);
             return StopThisEvent();
