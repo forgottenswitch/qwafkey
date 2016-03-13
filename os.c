@@ -118,3 +118,33 @@ char *OS_program_directory(void) {
     s2[l] = 0;
     return s2;
 }
+
+char *OS_keyboard_layout_name(LANGID lang) {
+    static BYTE buf2[256];
+    char buf[256], lang_str[16];
+    DWORD buf_len, buf2_len;
+    snprintf(lang_str, sizeof(lang_str)-1, "%08x", lang);
+    HKEY hkey;
+    char *subkey = str_concat_path("SYSTEM\\CurrentControlSet\\Control\\Keyboard Layouts", lang_str, NULL);
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) { 
+        printf("failed to open |%s|\n", subkey);
+        goto ret_null;
+    }
+    long text_idx = -1;
+    DWORD i, l;
+    RegQueryInfoKey(hkey, NULL, NULL, NULL, NULL, NULL, NULL, &l, NULL, NULL, NULL, NULL);
+    fori (i, 0, l) {
+        buf_len = lenof(buf);
+        if (RegEnumValue(hkey, i, buf, &buf_len, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) { continue; }
+        //printf("%d/%d in |%s|: |%s|\n", i+1, l, subkey, buf);
+        if (!stricmp(buf, "Layout Text")) { text_idx = i; break; }
+    }
+    if (text_idx < 0) { printf("no Layout Text in |%s|\n", subkey); goto ret_null; }
+    buf_len = lenof(buf); buf2_len = lenof(buf2);
+    RegEnumValue(hkey, (DWORD)text_idx, buf, &buf_len, NULL, NULL, buf2, &buf2_len);
+    free(subkey);
+    return (char*)buf2;
+  ret_null:
+    free(subkey);
+    return NULL;
+}

@@ -61,7 +61,7 @@ void LM_get_locales(bool set_selected) {
         printf("gkln{\"%s\",\"%s\"} ", langstr, str4);
         LANGID lang = hexntoi(str4, lenof(str4));
         l->lang = lang;
-        printf(" locale{%04x, %08x}\n", lang, (UINT)hkl);
+        printf(" locale{%04x, %08x, |%s|}\n", lang, (UINT)hkl, OS_keyboard_layout_name(lang));
     }
     if (set_selected) {
         bool found;

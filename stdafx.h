@@ -106,6 +106,7 @@ HINSTANCE OS_current_module_handle();
 bool OS_newer_than_Vista();
 char *OS_user_profile_directory();
 char *OS_program_directory();
+char *OS_keyboard_layout_name(LANGID lang);
 
 #define LANGID_Primary LOWORD
 #define LANGID_Device HIWORD
