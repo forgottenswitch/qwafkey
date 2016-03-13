@@ -88,7 +88,7 @@ ka(KA_kr_toggle) {
 
 ka(KA_kr_on_pt) {
     if (down) {
-        dput("kr_on_pt(%d,%d) ", KR_active, KR_id);
+        printf("kr_on_pt(%d,%d) ", KR_active, KR_id);
         if (!KR_active || !KR_id) {
             KR_activate();
         }
@@ -122,7 +122,7 @@ ka(KA_kr_off) {
 ka(KA_dim_screen) {
     if (!down)
         return;
-    dput("dim_screen ");
+    printf("dim_screen ");
     Sleep(500);
     SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, (LPARAM)2);
 }
@@ -130,7 +130,7 @@ ka(KA_dim_screen) {
 ka(KA_close_window) {
     if (!down)
         return;
-    dput("close_window ");
+    printf("close_window ");
     SendMessage(GetForegroundWindow(), WM_CLOSE, 0, 0);
 }
 
@@ -141,7 +141,7 @@ ka(KA_toggle_on_top) {
     WINDOWINFO wi;
     GetWindowInfo(hwnd, &wi);
     bool topmost = wi.dwExStyle & WS_EX_TOPMOST;
-    dput("top{%d} ", topmost);
+    printf("top{%d} ", topmost);
     RECT r;
     GetWindowRect(hwnd, &r);
     SetWindowPos(hwnd, (topmost ? (HWND)HWND_NOTOPMOST : (HWND)HWND_TOPMOST), r.left, r.top, r.right - r.left, r.bottom - r.top, 0);
@@ -178,7 +178,7 @@ ka(KA_right10) {
 ka(KA_msys2_shell) {
     if (!down)
         return;
-    dput("MSYS2 shell... ");
+    printf("MSYS2 shell... ");
     char command[] = "cmd /A /Q /K \"C:/msys64/msys2_shell.bat\"";
     OS_run_command(command);
 }
@@ -192,14 +192,14 @@ void KA_zdoom_vky(SC sc) {
 }
 
 ka(KA_zdoom_quicksave) {
-    dput("zqs ");
+    printf("zqs ");
     if (!down)
         return;
     KA_zdoom_vky(SC_F6);
 }
 
 ka(KA_zdoom_quickload) {
-    dput("zql ");
+    printf("zql ");
     if (!down)
         return;
     KA_zdoom_vky(SC_F9);
@@ -265,7 +265,7 @@ void KA_update_dk_names(void) {
 }
 
 int KA_call(UINT id, KA_PARAMS) {
-    if (id >= len(KA_fns))
+    if (id >= lenof(KA_fns))
         return -1;
     KA_fns[id].func(down, sc);
     return 0;
@@ -273,7 +273,7 @@ int KA_call(UINT id, KA_PARAMS) {
 
 int KA_name_to_id(char *name) {
     UINT i;
-    fori (i, 0, len(KA_fns)) {
+    fori (i, 0, lenof(KA_fns)) {
         KA_Pair *p = KA_fns + i;
         if (!strcmp(p->name, name)) {
             return i;
@@ -284,10 +284,10 @@ int KA_name_to_id(char *name) {
 
 void KA_init() {
     UINT i;
-    fori (i, 0, len(KA_fns)) {
+    fori (i, 0, lenof(KA_fns)) {
         KA_Pair *ka_pair = KA_fns + i;
         ka_pair->name += 3;
-        dput(" ka%d{%x,%s}", i, (UINT)ka_pair->func, ka_pair->name);
+        printf(" ka%d{%x,%s}", i, (UINT)ka_pair->func, ka_pair->name);
     }
-    dputs("");
+    puts("");
 }

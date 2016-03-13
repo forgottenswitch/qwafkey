@@ -31,7 +31,7 @@ void KM_nonmod_event(KM *km, bool down, SC sc) {
     }
     return;
 l_release:
-    dput("{l_release}");
+    printf("{l_release}");
     if (!(km->in_effect = km->shifts_count || !km->latch_releases)) {
         VK vk = km->latch_faked;
         if (vk) {
@@ -52,7 +52,7 @@ void KM_shift_event(KM *km, bool down, SC sc) {
                     km->shifts[j-1] = km->shifts[j];
                 }
                 km->in_effect = km->locked || km->latch || (km->shifts_count -= 1);
-                dput("{/:%d}", km->in_effect);
+                printf("{/:%d}", km->in_effect);
                 break;
             } else {
                 found = true;
@@ -71,7 +71,7 @@ void KM_latch_event(KM *km, bool down, SC sc) {
     km->locked = false;
     if (down) {
         if (!km->latch || km->latch_released) {
-            dput("{set latch %03x}", sc);
+            printf("{set latch %03x}", sc);
             km->latch = sc;
             km->latch_released = false;
             km->latch_releases = 0;
@@ -82,7 +82,7 @@ void KM_latch_event(KM *km, bool down, SC sc) {
         }
     } else {
         km->latch_released = true;
-        dput("{released:%d:%d}", km->latch, km->latch_releases);
+        printf("{released:%d:%d}", km->latch, km->latch_releases);
         if (km->latch_releases) {
             km->latch = 0;
             VK vk = km->latch_faked;
@@ -93,7 +93,7 @@ void KM_latch_event(KM *km, bool down, SC sc) {
         }
     }
     km->in_effect = km->latch || km->shifts_count;
-    dput("{latch.in_effect=%d:%d}", km->in_effect, km->latch_releases);
+    printf("{latch.in_effect=%d:%d}", km->in_effect, km->latch_releases);
 }
 
 void KM_lock_event(KM *km, bool down, SC sc) {

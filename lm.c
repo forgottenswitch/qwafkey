@@ -9,7 +9,7 @@
  *
  * */
 
-LM_LocalesBuffer LM_locales = { 0, 0, nil };
+LM_LocalesBuffer LM_locales = { 0, 0, NULL };
 ssize_t LM_selected_locale = 0;
 
 int hexntoi(char *str, size_t n) {
@@ -36,8 +36,8 @@ void LM_get_locales(bool set_selected) {
     int count = LM_locales.count, size = LM_locales.size;
     LM_Locale *elts = LM_locales.elts;
     ZeroMemory(elts, size * sizeof(LM_Locale));
-    count = GetKeyboardLayoutList(0, nil);
-    if (elts == nil) {
+    count = GetKeyboardLayoutList(0, NULL);
+    if (elts == NULL) {
         elts = (LM_Locale*) calloc((size = count), sizeof(LM_Locale));
     }
     if (size < count) {
@@ -58,10 +58,10 @@ void LM_get_locales(bool set_selected) {
         langstr[KL_NAMELENGTH] = '\0';
         CopyMemory(str4, langstr+4, 4);
         str4[4] = '\0';
-        dput("gkln{\"%s\",\"%s\"} ", langstr, str4);
-        LANGID lang = hexntoi(str4, len(str4));
+        printf("gkln{\"%s\",\"%s\"} ", langstr, str4);
+        LANGID lang = hexntoi(str4, lenof(str4));
         l->lang = lang;
-        dput(" locale{%04x, %08x}\n", lang, (UINT)hkl);
+        printf(" locale{%04x, %08x}\n", lang, (UINT)hkl);
     }
     if (set_selected) {
         bool found;
@@ -84,7 +84,7 @@ HWND LM_hwnd = 0;
 void LM_activate_nth_locale(size_t idx) {
     LM_Locale *l = LM_locales.elts + idx;
     LANGID lang = l->lang;
-    dput(" locale %04x ", lang);
+    printf(" locale %04x ", lang);
     OS_activate_layout(LM_hwnd, l->hkl);
     KL_activate_lang(lang);
 }
@@ -117,5 +117,5 @@ HKL LM_langid_to_hkl(LANGID langid) {
             return loc->hkl;
         }
     }
-    return nil;
+    return NULL;
 }

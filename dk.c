@@ -16,8 +16,8 @@
  * */
 
 /* The following two lines suppress all the debugging output from this file */
-#undef dput
-#define dput(...)
+#undef printf
+#define printf(...)
 
 /*
 A starting size of children array for a pivot node.
@@ -25,7 +25,7 @@ It is 2 as many nodes have just one descedant.
 */
 #define DK_Node_MINSIZE 2
 /* A printf shortcut for DK_Node. */
-#define dput_node(node) dput(" node {a%d}\n", node->count)
+#define dput_node(node) printf(" node {a%d}\n", node->count)
 
 /* A character buffer type definitions. */
 #define DK_charbuf_SIZE 256
@@ -34,7 +34,7 @@ typedef char DK_charbuf[DK_charbuf_SIZE];
 /* Check if two DK_Key structs have the same .type and .code. */
 bool DK_Key_eq(DK_Key k1, DK_Key k2) {
     bool ret = (k1.type == k2.type) && (k1.code == k2.code);;
-    //dput("DK_eq (%d,%d), (%d,%d) => %d\n", k1.type, k1.code, k2.type, k2.code, ret);
+    //printf("DK_eq (%d,%d), (%d,%d) => %d\n", k1.type, k1.code, k2.type, k2.code, ret);
     return ret;
 }
 
@@ -65,14 +65,14 @@ void DK_Node_free(DK_Node *node) {
         }
         free(nodes);
         DK_pivotNode_alloc(node) = 0;
-        DK_pivotNode_nodes(node) = nil;
+        DK_pivotNode_nodes(node) = NULL;
     }
 }
 
 /* Convert a pivot node to bind one, freeing children array. */
 void DK_pivotNode_toBind(DK_Node *node) {
     DK_Node_free(node);
-    DK_pivotNode_nodes(node) = nil;
+    DK_pivotNode_nodes(node) = NULL;
     DK_pivotNode_alloc(node) = 0;
     DK_bindNode_code(node) = 0;
 }
@@ -89,14 +89,14 @@ DK_Node *DK_pivotNode_fetch(DK_Node * const node, DK_Key key, bool pivot) {
     DK_Node *node1;
     int i;
 
-    dput("DK_pivot_fetch node(addr:%p alloc:%d length:%d) key(%d,%d) pivot:%d\n", (void*)node, alloc, len, key.type, key.code, pivot);
+    printf("DK_pivot_fetch node(addr:%p alloc:%d length:%d) key(%d,%d) pivot:%d\n", (void*)node, alloc, len, key.type, key.code, pivot);
     /* try to find an existing child */
     fori (i, 1, len) {
         node1 = nodes + i;
-        /* dput("DK_pivot_fetch   child[%d] alloc:%d key:(%d,%d)\n", i, node1->count, node1->key.type, node1->key.code); */
+        /* printf("DK_pivot_fetch   child[%d] alloc:%d key:(%d,%d)\n", i, node1->count, node1->key.type, node1->key.code); */
         if (DK_Key_eq(node1->key, key)) {
             bool is_pivot1 = DK_is_pivotNode(node1);
-            dput("DK_pivot_fetch   child[%d] is eq, is_pivot:%d\n", i, is_pivot1);
+            printf("DK_pivot_fetch   child[%d] is eq, is_pivot:%d\n", i, is_pivot1);
             if (is_pivot1 != pivot) {
                 if (pivot) {
                     DK_bindNode_toPivot(node1);
@@ -104,7 +104,7 @@ DK_Node *DK_pivotNode_fetch(DK_Node * const node, DK_Key key, bool pivot) {
                     DK_pivotNode_toBind(node1);
                 }
             }
-            /* dput("found"); dput_node(node1); */
+            /* printf("found"); dput_node(node1); */
             return node1;
         }
     }
@@ -114,7 +114,7 @@ DK_Node *DK_pivotNode_fetch(DK_Node * const node, DK_Key key, bool pivot) {
     if (alloc < len) {
         size_t alloc1 = alloc * 3 / 2;
         size_t bytes1 = sizeof(DK_Node) * alloc1;
-        dput("DK_pivot_fetch %ld -> %ld, %ld -> %ld\n", (long)alloc, (long)alloc1, (long)(sizeof(DK_Node) * alloc), (long)bytes1);
+        printf("DK_pivot_fetch %ld -> %ld, %ld -> %ld\n", (long)alloc, (long)alloc1, (long)(sizeof(DK_Node) * alloc), (long)bytes1);
         nodes = (DK_Node*) realloc(nodes, bytes1);
         DK_pivotNode_nodes(node) = nodes;
         DK_pivotNode_alloc(node) = alloc1;
@@ -124,37 +124,37 @@ DK_Node *DK_pivotNode_fetch(DK_Node * const node, DK_Key key, bool pivot) {
 
     /* initialize the child */
     if (pivot) {
-        dput("DK_pivot_fetch to_pivot\n");
+        printf("DK_pivot_fetch to_pivot\n");
         DK_bindNode_toPivot(node1);
     } else {
-        dput("DK_pivot_fetch to_bind\n");
+        printf("DK_pivot_fetch to_bind\n");
         DK_pivotNode_alloc(node1) = 0;
         DK_bindNode_code(node1) = 0;
     }
-    dput("DK_pivot_fetch key=(%d,%d)\n", key.type, key.code);
+    printf("DK_pivot_fetch key=(%d,%d)\n", key.type, key.code);
     node1->key = key;
-    /* dput("created"); dput_node(node1); */
+    /* printf("created"); dput_node(node1); */
 
-    dput("DK_pivot_fetch done(len:%d).\n", DK_pivotNode_length(node));
+    printf("DK_pivot_fetch done(len:%d).\n", DK_pivotNode_length(node));
     return node1;
 }
 
 /* Find a DK_Node descedant node with matching DK_Key. */
 DK_Node *DK_pivotNode_get(DK_Node *node, DK_Key key) {
-    dput("DK_pivot_get %p,%p (%d,%d), %d\n", (void*)node, (void*)&DK_node, key.type, key.code, node->count); fflush(stdout);
+    printf("DK_pivot_get %p,%p (%d,%d), %d\n", (void*)node, (void*)&DK_node, key.type, key.code, node->count); fflush(stdout);
     DK_Node *nodes = DK_pivotNode_nodes(node);
-    dput("DK_pivot_get nodes:%p.\n", (void*)nodes); fflush(stdout);
+    printf("DK_pivot_get nodes:%p.\n", (void*)nodes); fflush(stdout);
     int len = DK_pivotNode_length(node);
-    dput("DK_pivot_get len:%d.\n", len); fflush(stdout);
+    printf("DK_pivot_get len:%d.\n", len); fflush(stdout);
     int i;
     fori (i, 1, len) {
-        dput("DK_pivot_get %d-th.\n", i); fflush(stdout);
+        printf("DK_pivot_get %d-th.\n", i); fflush(stdout);
         if (DK_Key_eq(nodes[i].key, key)) {
             return nodes + i;
         }
     }
-    dput("DK_pivot_get nil.\n"); fflush(stdout);
-    return nil;
+    printf("DK_pivot_get NULL.\n"); fflush(stdout);
+    return NULL;
 }
 
 typedef SC DK_StrOffset;
@@ -177,11 +177,11 @@ size_t DK_s_alloc = 0;
 /* Output all the defined key name => UCS-2 character associations. */
 void DK_print_key_names() {
     size_t i;
-    dputs("");
+    puts("");
     fori (i, 0, DK_cns_count) {
-        dput("%s:U+%04x ", DK_ofs_to_s(DK_cns[i].name_ofs), DK_cns[i].code);
+        printf("%s:U+%04x ", DK_ofs_to_s(DK_cns[i].name_ofs), DK_cns[i].code);
     }
-    dputs("");
+    puts("");
 }
 
 /* Copy given string to string heap, and return offset of the copy. */
@@ -195,9 +195,9 @@ DK_StrOffset DK_s_get(char *s) {
     size_t len1 = len + l + 1;
     if (len1 > alloc) {
         size_t alloc1 = alloc * 3 / 2;
-        dput("DK_grow %ld,%ld, %ld -> %ld\n", (long)len, (long)len1, (long)alloc, (long)alloc1);
+        printf("DK_grow %ld,%ld, %ld -> %ld\n", (long)len, (long)len1, (long)alloc, (long)alloc1);
         DK_s = (char*) realloc(DK_s, (DK_s_alloc = alloc1));
-        dput("DK_grow done.\n");
+        printf("DK_grow done.\n");
         /* DK_print_key_names(); */
     }
     char *s1 = DK_s + len;
@@ -210,15 +210,15 @@ DK_StrOffset DK_s_get(char *s) {
 
 /* Add a key name => UCS-2 character association. */
 void DK_cns_push(char *name, int code) {
-    /* dput("%s=U+%04x ", name, code); */
+    /* printf("%s=U+%04x ", name, code); */
     size_t count = DK_cns_count;
     size_t count1 = count + 1;
     size_t alloc = DK_cns_alloc;
     size_t alloc1 = alloc * 3 / 2;
     if (count >= DK_cns_alloc) {
-        dput("DK_cns grow %ld -> %ld, %ld -> %ld\n", (long)count, (long)count1, (long)alloc, (long)alloc1);
+        printf("DK_cns grow %ld -> %ld, %ld -> %ld\n", (long)count, (long)count1, (long)alloc, (long)alloc1);
         DK_cns = (DK_CharName*) realloc(DK_cns, sizeof(DK_CharName) * (DK_cns_alloc = alloc1));
-        dput("DK_cns grow done.\n");
+        printf("DK_cns grow done.\n");
     }
     DK_StrOffset name_ofs = DK_s_get(name);
     DK_CharName cn;
@@ -302,9 +302,9 @@ DK_SymName DK_dks[80];
 size_t DK_dks_count = 0;
 
 void DK_dksym_add(SC sym, char *name) {
-    dput("dkn_id_add %04x |%s|\n", sym, name);
+    printf("dkn_id_add %04x |%s|\n", sym, name);
     DK_StrOffset name_ofs = DK_s_get(name);
-    dput("dkn_id_add done.\n");
+    printf("dkn_id_add done.\n");
     DK_dks[DK_dks_count].sym = sym;
     DK_dks[DK_dks_count].name_ofs = name_ofs;
     DK_dks_count += 1;
@@ -318,7 +318,7 @@ char *DK_dksym_to_s(SC sym) {
             return DK_ofs_to_s(DK_dks[i].name_ofs);
         }
     }
-    return nil;
+    return NULL;
 }
 
 /* Convert dead key sym to key action id. */
@@ -357,7 +357,7 @@ int DK_name_to_index(char *name) {
 }
 
 char *DK_index_to_name(size_t i) {
-    if (i >= DK_dks_count) { return nil; }
+    if (i >= DK_dks_count) { return NULL; }
     return DK_ofs_to_s(DK_dks[i].name_ofs);
 }
 
@@ -371,18 +371,18 @@ DK_Key DK_Key_from_charbuf(char *str) {
         ret.type = 0;
         return ret;
     }
-    /* dput("!ku "); */
+    /* printf("!ku "); */
     if ((sym = DK_name_to_dksym(str)) >= 0) {
         ret.type = KLM_KA;
         int code = DK_dksym_to_ka(sym);
         if (code >= 0) {
-            /* dput("key_ka"); dput_ret(); */
+            /* printf("key_ka"); dput_ret(); */
             //printf(" == ka %02x = %02x\n", sym, code);
             ret.code = code;
             return ret;
         }
     }
-    /* dput("!ka [%d]", DK_cns_count); */
+    /* printf("!ka [%d]", DK_cns_count); */
     fori (i, 0, DK_cns_count) {
         DK_CharName kn = DK_cns[i];
         char *kn_str = DK_ofs_to_s(kn.name_ofs);
@@ -392,9 +392,9 @@ DK_Key DK_Key_from_charbuf(char *str) {
             //printf(" == ch U+%04x\n", ret.code);
             return ret;
         }
-        /* dput(" |%s|<>|%s|\n", str, kn_str); */
+        /* printf(" |%s|<>|%s|\n", str, kn_str); */
     }
-    /* dput("!kn "); */
+    /* printf("!kn "); */
     ret.type = 0;
     ret.code = 0;
     /* dput_ret(); */
@@ -404,7 +404,7 @@ DK_Key DK_Key_from_charbuf(char *str) {
 }
 
 /* Current Compose node */
-DK_Node *DK_cur_node = nil;
+DK_Node *DK_cur_node = NULL;
 /* Main (root) Compose node */
 DK_Node DK_node;
 
@@ -428,7 +428,7 @@ void DK_assign(int read_bufs_cnt) {
     fori (i, 0, cnt1) {
         char *key_name = DK_read_bufs[i];
         DK_Key key = DK_Key_from_charbuf(key_name);
-        /* dput("%s {%d,U+%04x}, ", key_name, key.type, key.code); fflush(stdout); */
+        /* printf("%s {%d,U+%04x}, ", key_name, key.type, key.code); fflush(stdout); */
         node = DK_pivotNode_fetch(node, key, true);
         /* dput_node(node); */
     }
@@ -436,7 +436,7 @@ void DK_assign(int read_bufs_cnt) {
     {
         char *key_name = DK_read_bufs[cnt1];
         DK_Key key = DK_Key_from_charbuf(key_name);
-        /* dput("%s {%d,U+%04x}...", key_name, key.type, key.code); fflush(stdout); */
+        /* printf("%s {%d,U+%04x}...", key_name, key.type, key.code); fflush(stdout); */
         node = DK_pivotNode_fetch(node, key, false);
         /* dput_node(node); */
     }
@@ -444,7 +444,7 @@ void DK_assign(int read_bufs_cnt) {
     {
         DK_Bind bind = DK_Bind_from_charbuf(DK_code_buf);
         node->data.bind = bind;
-        /* dput(": %s => U+%04x;\n", DK_code_buf, bind.code); fflush(stdout); */
+        /* printf(": %s => U+%04x;\n", DK_code_buf, bind.code); fflush(stdout); */
     }
 }
 
@@ -469,7 +469,7 @@ char *DK_Key_to_name(DK_Key key) {
     } else if (key.code < DK_dks_count) {
         return DK_ofs_to_s( DK_dks[key.code].name_ofs );
     }
-    return nil;
+    return NULL;
 }
 
 /* Pretty-print DK_Node and its children */
@@ -504,19 +504,19 @@ void DK_print_node(DK_Node *node, int ofs) {
  * that is, when no symbol code has been sent.
  * */
 bool DK_descend(DK_Key key) {
-    dputs("DK_descend"); fflush(stdout);
+    puts("DK_descend"); fflush(stdout);
     DK_Node *node = DK_cur_node;
-    if (node == nil) {
-        dput("DK_descend (%d,%d) on a nil node => reset\n", key.type, key.code); fflush(stdout);
+    if (node == NULL) {
+        printf("DK_descend (%d,%d) on a NULL node => reset\n", key.type, key.code); fflush(stdout);
         DK_cur_node = &DK_node;
     } else if (!DK_is_pivotNode(node)) {
-        dput("DK_descend (%d,%d) on a bind node => sendinput\n", key.type, key.code); fflush(stdout);
+        printf("DK_descend (%d,%d) on a bind node => sendinput\n", key.type, key.code); fflush(stdout);
         DK_send_code(node->data.bind.code);
     } else {
-        dputs("here1"); fflush(stdout);
+        puts("here1"); fflush(stdout);
         DK_Node *node1 = DK_pivotNode_get(node, key);
-        printf("descend { %d, U+%04x }: %snil\n", key.type, key.code, (node1 == nil ? "" : "non-"));
-        if (node1 == nil) {
+        printf("descend { %d, U+%04x }: %snil\n", key.type, key.code, (node1 == NULL ? "" : "non-"));
+        if (node1 == NULL) {
             /* DK_print_node(node, 2); */
             DK_cur_node = &DK_node;
         } else if (DK_is_pivotNode(node1)) {
@@ -535,7 +535,7 @@ bool DK_descend(DK_Key key) {
  * */
 void DK_dkn(UINT n, bool down, SC sc) {
     if (down) {
-        dput("dkn:%d\n", n);
+        printf("dkn:%d\n", n);
         if ((n < KA_dkn_count)) {
             DK_Key key;
             key.type = KLM_KA;
@@ -552,7 +552,7 @@ void DK_dkn(UINT n, bool down, SC sc) {
  * */
 bool DK_on_char(SC ch) {
     DK_Node *node = DK_cur_node;
-    if (node != nil) {
+    if (node != NULL) {
         if (DK_is_pivotNode(node)) {
             DK_Key key;
             key.type = 0;
@@ -567,7 +567,7 @@ bool DK_on_char(SC ch) {
  * assigning key names with DK_cns_push().
  * */
 void DK_read_keydef_file(char *filename) {
-    dput("DK_rk %ld %s\n", (long)lenof(DK_read_bufs), filename);
+    printf("DK_rk %ld %s\n", (long)lenof(DK_read_bufs), filename);
     FILE *f;
     f = fopen(filename, "r");
     if (!f) { fprintf(stderr, "error opening keydef file |%s|\n", filename); return; }
@@ -577,9 +577,9 @@ void DK_read_keydef_file(char *filename) {
     read_line_buf_init(&buf);
     char *name = DK_read_bufs[0];
     long int code;
-    while ((s = fread_line(f, &buf)) != nil) {
+    while ((s = fread_line(f, &buf)) != NULL) {
         ++nl;
-        /* dput(" %d %s", nl, s); */
+        /* printf(" %d %s", nl, s); */
         char c = *s;
 #define skip_spc() while ((c == ' ') || (c == '\t')) { c = *(s+=1); }
 #define skip_nonspc() while (c && !((c == ' ') || (c == '\t'))) { c = *(s+=1); }
@@ -596,7 +596,7 @@ void DK_read_keydef_file(char *filename) {
             save_nonspc(name);
             if (!strncmp(name, "dead_", 5)) {
                 skip_spc();
-                int sym = strtoul(s, nil, 0x10);
+                int sym = strtoul(s, NULL, 0x10);
                 if (!sym) {
                     goto next;
                 }
@@ -628,7 +628,7 @@ void DK_read_keydef_file(char *filename) {
         do {} while(0);
     }
     /* DK_print_key_names(); */
-    s = nil;
+    s = NULL;
     read_line_buf_free(&buf);
     fclose(f);
 }
@@ -637,7 +637,7 @@ void DK_read_keydef_file(char *filename) {
  * assigning Compose sequences with DK_assign().
  * */
 void DK_read_compose_file(char *filename) {
-    dput("DK_rf %ld %s\n", (long)lenof(DK_read_bufs), filename);
+    printf("DK_rf %ld %s\n", (long)lenof(DK_read_bufs), filename);
     FILE *f;
     f = fopen(filename, "r");
     if (!f) { fprintf(stderr, "error opening compose file |%s|\n", filename); return; }
@@ -645,10 +645,10 @@ void DK_read_compose_file(char *filename) {
     char *s;
     read_line_buf buf;
     read_line_buf_init(&buf);
-    while ((s = fread_line(f, &buf)) != nil) {
+    while ((s = fread_line(f, &buf)) != NULL) {
         ++nl;
         UINT ki = 0;
-        dput(" |%04ld| %s", (long)nl, s);
+        printf(" |%04ld| %s", (long)nl, s);
         do {
             char c = *s;
 #define skip_spc() while ((c == ' ') || (c == '\t')) { c = *(s+=1); }
@@ -657,11 +657,11 @@ void DK_read_compose_file(char *filename) {
 #define skip_to_dq() while (c && (c != '"')) { c = *(s+=1); }
 #define forward_char() do { if (c) { c = *(s+=1); }; } while (0)
             skip_spc();
-            /* dput(" >|%s", s); */
+            /* printf(" >|%s", s); */
             if (!c) {
                 break;
             } else if (c == '#') {
-                /* dput("%04d %s", nl, s); */
+                /* printf("%04d %s", nl, s); */
                 break;
             } else if (c == '<') {
                 if (ki >= lenof(DK_read_bufs)) {
@@ -690,7 +690,7 @@ void DK_read_compose_file(char *filename) {
                 bool is_dead = !strncmp("dead_", DK_read_bufs[0], 5);
                 bool is_multi = !strncmp("Multi_key", DK_read_bufs[0], 9);
                 if (ki && (is_dead || is_multi)) {
-                    if (is_multi) { dput("multi_assign\n"); }
+                    if (is_multi) { printf("multi_assign\n"); }
                     DK_assign(ki);
                 }
                 break;
@@ -703,9 +703,9 @@ void DK_read_compose_file(char *filename) {
 #undef skip_to_dq
 #undef forward_char
         } while (1);
-        /* dputs("next"); */
+        /* puts("next"); */
     }
-    dput("End of compose file read\n");
+    printf("End of compose file read\n");
     read_line_buf_free(&buf);
     fclose(f);
 }

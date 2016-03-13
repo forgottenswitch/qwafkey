@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include <stdarg.h>
 
+void memcpyzn(void *dest, const void *src, size_t n, size_t max) {
+    size_t i, l = (n > max ? max : n);
+    fori(i, 0, l) { ((char*) dest)[i] = ((char*) src)[i]; }
+    ((char*) dest)[l] = 0;
+}
+
 WCHAR *wcs_concat(WCHAR *str, ...) {
     va_list ap, ap1;
     WCHAR *s, *str1;

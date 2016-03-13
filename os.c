@@ -22,7 +22,7 @@ KP OS_wchar_to_sc(WCHAR w) {
     SHORT vks = VkKeyScan((TCHAR)w);
     VK vk = LOBYTE(vks);
     ret.mods = HIBYTE(vks);
-    dput("vksc{/%d,%02x}", ret.mods, vk);
+    printf("vksc{/%d,%02x}", ret.mods, vk);
     ret.sc = MapVirtualKey(vk, MAPVK_VK_TO_VSC);
     return ret;
 }
@@ -56,7 +56,7 @@ void OS_print_last_error() {
                   MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
                   (LPTSTR) &lpMsgBuf,
                   0, NULL );
-    dput("Error %ld: %s\n", error_code, (char*)lpMsgBuf);
+    printf("Error %ld: %s\n", error_code, (char*)lpMsgBuf);
     LocalFree(lpMsgBuf);
 }
 
@@ -77,26 +77,26 @@ void OS_activate_prev_layout(HWND hwnd) {
 char *OS_get_window_class(HWND hwnd) {
   static char buf[256];
   GetClassName(hwnd, buf, sizeof(buf));
-  last(buf) = '\0';
+  lastof(buf) = '\0';
   return buf;
 }
 
 void OS_run_command(TCHAR *cmd) {
-    dput("cmd|%s| ", cmd);
+    printf("cmd|%s| ", cmd);
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(STARTUPINFO));
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    CreateProcess(nil, cmd, 0, 0, 0, 0, 0, nil, &si, &pi);
+    CreateProcess(NULL, cmd, 0, 0, 0, 0, 0, NULL, &si, &pi);
 }
 
 void OS_run_executable(TCHAR *exe) {
-    dput("exe|%s| ", exe);
+    printf("exe|%s| ", exe);
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(STARTUPINFO));
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    CreateProcess(exe, nil, 0, 0, 0, 0, 0, nil, &si, &pi);
+    CreateProcess(exe, NULL, 0, 0, 0, 0, 0, NULL, &si, &pi);
 }
 
 bool OS_newer_than_Vista() {

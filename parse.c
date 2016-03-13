@@ -101,7 +101,7 @@ int read_ka(READ_PARMS) {
             char buf[256];
             size_t i = 0;
             buf[0] = c;
-            while (i < len(buf) && isidentchar((c = *(str++)))) {
+            while (i < lenof(buf) && isidentchar((c = *(str++)))) {
                 buf[i++] = c;
             }
             buf[i++] = '\0';
@@ -330,7 +330,7 @@ Bind read_binding(READ_PARMS) {
     } else {
         return rv;
     }
-    dput("rb{%x} ", rv.binding);
+    printf("rb{%x} ", rv.binding);
     RET(str, rv);
 }
 
@@ -348,7 +348,7 @@ bool read_bind(READ_PARMS) {
             do {
                 read_spc(&str);
                 if (get_bind(&str, &bind, read_binding)) {
-                    if (binds_count < len(binds)) {
+                    if (binds_count < lenof(binds)) {
                         binds[binds_count] = bind;
                     }
                     binds_count++;
@@ -365,7 +365,7 @@ bool read_bind(READ_PARMS) {
                             KL_bind(sc, i, bind.mods, bind.binding);
                             i++;
                             if ((i < KLVN) && (i % 2)) {
-                                dput("B(%d) ", binds_count);
+                                printf("B(%d) ", binds_count);
                                 bind = binds[(binds_count > 1 ? 1 : 0)];
                                 KL_bind(sc, i, bind.mods, bind.binding);
                             }
@@ -460,9 +460,9 @@ bool read_levs(READ_PARMS) {
         read_colon(&str);
         read_spc(&str);
         if (get_size_t(&str, &n, read_N_decimal)) {
-            dput("lvl(%d) ", n);
+            printf("lvl(%d) ", n);
             n--;
-            if (n < len(Bind_lvls)) {
+            if (n < lenof(Bind_lvls)) {
                 ZeroBuf(Bind_lvls);
                 Bind_sole_lvl = true;
                 Bind_lvls[n] = true;
@@ -475,9 +475,9 @@ bool read_levs(READ_PARMS) {
         do {
             read_spc(&str);
             if (get_size_t(&str, &n, read_N_decimal)) {
-                dput("lvn(%d) ", n);
+                printf("lvn(%d) ", n);
                 n--;
-                if (n < len(Bind_lvls)) {
+                if (n < lenof(Bind_lvls)) {
                     if (!zeroed) {
                         ZeroBuf(Bind_lvls);
                         zeroed = true;
@@ -498,7 +498,7 @@ char *read_window_title(READ_PARMS) {
     size_t buflen = 0;
     char *str = *input, c;
     buf[0] = '\0';
-    while ((c = *str) && (c != '\n') && (c != '\r') && (buflen < len(buf))) {
+    while ((c = *str) && (c != '\n') && (c != '\r') && (buflen < lenof(buf))) {
         buf[buflen] = c;
         buflen++;
         str++;
@@ -582,7 +582,7 @@ bool read_res(READ_PARMS) {
         if (get_size_t(&str, &x, read_N_decimal)) {
             while (read_char(&str, 'x') || read_spc(&str)) {}
             if (get_size_t(&str, &y, read_N_decimal)) {
-                dput("+r{%d,%d} ", x, y);
+                printf("+r{%d,%d} ", x, y);
                 KR_add_res(x, y);
                 RET(str, true);
             }
@@ -654,11 +654,11 @@ void parse_args(int argc, char *argv[], int argb) {
     fori (argi, argb, argc) {
         char *arg = argv[argi];
         read_spc(&arg);
-        dput("%20s| ", arg);
+        printf("%20s| ", arg);
         if (!read_statement(&arg)) {
-            dput("unrecognized arg %d: %s\n", argi, arg);
+            printf("unrecognized arg %d: %s\n", argi, arg);
         }
-        dput("\n");
+        printf("\n");
     }
 }
 
@@ -691,11 +691,11 @@ void parse_str(char *str) {
         read_spc(&str);
         char *s0 = str, *s1 = str;
         read_to_eol(&s1);
-        dput("line%03d:%.*s|\n", parse_lineno, (int)(s1 - s0), s0);
+        printf("line%03d:%.*s|\n", parse_lineno, (int)(s1 - s0), s0);
         if (!(read_statement(&str))) {
             char c = *str;
             if (c != '#' && c != '\n' && c != '\r') {
-                dput("Unrecognized line %d\n", parse_lineno);
+                printf("Unrecognized line %d\n", parse_lineno);
                 char line[64];
                 snprintf(line, sizeof(line)-1, "line %03d: %.*s", parse_lineno, (int)(s1-s0), s0);
                 parse_add_failed_line(line);

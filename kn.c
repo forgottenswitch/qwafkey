@@ -83,7 +83,7 @@ KN_Pair KN_pairs[] = {
 
 VK KN_name_to_vk(char *name) {
     size_t i;
-    fori (i, 0, len(KN_pairs)) {
+    fori (i, 0, lenof(KN_pairs)) {
         KN_Pair *p = KN_pairs + i;
         if (!_strcmpi(p->name, name) || (!_strnicmp("VK_", name, 3) && !_strcmpi(p->name, name+3))) {
             return p->vk;
@@ -94,7 +94,7 @@ VK KN_name_to_vk(char *name) {
 
 void KN_init() {
     size_t i;
-    fori (i, 0, len(KN_pairs)) {
+    fori (i, 0, lenof(KN_pairs)) {
         KN_Pair *p = KN_pairs + i;
         char *name = p->name;
         if (name[0] == 'V' && name[1] == 'K' && name[2] == '_') {
@@ -229,11 +229,11 @@ KN_LPair KN_lpairs[] = {
 SC KN_lname_to_sc(char *name) {
     char *colon = strchr(name, ':');
     char *asgn = strchr(name, '=');
-    size_t colon_pos = (colon == nil ? strlen(name) : (size_t)(colon - name));
-    size_t asgn_pos = (asgn == nil ? strlen(name) : (size_t)(asgn - name));
+    size_t colon_pos = (colon == NULL ? strlen(name) : (size_t)(colon - name));
+    size_t asgn_pos = (asgn == NULL ? strlen(name) : (size_t)(asgn - name));
     size_t maxpos = (colon_pos > asgn_pos ? asgn_pos : colon_pos);
     size_t i;
-    fori (i, 0, len(KN_lpairs)) {
+    fori (i, 0, lenof(KN_lpairs)) {
         KN_LPair *lp = KN_lpairs + i;
         if ((strlen(lp->name) == maxpos) && !_strnicmp(lp->name, name, maxpos)) {
             return lp->sc;

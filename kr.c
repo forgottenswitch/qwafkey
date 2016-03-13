@@ -30,7 +30,7 @@ size_t KR_res_count = 0;
 KR_Res KR_res[32];
 
 void KR_add_res(USHORT x, USHORT y) {
-    if (KR_res_count >= len(KR_res)) {
+    if (KR_res_count >= lenof(KR_res)) {
         return;
     }
     KR_res[KR_res_count].x = x;
@@ -40,13 +40,13 @@ void KR_add_res(USHORT x, USHORT y) {
 
 bool KR_match_res(HWND hwnd) {
     KR_Res dim = KR_hwnd_to_res(hwnd), res;
-    dput("w{%d,%d} ", dim.x, dim.y);
+    printf("w{%d,%d} ", dim.x, dim.y);
     size_t i;
     fori (i, 0, KR_res_count) {
         res = KR_res[i];
-        dput("r{%d,%d} ", res.x, res.y);
+        printf("r{%d,%d} ", res.x, res.y);
         if (res.x == dim.x && res.y == dim.y) {
-            dput("ok ");
+            printf("ok ");
             return true;
         }
     }
@@ -86,7 +86,7 @@ KR_Title *KR_titles;
 size_t KR_wndcs_count = 0, KR_wndcs_size = 0;
 KR_Wndcls *KR_wndcs;
 
-KR_App *KR_app = nil;
+KR_App *KR_app = NULL;
 
 void KR_add_app() {
     if ((KR_apps_count+=1) > KR_apps_size) {
@@ -132,7 +132,7 @@ void KR_apply_app(KR_App *app, bool on_pt_only) {
 }
 
 void KR_apply(KR_App *app, bool on_pt_only) {
-    dput("kr_apply");
+    printf("kr_apply");
     if (!on_pt_only) {
         KR_id = 1;
     }
@@ -142,16 +142,16 @@ void KR_apply(KR_App *app, bool on_pt_only) {
 KR_App *KR_hwnd_to_app(HWND hwnd) {
     printf(" hwnd_to_app... ");
     char buf[256];
-    int buflen = GetWindowTextA(hwnd, buf, len(buf));
+    int buflen = GetWindowTextA(hwnd, buf, lenof(buf));
     if (buflen > 0) {
-        dput("title(%d) |%s| ", buflen, buf);
+        printf("title(%d) |%s| ", buflen, buf);
         buflen--;
         size_t i;
         fori (i, 0, KR_titles_count) {
             KR_Title *ti = KR_titles + i;
-            dput("t(%d)|%s| ", ti->len, ti->str);
+            printf("t(%d)|%s| ", ti->len, ti->str);
             if (ti->len && !strnicmp(buf, ti->str, ti->len)) {
-                dput("ok t app%d ", i);
+                printf("ok t app%d ", i);
                 return ti->app;
             }
         }
@@ -163,9 +163,9 @@ KR_App *KR_wndcls_to_app(char *wndcls) {
     size_t i;
     fori (i, 0, KR_wndcs_count) {
         KR_Wndcls *cls = KR_wndcs + i;
-        dput("c(%d)|%s| ", cls->len, cls->str);
+        printf("c(%d)|%s| ", cls->len, cls->str);
         if (cls->len && !strnicmp(wndcls, cls->str, cls->len)) {
-            dput("ok c app%d ", i);
+            printf("ok c app%d ", i);
             return cls->app;
         }
     }
@@ -173,13 +173,13 @@ KR_App *KR_wndcls_to_app(char *wndcls) {
 }
 
 void KR_clear() {
-    dput("kr_clear ");
+    printf("kr_clear ");
     KR_id = 0;
     LM_activate_selected_locale();
 }
 
 void KR_resume(bool on_pt_only) {
-    dput("kr_resume(%d) ", on_pt_only);
+    printf("kr_resume(%d) ", on_pt_only);
     HWND hwnd = GetForegroundWindow();
     KR_on_task_switch(hwnd, OS_get_window_class(hwnd), on_pt_only);
 }
@@ -211,13 +211,13 @@ void KR_on_task_switch(HWND hwnd, char *wndclass, bool on_pt_only) {
 }
 
 void KR_activate() {
-    dput("kr_on ");
+    printf("kr_on ");
     KR_active = true;
     KR_resume(false);
 }
 
 void KR_deactivate() {
-    dput("kr_off ");
+    printf("kr_off ");
     KR_active = false;
     KR_clear();
 }
@@ -255,11 +255,11 @@ void KR_set_bind_class(char *wndclass) {
 }
 
 void KR_bind(SC sc, SC binding, USHORT mods) {
-    if (KR_app == nil) {
-        dput("remap sc%03x=>%03x : no title; ", sc, binding);
+    if (KR_app == NULL) {
+        printf("remap sc%03x=>%03x : no title; ", sc, binding);
         return;
     }
-    dput("remap sc%03x=>%03x/x%02x ", sc, binding, mods);
+    printf("remap sc%03x=>%03x/x%02x ", sc, binding, mods);
     if (!KR_app->binds) {
         KR_app->binds = (KR_Bind*)malloc((KR_app->binds_size = 8) * sizeof(KR_Bind));
     }

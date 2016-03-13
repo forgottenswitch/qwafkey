@@ -12,12 +12,11 @@
     #define UNICODE
 #endif
 
-#ifdef DEBUG
-# define dput printf
-# define dputs puts
-#else
-# define dput(...)
-# define dputs(...)
+#ifndef DEBUG
+# undef printf
+# undef puts
+# define printf(...)
+# define puts(...)
 #endif
 
 #include <tchar.h>
@@ -34,18 +33,15 @@
 
 #define ProgramName "lw"
 
-#define nil NULL
 #define fori(i, from, to) for (i = from; i < to; i++)
-#define len(ary) (sizeof((ary))/sizeof((ary)[0]))
-#define lenof len
-#define last(ary) ary[len(ary)-1]
+#define lenof(ary) (sizeof((ary))/sizeof((ary)[0]))
+#define lastof(ary) ary[lenof(ary)-1]
 #define between(v, min, max) ((min) <= (v) && (v) <= (max))
-#define isidx(i, ary) (between((i), 0, len((ary))))
 
 #define strbcr(buf, from, to)\
     do {\
         size_t l = to - from;\
-        if (l > len(buf)) { l = len(buf); }\
+        if (l > lenof(buf)) { l = lenof(buf); }\
         memcpy(buf, from, l);\
         buf[l-1] = '\0';\
     } while (0)
@@ -84,6 +80,7 @@ extern TCHAR *ConfigDir;
 
 void restart_the_program(void);
 
+void memcpyzn(void *dest, const void *src, size_t n, size_t max);
 WCHAR *wcs_concat(WCHAR *str, ...);
 WCHAR *wcs_concat_path(WCHAR *str, ...);
 char *str_concat_path(char *str, ...);

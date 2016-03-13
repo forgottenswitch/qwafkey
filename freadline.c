@@ -3,11 +3,6 @@
 /* freadline.c -- reading a line from file
  * */
 
-void memcpyzn(void *dest, const void *src, size_t n, size_t max) {
-    memcpy(dest, src, (n > max ? max : n));
-    *(((char*) dest) + n) = 0;
-}
-
 void read_line_buf_init(read_line_buf *buf) {
     buf->len = 0;
     buf->s = (char*)malloc(buf->size = 255);
@@ -17,7 +12,7 @@ void read_line_buf_free(read_line_buf *buf) {
     buf->size = 0;
     buf->len = 0;
     free(buf->s);
-    buf->s = nil;
+    buf->s = NULL;
 }
 
 char *fread_line(FILE *f, read_line_buf *buf) {
@@ -26,7 +21,7 @@ char *fread_line(FILE *f, read_line_buf *buf) {
     do {
         s = fgets(s, size, f);
         size_t i;
-        if (s == nil) {
+        if (s == NULL) {
             buf->len = 0;
             break;
         }

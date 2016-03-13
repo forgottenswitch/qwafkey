@@ -35,17 +35,17 @@ bool UI_TR_proc(DWORD action, char *tooltip_str) {
     nid.hIcon = (KL_active ? UI_ICO_On : UI_ICO_Off);
     if (tooltip_str) {
         nid.uFlags |= NIF_TIP;
-        lstrcpyn(nid.szTip, tooltip_str, len(nid.szTip));
+        lstrcpyn(nid.szTip, tooltip_str, lenof(nid.szTip));
     }
     return (bool) Shell_NotifyIcon(action, &nid);
 }
 
 bool UI_TR_update() {
-    return UI_TR_proc(NIM_MODIFY, nil);
+    return UI_TR_proc(NIM_MODIFY, NULL);
 }
 
 void UI_TR_delete() {
-    UI_TR_proc(NIM_DELETE, nil);
+    UI_TR_proc(NIM_DELETE, NULL);
 }
 
 UI_STR UI_STR_Suspend = "Suspend";
@@ -65,10 +65,10 @@ void UI_TR_menu() {
     POINT mpt;
     HMENU m = CreatePopupMenu();
     AppendMenu(m, (KL_active ? 0 : MF_CHECKED), UI_TC_SUSPEND, UI_STR_Suspend);
-    AppendMenu(m, MF_SEPARATOR, 0, nil);
+    AppendMenu(m, MF_SEPARATOR, 0, NULL);
     AppendMenu(m, 0, UI_TC_NEXT, UI_STR_NextLayout);
     AppendMenu(m, 0, UI_TC_PREV, UI_STR_PrevLayout);
-    AppendMenu(m, MF_SEPARATOR, 0, nil);
+    AppendMenu(m, MF_SEPARATOR, 0, NULL);
     AppendMenu(m, 0, UI_TC_EXIT, UI_STR_Exit);
     GetCursorPos(&mpt);
     int cmd = TrackPopupMenuEx(m, TPM_RETURNCMD, mpt.x, mpt.y, UI_MW, 0);
@@ -179,7 +179,7 @@ DWORD WINAPI UI_thread_proc(LPVOID arg_unused) {
 }
 
 void UI_spawn() {
-    UI_thread = CreateThread(nil, 8*1024, UI_thread_proc, nil, 0, &UI_thread_id);
+    UI_thread = CreateThread(NULL, 8*1024, UI_thread_proc, NULL, 0, &UI_thread_id);
 }
 
 char DefaultConfigFileContents[] = "# An example "ProgramName" config file\n";

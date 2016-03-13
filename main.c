@@ -230,14 +230,14 @@ void main_loop() {
     for (;;) {
         int result;
         MSG msg;
-        result = GetMessage(&msg, nil, 0, 0);
+        result = GetMessage(&msg, NULL, 0, 0);
         if (result <= 0)
             break;
         UINT id;
         switch (msg.message) {
         case WM_HOTKEY:
             id = (UINT) msg.wParam;
-            dput("HK %02d (%s); ", (id - HK_0), HK_to_s(LOWORD(msg.lParam), HIWORD(msg.lParam)));
+            printf("HK %02d (%s); ", (id - HK_0), HK_to_s(LOWORD(msg.lParam), HIWORD(msg.lParam)));
             HK_KA_call(id);
             break;
         }
@@ -254,9 +254,9 @@ void read_lang_config_files();
 int main(int argc, char *argv[]) {
     UserProfileDir = OS_user_profile_directory();
     ConfigDir = str_concat_path(UserProfileDir, ProgramName, NULL);
-    dput("cfgdir:%s|\n", ConfigDir);
+    printf("cfgdir:%s|\n", ConfigDir);
     ProgramDir = OS_program_directory();
-    dput("exedir:%s|\n", ProgramDir);
+    printf("exedir:%s|\n", ProgramDir);
 
     KN_init();
     KL_init();
@@ -265,14 +265,14 @@ int main(int argc, char *argv[]) {
     DK_init();
 
     read_main_config_file();
-    parse_args(len(default_argv), default_argv, 0);
+    parse_args(lenof(default_argv), default_argv, 0);
     parse_args(argc, argv, 1);
 
     KL_activate_lang(LANG_NEUTRAL);
-    dputs("LM_init locales...");
+    puts("LM_init locales...");
     LM_get_locales(true);
     read_lang_config_files();
-    dputs("LM_init activate...");
+    puts("LM_init activate...");
     LM_activate_selected_locale();
     KL_activate();
     EH_activate();
@@ -378,7 +378,7 @@ void read_lang_config_files(void) {
             char *path = str_concat_path(ConfigDir, lang_config_filename(lang), NULL);
             FILE *f = fopen(path, "r");
             if (f) {
-                dput("reading lang config file |%s| ...\n", path);
+                printf("reading lang config file |%s| ...\n", path);
                 char *s = fread_to_eof(f, '\n');
                 if (!parse_str_has_nodefault(s)) {
                     read_default_config_file_for_lang(lang);
@@ -388,7 +388,7 @@ void read_lang_config_files(void) {
                 free(s);
                 fclose(f);
             } else {
-                dput("no lang config file |%s| found\n", path);
+                printf("no lang config file |%s| found\n", path);
                 read_default_config_file_for_lang(lang);
             }
             free(path);
@@ -398,8 +398,8 @@ void read_lang_config_files(void) {
 
 void restart_the_program(void) {
     TCHAR buf[MAX_PATH];
-    GetModuleFileName(0, buf, len(buf));
-    last(buf) = '\0';
+    GetModuleFileName(0, buf, lenof(buf));
+    lastof(buf) = '\0';
     OS_run_executable(buf);
     exit(0);
 }
