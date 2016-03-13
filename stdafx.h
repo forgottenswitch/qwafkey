@@ -32,6 +32,8 @@
 #include "resource.h"
 
 #define ProgramName "lw"
+#define DefaultComposeFilename "Compose"
+#define DefaultKeydefsFilename "keysymdef.h"
 
 #define fori(i, from, to) for (i = from; i < to; i++)
 #define lenof(ary) (sizeof((ary))/sizeof((ary)[0]))
@@ -76,8 +78,11 @@ typedef struct {
     unsigned short binding;
 } LK;
 
-extern TCHAR *ConfigDir;
+extern char *ConfigDir;
+extern char *current_parsing_directory;
 
+void read_keydefs_file(char *path);
+void read_compose_file(char *path);
 void restart_the_program(void);
 
 void memcpyzn(void *dest, const void *src, size_t n, size_t max);

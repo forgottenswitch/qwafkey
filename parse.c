@@ -526,7 +526,19 @@ bool read_title(READ_PARMS) {
 bool read_nodefault(READ_PARMS) {
     char *str = *input;
     if (read_word(&str, (char*)"nodefault")) {
-        RET(str, true);
+        if (read_spc(&str)) {
+            if (read_word(&str, (char*)DefaultComposeFilename)) {
+                parse_nodefault_compose = true;
+                return false;
+            }
+            if (read_word(&str, (char*)DefaultKeydefsFilename)) {
+                parse_nodefault_keydefs = true;
+                return false;
+            }
+        }
+        if (*str == '#' || *str == '\n' || *str == '\r') {
+                RET(str, true);
+        }
     }
     return false;
 }
@@ -615,9 +627,9 @@ bool read_dk_file(READ_PARMS) {
             if (i < sizeof(filename)-1) { filename[i++] = *str++; }
         }
         filename[i] = 0;
-        printf("reading keysym file |%s|... ", filename);
-        DK_read_keydef_file(filename);
-        KA_update_dk_names();
+        char *path = str_concat_path(current_parsing_directory, filename, NULL);
+        read_keydefs_file(path);
+        free(path);
         RET(str, true);
     } else if (read_word(&str, (char*)"compose_file")) {
         read_spc(&str);
@@ -625,8 +637,9 @@ bool read_dk_file(READ_PARMS) {
             if (i < sizeof(filename)-1) { filename[i++] = *str++; }
         }
         filename[i] = 0;
-        printf("reading compose file |%s|... ", filename);
-        DK_read_compose_file(filename);
+        char *path = str_concat_path(current_parsing_directory, filename, NULL);
+        read_compose_file(path);
+        free(path);
         RET(str, true);
     }
     return false;
@@ -707,14 +720,18 @@ void parse_str(char *str) {
     }
 }
 
+bool parse_nodefault_compose;
+bool parse_nodefault_keydefs;
+
 bool parse_str_has_nodefault(char *str) {
+    bool ret = false;
     while (*str) {
         read_spc(&str);
         if (read_nodefault(&str)) {
-            return true;
+            ret = true;
         }
         read_to_eol(&str);
         read_newline(&str);
     }
-    return false;
+    return ret;
 }

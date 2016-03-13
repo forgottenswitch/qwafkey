@@ -25,9 +25,6 @@
 char *default_argv[] = {
     #define s (char*)
 
-    s"keysym_file keysymdef.h",
-    s"compose_file Compose",
-
     s"@#F2:!toggle",
     s"@#F3:!restart",
     s"@#qZ:!dim_screen",
@@ -246,6 +243,7 @@ void main_loop() {
 
 char *UserProfileDir;
 char *ConfigDir;
+char *current_parsing_directory;
 char *ProgramDir;
 
 void read_main_config_file();
@@ -297,8 +295,8 @@ int main(int argc, char *argv[]) {
 void read_default_main_config_file(void) {
     char *path;
     FILE *f;
-
     puts("read default main cfg...");
+    current_parsing_directory = ProgramDir;
     path = str_concat_path(ProgramDir, "config.txt", NULL);
     printf("default main cfg:%s|\n", path);
     f = fopen(path, "r");
@@ -315,10 +313,32 @@ void read_default_main_config_file(void) {
     free(path);
 }
 
+void read_keydefs_file(char *path) {
+    printf("reading keysym file |%s|...\n", path);
+    DK_read_keydef_file(path);
+    KA_update_dk_names();
+}
+
+void read_compose_file(char *path) {
+    printf("reading compose file |%s|...\n", path);
+    DK_read_compose_file(path);
+}
+
+void read_default_keydefs_file(void) {
+    char *path = str_concat_path(ProgramDir, DefaultKeydefsFilename, NULL);
+    read_keydefs_file(path);
+    free(path);
+}
+
+void read_default_compose_file(void) {
+    char *path = str_concat_path(ProgramDir, DefaultComposeFilename, NULL);
+    read_compose_file(path);
+    free(path);
+}
+
 void read_main_config_file(void) {
     char *path;
     FILE *f;
-
     puts("read main cfg...");
     path = str_concat_path(ConfigDir, "config.txt", NULL);
     printf("main cfg:%s|\n", path);
@@ -326,9 +346,11 @@ void read_main_config_file(void) {
     if (f) {
         printf("reading config file |%s|...\n", path);
         char *s = fread_to_eof(f, '\n');
-        if (!parse_str_has_nodefault(s)) {
-            read_default_main_config_file();
-        }
+        bool nodefault = parse_str_has_nodefault(s);
+        if (!parse_nodefault_keydefs) { read_default_keydefs_file(); }
+        if (!parse_nodefault_compose) { read_default_compose_file(); }
+        if (!nodefault) { read_default_main_config_file(); }
+        current_parsing_directory = ConfigDir;
         parse_str(s);
         UI_maybe_show_errors_for_config_file(path);
         free(s);
@@ -337,6 +359,10 @@ void read_main_config_file(void) {
         printf("no config file |%s| found\n", path);
         if (UI_ask_for_creating_config_file(path)) {
             read_main_config_file();
+        } else {
+            read_default_keydefs_file();
+            read_default_compose_file();
+            read_default_main_config_file();
         }
     }
     free(path);
@@ -351,8 +377,8 @@ char *lang_config_filename(LANGID lang) {
 void read_default_config_file_for_lang(LANGID lang) {
     char *path;
     FILE *f;
-
     printf("read default lang %04x cfg...", lang);
+    current_parsing_directory = ProgramDir;
     path = str_concat_path(ProgramDir, lang_config_filename(lang), NULL);
     printf("default lang %04x cfg:%s|\n", lang, path);
     f = fopen(path, "r");
@@ -382,6 +408,7 @@ void read_lang_config_files(void) {
                 char *s = fread_to_eof(f, '\n');
                 if (!parse_str_has_nodefault(s)) {
                     read_default_config_file_for_lang(lang);
+                    current_parsing_directory = ConfigDir;
                 }
                 parse_str(s);
                 UI_maybe_show_errors_for_config_file(path);
