@@ -590,23 +590,6 @@ bool read_remap(READ_PARMS) {
     return false;
 }
 
-bool read_res(READ_PARMS) {
-    char *str = *input;
-    if (read_word(&str, (char*)"res")) {
-        read_spc(&str);
-        size_t x, y;
-        if (get_size_t(&str, &x, read_N_decimal)) {
-            while (read_char(&str, 'x') || read_spc(&str)) {}
-            if (get_size_t(&str, &y, read_N_decimal)) {
-                printf("+r{%d,%d} ", x, y);
-                KR_add_res(x, y);
-                RET(str, true);
-            }
-        }
-    }
-    return false;
-}
-
 bool read_vks_lang(READ_PARMS) {
     char *str = *input;
     if (read_word(&str, (char*)"vks_lang")) {
@@ -656,7 +639,6 @@ bool read_dk_file(READ_PARMS) {
     read_hotk(arg) ||\
     read_lang(arg) ||\
     read_levs(arg) ||\
-    read_res(arg) ||\
     read_title(arg) ||\
     read_class(arg) ||\
     read_remap(arg) ||\

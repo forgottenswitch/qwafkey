@@ -71,9 +71,13 @@ int main(int argc, char *argv[]) {
     puts("LM_init activate...");
     LM_activate_selected_locale();
     KL_activate();
-    EH_activate();
+    KR_hash_the_titles();
+    KR_hash_the_wndcls();
     KR_activate();
     KL_define_vks();
+
+    Sleep(1);
+    EH_activate();
 
 #ifndef NOGUI
     UI_init();

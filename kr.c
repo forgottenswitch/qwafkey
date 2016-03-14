@@ -13,47 +13,6 @@ bool KR_active;
 size_t KR_id = 0;
 
 typedef struct {
-    USHORT x;
-    USHORT y;
-} KR_Res;
-
-KR_Res KR_hwnd_to_res(HWND hwnd) {
-    RECT r;
-    KR_Res res;
-    GetClientRect(hwnd, &r);
-    res.x = r.right - r.left;
-    res.y = r.bottom - r.top;
-    return res;
-}
-
-size_t KR_res_count = 0;
-KR_Res KR_res[32];
-
-void KR_add_res(USHORT x, USHORT y) {
-    if (KR_res_count >= lenof(KR_res)) {
-        return;
-    }
-    KR_res[KR_res_count].x = x;
-    KR_res[KR_res_count].y = y;
-    KR_res_count += 1;
-}
-
-bool KR_match_res(HWND hwnd) {
-    KR_Res dim = KR_hwnd_to_res(hwnd), res;
-    printf("w{%d,%d} ", dim.x, dim.y);
-    size_t i;
-    fori (i, 0, KR_res_count) {
-        res = KR_res[i];
-        printf("r{%d,%d} ", res.x, res.y);
-        if (res.x == dim.x && res.y == dim.y) {
-            printf("ok ");
-            return true;
-        }
-    }
-    return false;
-}
-
-typedef struct {
     USHORT sc;
     USHORT mods;
     USHORT binding;
@@ -77,6 +36,15 @@ typedef struct {
     KR_App *app;
 } KR_Wndcls;
 
+typedef struct {
+    int one;
+    int two;
+} int_pair;
+
+#define KR_hash_table_len 256
+int_pair KR_titles_hash_pairs[KR_hash_table_len];
+int_pair KR_wndcs_hash_pairs[KR_hash_table_len];
+
 size_t KR_apps_count = 0, KR_apps_size = 0;
 KR_App *KR_apps;
 
@@ -87,6 +55,26 @@ size_t KR_wndcs_count = 0, KR_wndcs_size = 0;
 KR_Wndcls *KR_wndcs;
 
 KR_App *KR_app = NULL;
+
+#ifndef INT_MAX
+# define INT_MAX 2147483647
+#endif
+
+int KR_str_checksum(char *s) {
+    char c, c0 = 0;
+    int sum = 0;
+    while ((c = *s++)) {
+        sum += c - 2 * c0;
+        sum &= INT_MAX;
+        c0 = c;
+    }
+    return sum;
+}
+
+int_pair KR_hash_get_idx_pair(int_pair *hash_pairs, char *str) {
+    int chsum = KR_str_checksum(str);
+    return hash_pairs[chsum % KR_hash_table_len];
+}
 
 void KR_add_app() {
     if ((KR_apps_count+=1) > KR_apps_size) {
@@ -113,6 +101,111 @@ void KR_add_wndcs() {
     KR_Wndcls *cls = KR_wndcs + KR_wndcs_count - 1;
     ZeroPnt(cls);
     cls->app = KR_apps + KR_apps_count - 1;
+}
+
+int KR_compare_sumpairs(const void *x, const void *y) {
+    int xc = ((int_pair*)x)->two, yc = ((int_pair*)y)->two;
+    if (xc < yc) { return -1; }
+    if (xc == yc) { return 0; }
+    return 1;
+}
+
+void KR_hash_the_titles(void) {
+    /* Sort the KR_titles by checksum value */
+    int n = KR_titles_count;
+    int i;
+    int_pair *pairs = malloc((n+1) * sizeof(int_pair));
+    fori (i, 0, n) {
+        pairs[i].one = i;
+        pairs[i].two = KR_str_checksum(KR_titles[i].str) % KR_hash_table_len;
+        //printf("Titles [%d]: %.*s\n", i, KR_titles[i].len, KR_titles[i].str);
+    }
+    qsort(pairs, n, sizeof(int_pair), KR_compare_sumpairs);
+    KR_Title *ary = malloc(n * sizeof(KR_Title));
+    fori (i, 0, n) {
+        int i0 = pairs[i].one;
+        ary[i] = KR_titles[i0];
+        //printf("Titles [%d]: h%d %.*s\n", i0, pairs[i].two, KR_titles[i0].len, KR_titles[i0].str);
+    }
+    fori (i, 0, n) { 
+        KR_titles[i] = ary[i]; 
+        //printf("KR_titles[%d]:= %.*s\n", i, KR_titles[i].len, KR_titles[i].str);
+    }
+    /* Assign the checksum value ranges to KR_wndcls_hash_pairs */
+    int sum0 = 0, i1 = 0, n1 = n + 1;
+    fori (i, 0, n1) {
+        int sum = pairs[i].two;
+        if (!i) { sum0 = sum; }
+        else if (sum != sum0) {
+            KR_titles_hash_pairs[sum0].one = i1 + 1;
+            KR_titles_hash_pairs[sum0].two = i - 1;
+            //printf("sum!=; i=%d; [%d..%d] \n", n, i, i1+1, i-1);
+            i1 = i;
+        } //else { printf("sum[%d]:%d; ", i, sum); }
+        sum0 = sum;
+    }
+    /* Clean up */
+    free(ary);
+    free(pairs);
+    /* Print the result */
+    fori (i, 0, KR_hash_table_len) {
+        int_pair i12 = KR_titles_hash_pairs[i];
+        if (i12.one) {
+            printf("Titles h%d:\n", i);
+            if (i12.one) for (i1=i12.one-1; i1<=i12.two; i1++) {
+                printf(" [%d]: %.*s\n", i1, KR_titles[i1].len, KR_titles[i1].str);
+            }
+        }
+    }
+}
+
+void KR_hash_the_wndcls(void) {
+    /* Sort the KR_wndcs by checksum value */
+    int n = KR_wndcs_count;
+    int i;
+    int_pair *pairs = malloc((n+1) * sizeof(int_pair));
+    fori (i, 0, n) {
+        pairs[i].one = i;
+        pairs[i].two = KR_str_checksum(KR_wndcs[i].str) % KR_hash_table_len;
+        //printf("Wndcs [%d]: %.*s\n", i, KR_wndcs[i].len, KR_wndcs[i].str);
+    }
+    qsort(pairs, n, sizeof(int_pair), KR_compare_sumpairs);
+    KR_Wndcls *ary = malloc(n * sizeof(KR_Wndcls));
+    fori (i, 0, n) {
+        int i0 = pairs[i].one;
+        ary[i] = KR_wndcs[i0];
+        //printf("Wndcs [%d]: h%d %.*s\n", i0, pairs[i].two, KR_wndcs[i0].len, KR_wndcs[i0].str);
+    }
+    fori (i, 0, n) { 
+        KR_wndcs[i] = ary[i]; 
+        //printf("KR_wndcs[%d]:= %.*s\n", i, KR_wndcs[i].len, KR_wndcs[i].str);
+    }
+    /* Assign the checksum value ranges to KR_wndcls_hash_pairs */
+    int sum0 = 0, i1 = 0, n1 = n + 1;
+    fori (i, 0, n1) {
+        int sum = pairs[i].two;
+        if (!i) { sum0 = sum; }
+        else if (sum != sum0) {
+            KR_wndcs_hash_pairs[sum0].one = i1 + 1;
+            KR_wndcs_hash_pairs[sum0].two = i - 1;
+            //printf("sum!=; i=%d; [%d..%d] \n", n, i, i1+1, i-1);
+            i1 = i;
+        } //else { printf("sum[%d]:%d; ", i, sum); }
+        sum0 = sum;
+    }
+    /* Clean up */
+    free(ary);
+    free(pairs);
+    /* Print the result */
+    fori (i, 0, KR_hash_table_len) {
+        int_pair i12 = KR_wndcs_hash_pairs[i];
+        if (i12.one) {
+            printf("Wndcls h%d:\n", i);
+            if (i12.one) for (i1=i12.one-1; i1<=i12.two; i1++) {
+                printf(" [%d]: %.*s\n", i1, KR_wndcs[i1].len, KR_wndcs[i1].str);
+            }
+        }
+    }
 }
 
 size_t KR_ka_kr_on_pt;
@@ -146,13 +239,16 @@ KR_App *KR_hwnd_to_app(HWND hwnd) {
     if (buflen > 0) {
         printf("title(%d) |%s| ", buflen, buf);
         buflen--;
-        size_t i;
-        fori (i, 0, KR_titles_count) {
-            KR_Title *ti = KR_titles + i;
-            printf("t(%d)|%s| ", ti->len, ti->str);
-            if (ti->len && !strnicmp(buf, ti->str, ti->len)) {
-                printf("ok t app%d ", i);
-                return ti->app;
+        int i;
+        int_pair i12 = KR_hash_get_idx_pair(KR_titles_hash_pairs, buf);
+        if (i12.one) {
+            for (i=i12.one-1; i<=i12.two; i++) {
+                KR_Title *ti = KR_titles + i;
+                printf("t(%d)|%s| ", ti->len, ti->str);
+                if (ti->len && !strnicmp(buf, ti->str, ti->len)) {
+                    printf("ok t app%d ", i);
+                    return ti->app;
+                }
             }
         }
     }
@@ -160,13 +256,17 @@ KR_App *KR_hwnd_to_app(HWND hwnd) {
 }
 
 KR_App *KR_wndcls_to_app(char *wndcls) {
-    size_t i;
-    fori (i, 0, KR_wndcs_count) {
-        KR_Wndcls *cls = KR_wndcs + i;
-        printf("c(%d)|%s| ", cls->len, cls->str);
-        if (cls->len && !strnicmp(wndcls, cls->str, cls->len)) {
-            printf("ok c app%d ", i);
-            return cls->app;
+    int i;
+    int_pair i12 = KR_hash_get_idx_pair(KR_wndcs_hash_pairs, wndcls);
+    printf(" wndcls_to_app { %d, %d }... ", i12.one, i12.two);
+    if (i12.one) {
+        for (i=i12.one-1; i<=i12.two; i++) {
+            KR_Wndcls *cls = KR_wndcs + i;
+            printf("c(%d)|%s| ", cls->len, cls->str);
+            if (cls->len && !strnicmp(wndcls, cls->str, cls->len)) {
+                printf("ok c app%d ", i);
+                return cls->app;
+            }
         }
     }
     return 0;
@@ -185,8 +285,7 @@ void KR_resume(bool on_pt_only) {
 }
 
 void KR_on_task_switch(HWND hwnd, char *wndclass, bool on_pt_only) {
-    Sleep(500);
-    if (!KL_active || !KR_active || !KR_match_res(hwnd)) {
+    if (!KL_active || !KR_active) {
         if (KR_id) {
             goto clear;
         }
@@ -194,16 +293,19 @@ void KR_on_task_switch(HWND hwnd, char *wndclass, bool on_pt_only) {
     }
     KR_App *app;
     if ((app = KR_hwnd_to_app(hwnd))) {
+        puts("{FOUND APP}");
         KR_apply(app, false);
         return;
     } else if (KR_id) {
+        puts("{HAVE ID}");
         goto clear;
     } else {
-        return;
+        goto wndcls;
     }
     clear:
     KR_clear();
     wndcls:
+    puts("{AT WNDCLS}");
     if ((app = KR_wndcls_to_app(wndclass))) {
         KR_apply(app, on_pt_only);
     }
