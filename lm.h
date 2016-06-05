@@ -22,10 +22,10 @@ extern HWND LM_hwnd;
 
 void LM_get_locales(bool set_selected);
 void LM_activate_nth_locale(size_t idx);
-void LM_activate_selected_locale();
-void LM_activate_next_locale();
-void LM_activate_prev_locale();
-LANGID LM_selected_langid();
+void LM_activate_selected_locale(void);
+void LM_activate_next_locale(void);
+void LM_activate_prev_locale(void);
+LANGID LM_selected_langid(void);
 HKL LM_langid_to_hkl(LANGID langid);
 
 #endif // LM_H_INCLUDED

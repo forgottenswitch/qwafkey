@@ -42,7 +42,7 @@ struct DK_Node {
     DK_NodeData data;
 };
 
-void DK_init();
+void DK_init(void);
 
 void DK_read_compose_file(char *path);
 void DK_read_keydef_file(char *path);
@@ -50,7 +50,7 @@ void DK_read_keydef_file(char *path);
 void DK_dkn(UINT n, bool down, SC sc);
 bool DK_on_char(SC ch);
 
-void DK_print_key_names();
+void DK_print_key_names(void);
 
 int DK_name_to_index(char *name);
 char *DK_index_to_name(size_t i);

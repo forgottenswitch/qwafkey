@@ -10,7 +10,7 @@
 #define KA_PARAMS bool down, SC sc
 typedef void (*KA_FUNC)(KA_PARAMS);
 
-void KA_init();
+void KA_init(void);
 int KA_call(UINT id, KA_PARAMS);
 int KA_name_to_id(char *name);
 

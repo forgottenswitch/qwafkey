@@ -30,10 +30,10 @@ extern KM KL_km_l5;
 
 LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam);
 
-void KL_init();
-void KL_toggle();
-void KL_activate();
-void KL_deactivate();
+void KL_init(void);
+void KL_toggle(void);
+void KL_activate(void);
+void KL_deactivate(void);
 void KL_bind(SC sc, UINT lvl, UINT mods, SC binding);
 void KL_temp_sc(SC sc, SC mods, SC binding);
 
@@ -41,11 +41,11 @@ void KL_add_lang(LANGID lang);
 void KL_activate_lang(LANGID lang);
 void KL_set_bind_lang(LANGID lang);
 void KL_set_vks_lang(LANGID lang);
-void KL_define_vks();
+void KL_define_vks(void);
 
-void KL_bind_init();
-void KL_bind_lvls_zero();
-void KL_bind_lvls_init();
+void KL_bind_init(void);
+void KL_bind_lvls_zero(void);
+void KL_bind_lvls_init(void);
 
 void KL_dk_send_wchar(WCHAR wc);
 

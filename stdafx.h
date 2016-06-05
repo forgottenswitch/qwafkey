@@ -4,7 +4,7 @@
 /* stdafx.h -- common includes and definitions */
 
 #define _WIN32_WINNT 0x0501
-#define WINVER 0x500
+#define WINVER 0x502
 
 #if defined(UNICODE) && !defined(_UNICODE)
     #define _UNICODE
@@ -96,17 +96,17 @@ size_t str_remove_cr(char *s);
 KP OS_wchar_to_vk(WCHAR tc);
 VK OS_sc_to_vk(SC sc);
 SC OS_vk_to_sc(SC sc);
-void OS_print_last_error();
+void OS_print_last_error(void);
 void OS_activate_layout(HWND hwnd, HKL hkl);
 void OS_activate_next_layout(HWND hwnd);
 void OS_activate_prev_layout(HWND hwnd);
 char *OS_get_window_class(HWND hwnd);
 void OS_run_command(TCHAR *cmd);
 void OS_run_executable(TCHAR *exe);
-HINSTANCE OS_current_module_handle();
-bool OS_newer_than_Vista();
-char *OS_user_profile_directory();
-char *OS_program_directory();
+HINSTANCE OS_current_module_handle(void);
+bool OS_newer_than_Vista(void);
+char *OS_user_profile_directory(void);
+char *OS_program_directory(void);
 char *OS_keyboard_layout_name(LANGID lang);
 
 #define LANGID_Primary LOWORD

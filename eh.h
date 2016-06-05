@@ -5,7 +5,7 @@
 
 /* eh.h -- event hook */
 
-void EH_activate();
-void EH_deactivate();
+void EH_activate(void);
+void EH_deactivate(void);
 
 #endif // EH_H_INCLUDED

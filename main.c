@@ -22,7 +22,7 @@
 # include "ui.h"
 #endif // NOGUI
 
-void main_loop() {
+void main_loop(void) {
     for (;;) {
         int result;
         MSG msg;
@@ -45,8 +45,8 @@ char *ConfigDir;
 char *current_parsing_directory;
 char *ProgramDir;
 
-void read_main_config_file();
-void read_lang_config_files();
+void read_main_config_file(void);
+void read_lang_config_files(void);
 
 int main(int argc, char *argv[]) {
     UserProfileDir = OS_user_profile_directory();

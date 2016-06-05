@@ -76,7 +76,7 @@ int_pair KR_hash_get_idx_pair(int_pair *hash_pairs, char *str) {
     return hash_pairs[chsum % KR_hash_table_len];
 }
 
-void KR_add_app() {
+void KR_add_app(void) {
     if ((KR_apps_count+=1) > KR_apps_size) {
         KR_apps = (KR_App*)realloc(KR_apps, (KR_apps_size *= 1.5) * sizeof(KR_App));
     }
@@ -85,7 +85,7 @@ void KR_add_app() {
     KR_app = ka;
 }
 
-void KR_add_title() {
+void KR_add_title(void) {
     if ((KR_titles_count+=1) > KR_titles_size) {
         KR_titles = (KR_Title*)realloc(KR_titles, (KR_titles_size *= 1.5) * sizeof(KR_Title));
     }
@@ -94,7 +94,7 @@ void KR_add_title() {
     ti->app = KR_apps + KR_apps_count - 1;
 }
 
-void KR_add_wndcs() {
+void KR_add_wndcs(void) {
     if ((KR_wndcs_count+=1) > KR_wndcs_size) {
         KR_wndcs = (KR_Wndcls*)realloc(KR_wndcs, (KR_wndcs_size *= 1.5) * sizeof(KR_Wndcls));
     }

@@ -40,11 +40,11 @@ bool UI_TR_proc(DWORD action, char *tooltip_str) {
     return (bool) Shell_NotifyIcon(action, &nid);
 }
 
-bool UI_TR_update() {
+bool UI_TR_update(void) {
     return UI_TR_proc(NIM_MODIFY, NULL);
 }
 
-void UI_TR_delete() {
+void UI_TR_delete(void) {
     UI_TR_proc(NIM_DELETE, NULL);
 }
 
@@ -60,7 +60,7 @@ enum {
     UI_TC_EXIT,
 };
 
-void UI_TR_menu() {
+void UI_TR_menu(void) {
     SetForegroundWindow(UI_MW);
     POINT mpt;
     HMENU m = CreatePopupMenu();
@@ -112,7 +112,7 @@ void UI_quit(int status) {
     PostQuitMessage(status);
 }
 
-bool UI_init() {
+bool UI_init(void) {
     WNDCLASSEX w;
     w.cbClsExtra = 0;
     w.cbSize = sizeof(WNDCLASSEX);
@@ -159,7 +159,7 @@ bool UI_init() {
 HANDLE UI_thread;
 DWORD UI_thread_id;
 
-void UI_loop() {
+void UI_loop(void) {
     for (;;) {
         int r;
         MSG msg;
@@ -178,7 +178,7 @@ DWORD WINAPI UI_thread_proc(LPVOID arg_unused) {
     return 0;
 }
 
-void UI_spawn() {
+void UI_spawn(void) {
     UI_thread = CreateThread(NULL, 8*1024, UI_thread_proc, NULL, 0, &UI_thread_id);
 }
 

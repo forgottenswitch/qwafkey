@@ -70,6 +70,6 @@ void HK_KA_call(UINT hk_id) {
     KA_call(ka_id, false, 0);
 }
 
-void HK_init() {
+void HK_init(void) {
     ZeroBuf(HK_KA_ary);
 }
