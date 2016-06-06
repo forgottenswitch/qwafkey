@@ -108,7 +108,14 @@ char *OS_user_profile_directory(void) {
 }
 
 char *OS_program_directory(void) {
-    char *s = _pgmptr;
+    static size_t alloc = 512;
+    static char *s = NULL;
+    if (!s) { s = malloc(alloc); }
+    while (1) {
+         GetModuleFileName(NULL, s, alloc);
+         if (str_fills(s, alloc)) { break; }
+         s = realloc(s, alloc *= 1.5);
+    }
     char *s1 = strrchr(s, '\\');
     if (!s1) { s1 = s + strlen(s); }
     int l = s1 - s;

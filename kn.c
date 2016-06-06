@@ -1,6 +1,7 @@
 #include "kn.h"
 #include "kl.h"
 #include "scancodes.h"
+#include <string.h>
 
 /* kn.c -- key names database */
 

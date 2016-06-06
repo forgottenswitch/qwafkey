@@ -157,3 +157,12 @@ char *fread_to_eof(FILE *stream, char null_bytes_replacement) {
     //printf("fread_eof:<<EOF\n%s\nEOF\n", s);
     return s;
 }
+
+int str_fills(char *s, size_t len) {
+    while (1) {
+        if (len <= 0) { break; }
+        if (*s == 0) { return 1; }
+        s++;
+    }
+    return 0;
+}
