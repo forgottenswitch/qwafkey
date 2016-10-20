@@ -149,12 +149,12 @@ char *fread_to_eof(FILE *stream, char null_bytes_replacement) {
     l = maxpos - pos;
     s = malloc(l+1);
     fseek(stream, pos, SEEK_SET);
-    fread(s, 1, l, stream);
+    l = fread(s, 1, l, stream);
     fori (pos, 0, l) { if (!s[pos]) { s[pos] = null_bytes_replacement; }; }
     s[l] = 0;
+    //printf("fread_eof:<<EOF\n%s\nEOF\n", s);
     l = str_remove_cr(s);
     s = realloc(s, l+1);
-    //printf("fread_eof:<<EOF\n%s\nEOF\n", s);
     return s;
 }
 
