@@ -31,7 +31,7 @@
 
 #include "resource.h"
 
-#define ProgramName "lw"
+#define ProgramName "qwafkey"
 #define DefaultComposeFilename "Compose"
 #define DefaultKeydefsFilename "keysymdef.h"
 
