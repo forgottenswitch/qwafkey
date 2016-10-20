@@ -49,12 +49,14 @@ void UI_TR_delete(void) {
 }
 
 UI_STR UI_STR_Suspend = "Suspend";
+UI_STR UI_STR_Restart = "Restart";
 UI_STR UI_STR_NextLayout = "Next layout";
 UI_STR UI_STR_PrevLayout = "Previous layout";
 UI_STR UI_STR_Exit = "Exit";
 
 enum {
     UI_TC_SUSPEND = 17,
+    UI_TC_RESTART,
     UI_TC_NEXT,
     UI_TC_PREV,
     UI_TC_EXIT,
@@ -65,6 +67,7 @@ void UI_TR_menu(void) {
     POINT mpt;
     HMENU m = CreatePopupMenu();
     AppendMenu(m, (KL_active ? 0 : MF_CHECKED), UI_TC_SUSPEND, UI_STR_Suspend);
+    AppendMenu(m, 0, UI_TC_RESTART, UI_STR_Restart);
     AppendMenu(m, MF_SEPARATOR, 0, NULL);
     AppendMenu(m, 0, UI_TC_NEXT, UI_STR_NextLayout);
     AppendMenu(m, 0, UI_TC_PREV, UI_STR_PrevLayout);
@@ -79,6 +82,9 @@ void UI_TR_menu(void) {
         } else {
             KL_activate();
         }
+        break;
+    case UI_TC_RESTART:
+        restart_the_program();
         break;
     case UI_TC_NEXT:
         LM_activate_next_locale();
@@ -142,6 +148,7 @@ bool UI_init(void) {
 
     #define s(id, var) LoadString(0, id, var, UI_STR_MAXLEN)
     s(IDS_SUSPEND, UI_STR_Suspend);
+    s(IDS_RESTART, UI_STR_Restart);
     s(IDS_NEXT_LAYOUT, UI_STR_NextLayout);
     s(IDS_PREV_LAYOUT, UI_STR_PrevLayout);
     s(IDS_EXIT, UI_STR_Exit);
