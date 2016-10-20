@@ -115,11 +115,5 @@ char *OS_keyboard_layout_name(LANGID lang);
 
 #define HK_0 32000
 
-#ifdef __MINGW32__
-# define EH_CALLBACK
-#else
-# define EH_CALLBACK CALLBACK
-#endif // __MINGW32__
-
 #endif // STDAFX_H_INCLUDED
 

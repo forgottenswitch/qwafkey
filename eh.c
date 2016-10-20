@@ -10,11 +10,15 @@
  * the owner of currently focused window is focused.
  * Requires Windows 2000.
  *
+ * Needed to implement "global" layout (Windows 7 only sets it per-app).
+ * Not needed on Windows 10, as layout is now global by default.
+ * Does not harm, though.
+ *
  * */
 
 HWINEVENTHOOK EH_handle;
 
-void EH_CALLBACK EH_proc(
+void CALLBACK EH_proc(
     HWINEVENTHOOK hook, DWORD event, HWND hwnd,
     LONG idObject, LONG idChild,
     DWORD dwEventThread, DWORD dwmsEventTime
