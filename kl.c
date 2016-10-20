@@ -189,7 +189,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 
     /* Compute the layout level currently in effect
      * (using the modifier tracking data) */
-    unsigned char lv = 0;
+    int lv = 0;
     if (KL_km_l3.in_effect) {
         lv = 2;
     } else if (KL_km_l5.in_effect) {
@@ -199,6 +199,10 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         lv += 1;
     }
 
+    /* Acquire the key binding (the alteration to be performed) */
+    LK lk = KL_kly[lv][sc];
+    printf(" l%d,b%x", lv, lk.binding);
+
     /* If any of control, alt, or win is currently in effect,
      * alter the key being send using the special when-a-modifier-is-in-effect
      * lookup table, except when this would cancel a key action.
@@ -206,18 +210,12 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     if (lv <= 1 && (KL_km_alt.in_effect || KL_km_control.in_effect || KL_km_win.in_effect)) {
         VK vk = KL_mods_vks[sc];
         /* the when-modifier alteration */
-        LK lk = KL_kly[lv][sc];
         if (vk && !(lk.active && lk.mods && KLM_KA)) {
             keybd_event(vk, 0, (down ? 0 : KEYEVENTF_KEYUP), 0);
-            printf(" SendVK%c(%02x,'%c')", (down ? '_' : '^'), vk, vk);
+            printf(" SendVK%c(%02x=%c)", (down ? '_' : '^'), vk, vk);
             return StopThisEvent();
         }
     }
-
-    /* Acquire a key binding (the alteration to be performed) */
-    LK lk = KL_kly[lv][sc];
-    printf(" l%d,b%x", lv, lk.binding);
-    //printf(" [sc%03x%c]l%d,b%x", sc, (down?'_':'^'), lv, lk.binding);
 
     /* Processing of key when in dead key sequence */
     #define MaybeDeadKeyVK() \
