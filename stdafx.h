@@ -126,6 +126,7 @@ typedef struct {
 } LK;
 
 extern char *ConfigDir;
+extern char *ProgramDir;
 extern char *current_parsing_directory;
 
 void read_keydefs_file(char *path);

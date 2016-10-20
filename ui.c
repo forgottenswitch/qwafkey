@@ -182,8 +182,6 @@ void UI_spawn(void) {
     UI_thread = CreateThread(NULL, 8*1024, UI_thread_proc, NULL, 0, &UI_thread_id);
 }
 
-char DefaultConfigFileContents[] = "# An example "ProgramName" config file\n";
-
 bool UI_ask_for_creating_config_file(char *path) {
     int x;
     char title[] = ProgramName" configuration file";
@@ -192,10 +190,24 @@ bool UI_ask_for_creating_config_file(char *path) {
                          "Would you like to create it? (It would open in Notepad)", NULL);
     x = MessageBox(NULL, message, title, MB_YESNO);
     if (x == IDYES) {
+        char *config_example_path;
+        char *config_example = NULL;
+        config_example_path = str_concat_path(ProgramDir, "config", "example.txt", NULL);
         CreateDirectory(ConfigDir, NULL);
-        FILE *f = fopen(path, "w");
-        fwrite(DefaultConfigFileContents, 1, strlen(DefaultConfigFileContents), f);
-        fclose(f);
+        {
+            FILE *f = fopen(config_example_path, "r");
+            if (f) {
+                config_example = fread_to_eof(f, '\n');
+                fclose(f);
+            }
+            free(config_example_path);
+        }
+        if (config_example) {
+            FILE *f = fopen(path, "w");
+            fwrite(config_example, 1, strlen(config_example), f);
+            fclose(f);
+            free(config_example);
+        }
         char *cmd;
         cmd = str_concat("notepad \"", path, "\"", NULL);
         OS_run_command(cmd);

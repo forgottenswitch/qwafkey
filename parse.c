@@ -190,6 +190,14 @@ void read_to_eol(READ_PARMS) {
     *input = str;
 }
 
+bool read_comment(READ_PARMS) {
+    if (**input == '#') {
+        read_to_eol(input);
+        return true;
+    }
+    return false;
+}
+
 int read_sc_alias(READ_PARMS) {
     char *str = *input, *str0 = str;
     if (isidentchar0(str[0])) {
@@ -408,7 +416,9 @@ bool read_hotk(READ_PARMS) {
                 }
                 vk = OS_sc_to_vk(sc);
             }
+            read_spc(&str);
             if (read_colon(&str)) {
+                read_spc(&str);
                 if (get_int(&str, &ka, read_ka)) {
                     HK_KA_register(ka, mods, vk);
                     RET(str, true);
@@ -635,7 +645,8 @@ bool read_dk_file(READ_PARMS) {
 #undef READ_PARMS
 
 #define read_statement(arg) \
-    (read_bind(arg) ||\
+    (read_comment(arg) ||\
+    read_bind(arg) ||\
     read_hotk(arg) ||\
     read_lang(arg) ||\
     read_levs(arg) ||\

@@ -1,0 +1,191 @@
+# Example configuration file for QwafKey.
+# Use UTF-8 encoding for saving.
+#
+# This file is a copy of path\to\qwafkey\config\example.txt
+
+# Reading the entire file should only
+# be needed if something is handled incorrectly.
+
+
+# Lines denote a key and either an action, or a substitute:
+#  <key>: !<action>
+#  <key>: <key-to-use-instead>
+
+# Hotkeys are specified as @<modifiers><key>.
+#  Modifier could be a '#' (Win), '!' (Alt), '^' (Control), or '+' (Shift) character.
+# The following binds Win+F2 to toggle whether qwafkey is active:
+
+@#F2: !toggle
+
+# The leading '!' means to call a function (the toggle one in this case),
+# and not simply send a keypress.
+
+
+# Compose key
+# -----------
+
+# Quite a special action is the !compose.
+# Typing it allows the following keys to reference an exotic character.
+# Examples:
+#  "!compose . ." gives "…"
+#  "!compose a e" gives "æ"
+
+# Key combinations are read from config_dir/Compose
+# The file, however, uses key names.
+# The names are first read from config_dir/keysymdef.h
+#
+# The config_dir is first tried as "<User folder>\qwafkey",
+# and then as "<path to qwafkey>\config".
+#
+# If you need to define a Compose combination, copy the config\Compose
+# to qwafkey\Compose, and edit the latter.
+#
+# In Compose file, there are two types of combinations.
+# One type starts with a <Multi_key>, which means a !compose key.
+# Another starts with a <dead_...>, which means a !dead_... key.
+#
+# It is possible, say, for French layout (see "Per-language binds" below)
+# to bind '[' to !dead_acute, and [e would result in a "é".
+
+
+
+# Alphanumeric keys could be referenced in a number of ways:
+# - as scancode, i.e. by physical location.
+#   Written as "sc000", where '000' is a hexadecimal value.
+# - as "virtual keycode", i.e. the key from qwerty layout
+#   a key is supposed to "mean" in the current.
+#   Written as "vk00".
+# - as unicode character, i.e. by the character produced.
+#   Written as "=<character>", or "u0000".
+
+# The following scancodes are defined for convenience:
+#  Special keys:
+#   Escape/Esc, F1-F12, Backspace/BS, Enter/Return, Tab, Space, Menu/AppsKey/Apps,
+#   PrintScreen/Print/SysRq, ScrollLock, PauseBreak/Pause/Break/CtrlBreak,
+#   Insert/Ins, Home, PageUp/PgUp/Prior, PageDown/PgDn/Next, Delete/Del,
+#   Up, Down/Dn, Left, Right
+#  Qwerty keys:
+#   qA-qZ, q1-q9, q0, qTilde, qMinus, qPlus, qEquals/qEqual, qBackslash,
+#   qLBracket/qLBrace, qRBracket/qRBrace, qSemicolon/qSemic/qSemi, qQuote/qApostrophe,
+#   qComma, qPeriod/qDot, qSlash
+#
+# The following binds the key which would be 'Z' in QWERTY to power off the display:
+
+@#qZ: !dim_screen
+
+
+
+# Keys alone could be remapped as well.
+#
+# First, a level needs to be selected.
+# Usually, there are two levels: normal and Shift.
+# Qwafkey provides six.
+#
+# The following selects all levels:
+
+# levels: 1,2,3,4,5,6
+
+# The following would bind Capslock to Control (at least on most keyboards):
+# (done for speed/simplicity as an action, as qwafkey needs to track modifiers state)
+
+# sc03A: !control
+
+# To give a key different bindings across levels, separate them with commas.
+# The following would bind Capslock to switch to next keyboard layout,
+# and Shift-Capslock to previous:
+# (without the levels: directive, 'next' would be duplicated to 3th and 5th,
+# and 'previous' to 4th and 6th levels)
+
+# levels: 1,2
+# sc03A: !next_layout, !prev_layout
+
+# Accessing levels is done with Shift, Level3, and Level5 modifiers.
+# Each adds 1, 2, or 4 levels, respectively.
+# The following would bind Capslock to be Level5 shift:
+# (Note the need to select all levels, so that:
+#  1. level5 is cancellable by releasing Capslock while on levels 5 and 6
+#  2. capslock meaning is consistent)
+
+# levels: 1,2,3,4,5,6
+# sc03A: !lv5_shift
+
+# Other modifiers defined are:
+#  l5_lock, l3_latch, l2_latch
+#
+# 'Lock' is the same as caps-lock: it stays in effect until pressed again.
+# As for 'Latch', it:
+#   acts as shift if another key gets released while it was down
+#   otherwise 'shifts' only the next key
+
+# The following paragraph typically should not be needed,
+# and is provided for reference only.
+#
+# When a (possibly non-English) keyboard layout is selected, each key has a virtual keycode value.
+# This is in order to know whether Control+<the key> should mean, say, Control+Z, i.e. "undo".
+# So, if "Che" needs to mean X, it is assigned vk_x.
+#
+# Qwafkey, while active, changes virtual keycodes to be physically consistent across all layouts.
+# This way, "Control-ZXCV" and alike do not change location across different layouts,
+# i.e. you do not need to care which language is currently selected.
+#
+# One language, however, needs to be the "reference".
+# The following sets it to the (default) Neuthral, or US English.
+# 409 is the language code, as used by Windows.
+
+vks_lang:409
+
+
+# Per-language binds
+# ------------------
+
+# Keys could be remapped for a specific language only.
+# The following would swap A and B on English layouts.
+# (Assumption is that no more than a single layout for a language is needed,
+# which should usually be true):
+
+# lang: 409
+# qA: qB
+# qB: qA
+
+# Layout-specific remaps could be put into lang_0000.txt file (lang_0409.txt, etc.).
+# On start, qwafkey examines layouts in use, and loads any matching lang_ files.
+
+
+# Per-app binds
+# -------------
+
+# Keys could also be remapped for a specific window only.
+# Each window actually has two names - a title, and a class.
+#
+# Class is not directly visible, but is viewable with special programs.
+# The following makes 1/2 be left/right in Windows 7 Image Viewer:
+
+# class Photo_Lightweight_Viewer
+# q1: qLeft
+# q2: qRight
+
+# An application could also be specified by title fragment.
+# The following would make IJKL be arrows in a fictional "Games: No Options Game v1.0" window
+# (fullscreen would also work):
+
+# title No Options Game
+# qI: qUp
+# qJ: qLeft
+# qK: qDown
+# qL: qRight
+
+# Some games need scancodes, and some - virtutal keycodes.
+# Some wouldn't accept either.
+
+# Virtual keycodes could also be written as "vk_<name>"
+# The following names are defined:
+#   space, tab, enter/return, esc/escape, bs/back/backspace, del/delete, ins/insert,
+#   home, end, pgup/prior, pgdn/pgdown/next, up, down, left, right, scroll, capital, 
+#   numlock, numpad0-numpad9, decimal/numpaddot, delete/numpaddel,
+#   divide/numpaddiv, multiply/numpadmult, add/numpadadd, subtract/numpadsub,
+#   return/numpadenter, menu/apps/appskey, print/printscreen, pause/break, help, sleep,
+#   browser_back/_forward/_refresh/_stop/_search/_favorites/_home,
+#   volume_mute/_up/_down,
+#   media_next_track/_prev_track/_stop/_play_pause,
+#   launch_mail/_media_select/_app1/_app2
+
