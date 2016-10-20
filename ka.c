@@ -147,71 +147,6 @@ ka(KA_toggle_on_top) {
     SetWindowPos(hwnd, (topmost ? (HWND)HWND_NOTOPMOST : (HWND)HWND_TOPMOST), r.left, r.top, r.right - r.left, r.bottom - r.top, 0);
 }
 
-void KA_10_presses(VK vk1) {
-    static const ssize_t N = 11;
-    INPUT inps[2*N], *inp;
-    int i, tick_count = GetTickCount();
-    fori (i, 0, (2*N - 1)) {
-        inp = inps + i;
-        inp->type = INPUT_KEYBOARD;
-        inp->ki.wVk = vk1;
-        inp->ki.dwFlags = (i % 2 ? 0 : KEYEVENTF_KEYUP);
-        inp->ki.dwExtraInfo = 0;
-        inp->ki.wScan = 0;
-        inp->ki.time = tick_count;
-    }
-    SendInput(2*N, inps, sizeof(INPUT));
-}
-
-ka(KA_left10) {
-    if (!down)
-        return;
-    KA_10_presses(VK_LEFT);
-}
-
-ka(KA_right10) {
-    if (!down)
-        return;
-    KA_10_presses(VK_RIGHT);
-}
-
-ka(KA_msys2_shell) {
-    if (!down)
-        return;
-    printf("MSYS2 shell... ");
-    char command[] = "cmd /A /Q /K \"C:/msys64/msys2_shell.bat\"";
-    OS_run_command(command);
-}
-
-void KA_zdoom_vky(SC sc) {
-    keybd_event(0, sc, 0, 0);
-    keybd_event(0, sc, KEYEVENTF_KEYUP, 0);
-    Sleep(75);
-    keybd_event('Y', 0, 0, 0);
-    keybd_event('Y', 0, KEYEVENTF_KEYUP, 0);
-}
-
-ka(KA_zdoom_quicksave) {
-    printf("zqs ");
-    if (!down)
-        return;
-    KA_zdoom_vky(SC_F6);
-}
-
-ka(KA_zdoom_quickload) {
-    printf("zql ");
-    if (!down)
-        return;
-    KA_zdoom_vky(SC_F9);
-}
-
-ka(KA_lbutton_down) {
-    if (!down) { return; }
-    mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-    //keybd_event(VK_0, 0, 0, 0);
-    //keybd_event(VK_0, 0, KEYEVENTF_KEYUP, 0);
-}
-
 #undef ka
 
 typedef struct {
@@ -246,12 +181,6 @@ KA_Pair KA_fns[] = {
     ka(KA_kr_on_pt),
     ka(KA_kr_off_pt),
     ka(KA_kr_off),
-    ka(KA_left10),
-    ka(KA_right10),
-    ka(KA_msys2_shell),
-    ka(KA_zdoom_quicksave),
-    ka(KA_zdoom_quickload),
-    ka(KA_lbutton_down),
 };
 #undef ka
 
