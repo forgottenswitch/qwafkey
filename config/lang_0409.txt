@@ -1,0 +1,17 @@
+lang:409
+
+levels:1,2
+qE:=a,=A
+qR:=f,=F
+qT:=g,=G
+qA:=v,=V
+qD:=e,=E
+qF:=r,=R
+qG:=t,=T
+qV:=d,=D
+qI:=o,=O
+qO:=p,=P
+qP:=k,=K
+qJ:=n,=N
+qK:=i,=I
+qN:=j,=J
