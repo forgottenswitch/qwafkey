@@ -99,7 +99,7 @@ void read_default_main_config_file(void) {
     FILE *f;
     puts("read default main cfg...");
     current_parsing_directory = ProgramDir;
-    path = str_concat_path(ProgramDir, "config.txt", NULL);
+    path = str_concat_path(ProgramDir, "config/hjkl.txt", NULL);
     printf("default main cfg:%s|\n", path);
     f = fopen(path, "rb");
     if (f) {
@@ -127,13 +127,13 @@ void read_compose_file(char *path) {
 }
 
 void read_default_keydefs_file(void) {
-    char *path = str_concat_path(ProgramDir, DefaultKeydefsFilename, NULL);
+    char *path = str_concat_path(ProgramDir, "config", DefaultKeydefsFilename, NULL);
     read_keydefs_file(path);
     free(path);
 }
 
 void read_default_compose_file(void) {
-    char *path = str_concat_path(ProgramDir, DefaultComposeFilename, NULL);
+    char *path = str_concat_path(ProgramDir, "config", DefaultComposeFilename, NULL);
     read_compose_file(path);
     free(path);
 }
@@ -181,7 +181,7 @@ void read_default_config_file_for_lang(LANGID lang) {
     FILE *f;
     printf("read default lang %04x cfg...", lang);
     current_parsing_directory = ProgramDir;
-    path = str_concat_path(ProgramDir, lang_config_filename(lang), NULL);
+    path = str_concat_path(ProgramDir, "config", lang_config_filename(lang), NULL);
     printf("default lang %04x cfg:%s|\n", lang, path);
     f = fopen(path, "rb");
     if (f) {
