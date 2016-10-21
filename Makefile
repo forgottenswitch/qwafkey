@@ -33,16 +33,10 @@ RESCOMP ?= windres
 all: 32
 
 .PHONY: 32
-32: comp_con32 comp_cui32 comp_gui32
-con32: run_con32
-cui32: run_cui32
-gui32: run_gui32
+32: con32 cui32 gui32
 
 .PHONY: 64
-64: comp_con64 comp_cui64 comp_gui64
-con64: run_con64
-cui64: run_cui64
-gui64: run_gui64
+64: con64 cui64 gui64
 
 .PHONY: clean
 clean:
@@ -115,24 +109,31 @@ mkdir_gui64:
 	@echo "Building GUI for x86_64..."
 	@mkdir -p $(GUI64_OBJDIR)
 
-.PHONY: comp_con32 comp_cui32 comp_gui32
-comp_con32: mkdir_con32 $(HEADERS) $(CON32_OBJS)
+.PHONY: con32 cui32 gui32
+con32: $(CON32_EXE)
+cui32: $(CUI32_EXE)
+gui32: $(GUI32_EXE)
+$(CON32_EXE): mkdir_con32 $(HEADERS) $(CON32_OBJS)
 	@echo "Linking ConsoleUI for x86..."
-	$(CC32) $(LDFLAGS) $(CON32_OBJS) -s -o $(CON32_EXE)
-comp_cui32: mkdir_cui32 $(HEADERS) $(CUI32_OBJS)
+	$(CC32) $(LDFLAGS) $(CON32_OBJS) -s -o $@
+$(CUI32_EXE): mkdir_cui32 $(HEADERS) $(CUI32_OBJS)
 	@echo "Linking Console-with-GUI for x86..."
-	$(CC32) $(LDFLAGS) $(CUI32_OBJS) -s -o $(CUI32_EXE) $(LDFLAGS_UI)
-comp_gui32: mkdir_gui32 $(HEADERS) $(GUI32_OBJS)
+	$(CC32) $(LDFLAGS) $(CUI32_OBJS) -s -o $@ $(LDFLAGS_UI)
+$(GUI32_EXE): mkdir_gui32 $(HEADERS) $(GUI32_OBJS)
 	@echo "Linking GUI for x86..."
-	$(CC32) $(LDFLAGS) $(GUI32_OBJS) -s -o $(GUI32_EXE) $(LDFLAGS_UI) -mwindows
-.PHONY: comp_con64 comp_cui64 comp_gui64
-comp_con64: mkdir_con64 $(HEADERS) $(CON64_OBJS)
+	$(CC32) $(LDFLAGS) $(GUI32_OBJS) -s -o $@ $(LDFLAGS_UI) -mwindows
+
+.PHONY: con64 cui64 gui64
+con64: $(CON64_EXE)
+cui64: $(CUI64_EXE)
+gui64: $(GUI64_EXE)
+$(CON64_EXE): mkdir_con64 $(HEADERS) $(CON64_OBJS)
 	@echo "Linking Console for x86_64..."
-	$(CC64) $(LDFLAGS) $(CON64_OBJS) -s -o $(CON64_EXE)
-comp_cui64: mkdir_gui64 $(HEADERS) $(CUI64_OBJS)
+	$(CC64) $(LDFLAGS) $(CON64_OBJS) -s -o $@
+$(CUI64_EXE): mkdir_gui64 $(HEADERS) $(CUI64_OBJS)
 	@echo "Linking Console-with-GUI for x86_64..."
-	$(CC64) $(LDFLAGS) $(CUI64_OBJS) -s -o $(CUI64_EXE) $(LDFLAGS_UI)
-comp_gui64: mkdir_gui64 $(HEADERS) $(GUI64_OBJS)
+	$(CC64) $(LDFLAGS) $(CUI64_OBJS) -s -o $@ $(LDFLAGS_UI)
+$(GUI64_EXE): mkdir_gui64 $(HEADERS) $(GUI64_OBJS)
 	@echo "Linking GUI for x86_64..."
-	$(CC64) $(LDFLAGS) $(GUI64_OBJS) -s -o $(GUI64_EXE) $(LDFLAGS_UI) -mwindows
+	$(CC64) $(LDFLAGS) $(GUI64_OBJS) -s -o $@ $(LDFLAGS_UI) -mwindows
 
