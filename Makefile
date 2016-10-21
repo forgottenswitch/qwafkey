@@ -1,5 +1,7 @@
 PROJ = qwafkey
 
+WGET ?= wget
+
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -Wstrict-prototypes
 CFLAGS32 += -m32
 CFLAGS64 += -mx32
@@ -41,6 +43,11 @@ all: 32
 .PHONY: clean
 clean:
 	@rm -r *.exe .obj/* 2>/dev/null || true
+
+.PHONY: fetch
+fetch:
+	$(WGET) -O config/Compose https://cgit.freedesktop.org/xorg/lib/libX11/tree/nls/en_US.UTF-8/Compose.pre
+	$(WGET) -O config/keysymdef.h https://cgit.freedesktop.org/xorg/proto/x11proto/tree/keysymdef.h
 
 $(CON32_OBJDIR)/%.o: %.c
 	$(CC32) $(CFLAGS32) $(CFLAGS) -c -DNOGUI -DDEBUG $< -o $@
