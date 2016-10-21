@@ -155,3 +155,51 @@ char *OS_keyboard_layout_name(LANGID lang) {
     free(subkey);
     return NULL;
 }
+
+int OS_ToUnicodeThroghVkKeyScan(void *cache, VK vk, BOOL shift_down) {
+    INT i;
+    //INT ret;
+    shift_down = !!shift_down;
+
+    /* for all the UCS-2 codepoints ... */
+    for (i = 0; i <= 0xffff; i++) {
+        SHORT i_x;
+        BYTE i_vk, i_mods;
+        BOOL i_shift_down, i_ctrl_down;
+
+        i_x = ((SHORT*)cache)[i];
+        i_vk = LOBYTE(i_x);
+        i_mods = HIBYTE(i_x);
+        i_shift_down = i_mods & 1;
+        i_ctrl_down = !!(i_mods & 2);
+
+        if (0) {
+            BYTE i_char = (char) i;
+            if (i_char != i)
+                i_char = 0;
+            printf(" %04x '%c' => vk%02x vk'%c' shift:%d\n", i, i_char, i_vk, i_vk, i_shift_down);
+        }
+
+        if (i_vk == vk && i_shift_down == shift_down && !i_ctrl_down) {
+            // ret = i;
+            // puts(">>>");
+            return i;
+        }
+    }
+
+    return 0;
+}
+
+void *OS_ToUnicodeThroghVkKeyScan_new_cache(void) {
+    SHORT *ret;
+    INT i;
+
+    ret = malloc(0x10000 * sizeof(SHORT));
+
+    /* for all the UCS-2 codepoints ... */
+    for (i = 0; i <= 0xffff; i++) {
+        ret[i] = VkKeyScanW(i);
+    }
+
+    return (void*) ret;
+}

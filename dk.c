@@ -504,18 +504,21 @@ void DK_print_node(DK_Node *node, int ofs) {
  * that is, when no symbol code has been sent.
  * */
 bool DK_descend(DK_Key key) {
-    puts("DK_descend"); fflush(stdout);
+    if (key.type == 0) {
+        fprintf(stdout, "{Compose u%04x}", key.code);
+    } else {
+        fprintf(stdout, "{Compose dk %d}", key.code);
+    }
     DK_Node *node = DK_cur_node;
     if (node == NULL) {
-        printf("DK_descend (%d,%d) on a NULL node => reset\n", key.type, key.code); fflush(stdout);
+        fprintf(stdout, "DK_descend (%d,%d) on a NULL node => reset\n", key.type, key.code); fflush(stdout);
         DK_cur_node = &DK_node;
     } else if (!DK_is_pivotNode(node)) {
-        printf("DK_descend (%d,%d) on a bind node => sendinput\n", key.type, key.code); fflush(stdout);
+        fprintf(stdout, "DK_descend (%d,%d) on a bind node => sendinput\n", key.type, key.code); fflush(stdout);
         DK_send_code(node->data.bind.code);
     } else {
-        puts("here1"); fflush(stdout);
         DK_Node *node1 = DK_pivotNode_get(node, key);
-        printf("descend { %d, U+%04x }: %snil\n", key.type, key.code, (node1 == NULL ? "" : "non-"));
+        fprintf(stdout, "descend { %d, U+%04x }: %snil\n", key.type, key.code, (node1 == NULL ? "" : "non-"));
         if (node1 == NULL) {
             /* DK_print_node(node, 2); */
             DK_cur_node = &DK_node;
@@ -523,7 +526,7 @@ bool DK_descend(DK_Key key) {
             DK_cur_node = node1;
             return true;
         } else {
-            printf("descend bind => sendinput\n");
+            fprintf(stdout, "descend bind => sendinput\n");
             DK_send_code(DK_bindNode_code(node1));
         }
     }

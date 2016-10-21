@@ -4,6 +4,7 @@
 #include "lm.h"
 #include "dk.h"
 #include "scancodes.h"
+#include "stdafx.h"
 #ifndef NOGUI
 # include "ui.h"
 #endif // NOGUI
@@ -79,13 +80,18 @@ void KL_toggle() {
 void KL_dk_on_sc(SC sc, int level) {
     printf("{dk sc%03x}", sc);
     WCHAR wc = ((unsigned short)(sc) >= KPN) ? 0 : KL_scw[level % 2][sc];
+    printf("{dk l%d '%c'}", level % 2, (char)wc);
     if (wc) { KL_dk_in_effect = DK_on_char(wc); }
     else { KL_dk_in_effect = 0; }
 }
 
-void KL_dk_on_vk(VK vk, int level) {
+void KL_dk_on_vk(VK vk, int level, BOOL need_shift) {
+    if (need_shift) {
+        level = 1;
+    }
     printf("{dk vk%02x}", vk);
     WCHAR wc = KL_vkw[level % 2][(unsigned char)(vk)];
+    printf("{dk l%d '%c'}", level % 2, (char)wc);
     if (wc) { KL_dk_in_effect = DK_on_char(wc); }
     else { KL_dk_in_effect = 0; }
 }
@@ -220,7 +226,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     /* Processing of key when in dead key sequence */
     #define MaybeDeadKeyVK() \
         if (KL_dk_in_effect) { \
-            if (down) { KL_dk_on_vk(ev->vkCode, lv); }; \
+            if (down) { KL_dk_on_vk(ev->vkCode, lv, lk.mods & MOD_SHIFT); }; \
             return StopThisEvent(); \
         };
 
@@ -331,7 +337,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
      * */
     /* processing of virtual keycode when in dead key sequence */
     else if (KL_dk_in_effect) {
-        if (down) { KL_dk_on_vk(lk.binding, lv); };
+        if (down) { KL_dk_on_vk(lk.binding, lv, lk.mods & MOD_SHIFT); };
     }
     else {
         bool shift_was_down = KL_km_shift.in_effect;
@@ -542,9 +548,11 @@ void KL_compile_klc(KLC *klc) {
             }
         }
     }
+    void *to_wc_cache = OS_ToUnicodeThroghVkKeyScan_new_cache();
     fori (lv, 0, 2) {
+        BOOL shift_down = lv % 2;
         /* Set the shift state according to level */
-        if (lv % 2) {
+        if (shift_down) {
             KL_vksc_kbdstate[VK_SHIFT] = 1;
             KL_vksc_kbdstate[VK_LSHIFT] = 1;
             KL_vksc_kbdstate[VK_RSHIFT] = 1;
@@ -556,24 +564,31 @@ void KL_compile_klc(KLC *klc) {
         int vk;
         printf("\n");
         fori (vk, 0, VK_COUNT) {
-            WCHAR wc = 0, buf[4] = { 0, 0, 0, 0 };
-            /* Translate virtual keycode and shift state into UCS-2 character. */
-            int n = ToUnicode(vk, 0, KL_vksc_kbdstate, buf, lenof(buf), 0);
-            if (n == 1) { wc = buf[0]; };
-            printf("[vk%d%c%02x]", vk, lv ? '+' : ' ', buf[0]);
+            WCHAR wc = 0;
+            /* Translate virtual keycode and shift state into UCS-2 character.
+             * Do not use ToUnicode(), as it ignores shift state.
+             * */
+            // WCHAR buf[4] = { 0, 0, 0, 0 };
+            // int n = ToUnicode(vk, 0, KL_vksc_kbdstate, buf, lenof(buf), 0);
+            // if (n == 1) { wc = buf[0]; };
+            wc = OS_ToUnicodeThroghVkKeyScan(to_wc_cache, vk, shift_down);
+            printf("[vk%02x%cu%02x]", vk, lv ? '+' : ' ', wc);
             KL_vkw[lv][vk] = wc;
         }
         printf("\n");
         fori (sc, 0, KPN) {
-            WCHAR wc = 0, buf[4] = { 0, 0, 0, 0 };
+            WCHAR wc = 0;
             /* Translate scancode and shift state into UCS-2 character. */
             VK vk = OS_sc_to_vk(sc);
-            int n = ToUnicode(vk, 0, KL_vksc_kbdstate, buf, lenof(buf), 0);
-            if (n == 1) { wc = buf[0]; }
-            printf("[sc%03x=>vk%02x%c%02x]", sc, vk, lv ? '+' : ' ', buf[0]);
+            // WCHAR buf[4] = { 0, 0, 0, 0 };
+            // int n = ToUnicode(vk, 0, KL_vksc_kbdstate, buf, lenof(buf), 0);
+            // if (n == 1) { wc = buf[0]; }
+            wc = OS_ToUnicodeThroghVkKeyScan(to_wc_cache, vk, shift_down);
+            printf("[sc%03x=>vk%02x%cu%02x]", sc, vk, lv ? '+' : ' ', wc);
             KL_scw[lv][sc] = wc;
         }
     }
+    free(to_wc_cache);
     CopyMemory(kly, KL_kly, sizeof(KLY));
     CopyMemory(&(klc->vkw), KL_vkw, sizeof(KLVKW));
     CopyMemory(&(klc->scw), KL_scw, sizeof(KLSCW));
