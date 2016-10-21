@@ -110,6 +110,8 @@ bool OS_newer_than_Vista(void);
 char *OS_user_profile_directory(void);
 char *OS_program_directory(void);
 char *OS_keyboard_layout_name(LANGID lang);
+int OS_ToUnicodeThroghVkKeyScan(void *cache, VK vk, BOOL shift_down);
+void *OS_ToUnicodeThroghVkKeyScan_new_cache(void);
 
 #define LANGID_Primary LOWORD
 #define LANGID_Device HIWORD
