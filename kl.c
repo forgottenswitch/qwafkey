@@ -240,9 +240,10 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         } else if (lv < 4) { /* ... when level3 is in effect ... */
             printf("[34]");
             INPUT inp[5], *curinp = inp;
-            char lctrl = (KL_phys[SC_LCONTROL] ? 0 : 1), lctrl1=-lctrl;
-            char ralt = (KL_phys[SC_RMENU] ? 0 : 1), ralt1=-ralt;
+            char lctrl = (KL_phys[SC_LCONTROL] ? 1 : 0), lctrl1=-lctrl;
+            char ralt = (KL_phys[SC_RMENU] ? 1 : 0), ralt1=-ralt;
             size_t inpl = lctrl*2 + ralt*2;
+            printf("{inpl:%d}", (int)inpl);
             MaybeDeadKeyVK();
             if (!inpl) {
                 return PassThisEvent();
