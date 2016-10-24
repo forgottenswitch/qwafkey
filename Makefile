@@ -35,10 +35,16 @@ RESCOMP ?= windres
 all: 32
 
 .PHONY: 32
-32: con32 cui32 gui32
+32:
+	$(MAKE) con32
+	$(MAKE) cui32
+	$(MAKE) gui32
 
 .PHONY: 64
-64: con64 cui64 gui64
+64:
+	$(MAKE) con64
+	$(MAKE) cui64
+	$(MAKE) gui64
 
 .PHONY: clean
 clean:
@@ -50,16 +56,22 @@ fetch:
 	$(WGET) -O config/keysymdef.h https://cgit.freedesktop.org/xorg/proto/x11proto/plain/keysymdef.h
 
 $(CON32_OBJDIR)/%.o: %.c
+	@mkdir -p $(@D)
 	$(CC32) $(CFLAGS32) $(CFLAGS) -c -DNOGUI -DDEBUG $< -o $@
 $(CUI32_OBJDIR)/%.o: %.c
+	@mkdir -p $(@D)
 	$(CC32) $(CFLAGS32) $(CFLAGS) -c -DDEBUG $< -o $@
 $(GUI32_OBJDIR)/%.o: %.c
+	@mkdir -p $(@D)
 	$(CC32) $(CFLAGS32) $(CFLAGS) -c $< -o $@
 $(CON64_OBJDIR)/%.o: %.c
+	@mkdir -p $(@D)
 	$(CC64) $(CFLAGS64) $(CFLAGS) -c -DNOGUI -DDEBUG $< -o $@
 $(CUI64_OBJDIR)/%.o: %.c
+	@mkdir -p $(@D)
 	$(CC64) $(CFLAGS64) $(CFLAGS) -c -DDEBUG $< -o $@
 $(GUI64_OBJDIR)/%.o: %.c
+	@mkdir -p $(@D)
 	$(CC64) $(CFLAGS64) $(CFLAGS) -c $< -o $@
 
 $(CON32_OBJDIR)/resource.o: $(RES_RC) $(ICO)
@@ -89,44 +101,27 @@ CON64_OBJS := $(addprefix $(CON64_OBJDIR)/, $(CON_OBJS))
 CUI64_OBJS := $(addprefix $(CUI64_OBJDIR)/, $(GUI_OBJS))
 GUI64_OBJS := $(addprefix $(GUI64_OBJDIR)/, $(GUI_OBJS))
 
-.PHONY: mkdir_con32 mkdir_cui32 mkdir_gui32
-mkdir_con32:
-	@echo
-	@echo "Building Console for x86..."
-	@mkdir -p $(CON32_OBJDIR)
-mkdir_cui32:
-	@echo
-	@echo "Building Console-with-GUI for x86..."
-	@mkdir -p $(CUI32_OBJDIR)
-mkdir_gui32:
-	@echo
-	@echo "Building GUI for x86..."
-	@mkdir -p $(GUI32_OBJDIR)
-.PHONY: mkdir_con64 mkdir_cui64 mkdir_gui64
-mkdir_con64:
-	@echo
-	@echo "Building Console for x86_64..."
-	@mkdir -p $(CON64_OBJDIR)
-mkdir_cui64:
-	@echo
-	@echo "Building Console-with-GUI for x86_64..."
-	@mkdir -p $(CUI64_OBJDIR)
-mkdir_gui64:
-	@echo
-	@echo "Building GUI for x86_64..."
-	@mkdir -p $(GUI64_OBJDIR)
-
 .PHONY: con32 cui32 gui32
 con32: $(CON32_EXE)
 cui32: $(CUI32_EXE)
 gui32: $(GUI32_EXE)
-$(CON32_EXE): mkdir_con32 $(HEADERS) $(CON32_OBJS)
+.PHONY: con32_objs cui32_objs gui32_objs
+con32_objs: $(CON32_OBJS)
+cui32_objs: $(CUI32_OBJS)
+gui32_objs: $(GUI32_OBJS)
+$(CON32_EXE): $(HEADERS) $(CON32_OBJS)
+	@echo "Building Console for x86..."
+	@$(MAKE) con32_objs
 	@echo "Linking ConsoleUI for x86..."
 	$(CC32) $(LDFLAGS) $(CON32_OBJS) -s -o $@
-$(CUI32_EXE): mkdir_cui32 $(HEADERS) $(CUI32_OBJS)
+$(CUI32_EXE): $(HEADERS) $(CUI32_OBJS)
+	@echo "Building Console-with-GUI for x86..."
+	@$(MAKE) cui32_objs
 	@echo "Linking Console-with-GUI for x86..."
 	$(CC32) $(LDFLAGS) $(CUI32_OBJS) -s -o $@ $(LDFLAGS_UI)
-$(GUI32_EXE): mkdir_gui32 $(HEADERS) $(GUI32_OBJS)
+$(GUI32_EXE): $(HEADERS) $(GUI32_OBJS)
+	@echo "Building GUI for x86..."
+	@$(MAKE) gui32_objs
 	@echo "Linking GUI for x86..."
 	$(CC32) $(LDFLAGS) $(GUI32_OBJS) -s -o $@ $(LDFLAGS_UI) -mwindows
 
@@ -134,13 +129,23 @@ $(GUI32_EXE): mkdir_gui32 $(HEADERS) $(GUI32_OBJS)
 con64: $(CON64_EXE)
 cui64: $(CUI64_EXE)
 gui64: $(GUI64_EXE)
-$(CON64_EXE): mkdir_con64 $(HEADERS) $(CON64_OBJS)
+.PHONY: con64_objs cui64_objs gui64_objs
+con64_objs: $(CON64_OBJS)
+cui64_objs: $(CUI64_OBJS)
+gui64_objs: $(GUI64_OBJS)
+$(CON64_EXE): $(HEADERS) $(CON64_OBJS)
+	@echo "Building Console for x86_64..."
+	@$(MAKE) con64_objs
 	@echo "Linking Console for x86_64..."
 	$(CC64) $(LDFLAGS) $(CON64_OBJS) -s -o $@
-$(CUI64_EXE): mkdir_gui64 $(HEADERS) $(CUI64_OBJS)
+$(CUI64_EXE): $(HEADERS) $(CUI64_OBJS)
+	@echo "Building Console-with-GUI for x86_64..."
+	@$(MAKE) cui64_objs
 	@echo "Linking Console-with-GUI for x86_64..."
 	$(CC64) $(LDFLAGS) $(CUI64_OBJS) -s -o $@ $(LDFLAGS_UI)
-$(GUI64_EXE): mkdir_gui64 $(HEADERS) $(GUI64_OBJS)
+$(GUI64_EXE): $(HEADERS) $(GUI64_OBJS)
+	@echo "Building GUI for x86_64..."
+	@$(MAKE) gui64_objs
 	@echo "Linking GUI for x86_64..."
 	$(CC64) $(LDFLAGS) $(GUI64_OBJS) -s -o $@ $(LDFLAGS_UI) -mwindows
 
