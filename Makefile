@@ -23,8 +23,13 @@ CUI64_OBJDIR=.obj/cui64
 GUI64_OBJDIR=.obj/gui64
 
 ICO = $(addprefix icons/, off.ico on.ico)
+RES_H = resource.h
 RES_RC = resource.rc
-HEADERS = stdafx.h resource.h
+
+HEADERS = \
+	dk.h eh.h freadline.h hk.h ka.h ka_dk.h \
+	keysymdef.h kl.h km.h kn.h kr.h lm.h parse.h \
+	resource.h scancodes.h stdafx.h ui.h
 
 CC32 ?=i686-w64-mingw32-gcc
 CC64 ?=x86_64-w64-mingw32-gcc
@@ -55,36 +60,36 @@ fetch:
 	$(WGET) -O config/Compose https://cgit.freedesktop.org/xorg/lib/libX11/plain/nls/en_US.UTF-8/Compose.pre
 	$(WGET) -O config/keysymdef.h https://cgit.freedesktop.org/xorg/proto/x11proto/plain/keysymdef.h
 
-$(CON32_OBJDIR)/%.o: %.c
+$(CON32_OBJDIR)/%.o: %.c $(HEADERS)
 	@mkdir -p $(@D)
 	$(CC32) $(CFLAGS32) $(CFLAGS) -c -DNOGUI -DDEBUG $< -o $@
-$(CUI32_OBJDIR)/%.o: %.c
+$(CUI32_OBJDIR)/%.o: %.c $(HEADERS)
 	@mkdir -p $(@D)
 	$(CC32) $(CFLAGS32) $(CFLAGS) -c -DDEBUG $< -o $@
-$(GUI32_OBJDIR)/%.o: %.c
+$(GUI32_OBJDIR)/%.o: %.c $(HEADERS)
 	@mkdir -p $(@D)
 	$(CC32) $(CFLAGS32) $(CFLAGS) -c $< -o $@
-$(CON64_OBJDIR)/%.o: %.c
+$(CON64_OBJDIR)/%.o: %.c $(HEADERS)
 	@mkdir -p $(@D)
 	$(CC64) $(CFLAGS64) $(CFLAGS) -c -DNOGUI -DDEBUG $< -o $@
-$(CUI64_OBJDIR)/%.o: %.c
+$(CUI64_OBJDIR)/%.o: %.c $(HEADERS)
 	@mkdir -p $(@D)
 	$(CC64) $(CFLAGS64) $(CFLAGS) -c -DDEBUG $< -o $@
-$(GUI64_OBJDIR)/%.o: %.c
+$(GUI64_OBJDIR)/%.o: %.c $(HEADERS)
 	@mkdir -p $(@D)
 	$(CC64) $(CFLAGS64) $(CFLAGS) -c $< -o $@
 
-$(CON32_OBJDIR)/resource.o: $(RES_RC) $(ICO)
+$(CON32_OBJDIR)/resource.o: $(ICO) $(RES_RC) $(RES_H)
 	$(RESCOMP) -i $(RES_RC) -o $@
-$(CUI32_OBJDIR)/resource.o: $(RES_RC) $(ICO)
+$(CUI32_OBJDIR)/resource.o: $(ICO) $(RES_RC) $(RES_H)
 	$(RESCOMP) -i $(RES_RC) -o $@
-$(GUI32_OBJDIR)/resource.o: $(RES_RC) $(ICO)
+$(GUI32_OBJDIR)/resource.o: $(ICO) $(RES_RC) $(RES_H)
 	$(RESCOMP) -i $(RES_RC) -o $@
-$(CON64_OBJDIR)/resource.o: $(RES_RC) $(ICO)
+$(CON64_OBJDIR)/resource.o: $(ICO) $(RES_RC) $(RES_H)
 	$(RESCOMP) -i $(RES_RC) -o $@
-$(CUI64_OBJDIR)/resource.o: $(RES) $(ICO)
+$(CUI64_OBJDIR)/resource.o: $(ICO) $(RES_RC) $(RES_H)
 	$(RESCOMP) -i $(RES_RC) -o $@
-$(GUI64_OBJDIR)/resource.o: $(RES) $(ICO)
+$(GUI64_OBJDIR)/resource.o: $(ICO) $(RES_RC) $(RES_H)
 	$(RESCOMP) -i $(RES_RC) -o $@
 
 COMMON_OBJS := \
