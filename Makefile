@@ -1,11 +1,15 @@
 PROJ = qwafkey
 
 WGET ?= wget
+RESCOMP ?= windres
+CC32 ?= i686-w64-mingw32-gcc
+CC64 ?= x86_64-w64-mingw32-gcc
 
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -Wstrict-prototypes
 CFLAGS32 += -m32
 CFLAGS64 += -mx32
 
+LDFLAGS += -s
 LDFLAGS_UI += -lcomctl32
 
 CON32_EXE=$(PROJ)32-con.exe
@@ -30,10 +34,6 @@ HEADERS = \
 	dk.h eh.h freadline.h hk.h ka.h ka_dk.h \
 	keysymdef.h kl.h km.h kn.h kr.h lm.h parse.h \
 	resource.h scancodes.h stdafx.h ui.h
-
-CC32 ?=i686-w64-mingw32-gcc
-CC64 ?=x86_64-w64-mingw32-gcc
-RESCOMP ?= windres
 
 .PHONY: all
 # Do not build x64 by default, as gcc fails on dk.c
@@ -118,17 +118,17 @@ $(CON32_EXE): $(HEADERS) $(CON32_OBJS)
 	@echo "Building Console for x86..."
 	@$(MAKE) con32_objs
 	@echo "Linking ConsoleUI for x86..."
-	$(CC32) $(LDFLAGS) $(CON32_OBJS) -s -o $@
+	$(CC32) $(LDFLAGS) $(CON32_OBJS) -o $@
 $(CUI32_EXE): $(HEADERS) $(CUI32_OBJS)
 	@echo "Building Console-with-GUI for x86..."
 	@$(MAKE) cui32_objs
 	@echo "Linking Console-with-GUI for x86..."
-	$(CC32) $(LDFLAGS) $(CUI32_OBJS) -s -o $@ $(LDFLAGS_UI)
+	$(CC32) $(LDFLAGS) $(CUI32_OBJS) -o $@ $(LDFLAGS_UI)
 $(GUI32_EXE): $(HEADERS) $(GUI32_OBJS)
 	@echo "Building GUI for x86..."
 	@$(MAKE) gui32_objs
 	@echo "Linking GUI for x86..."
-	$(CC32) $(LDFLAGS) $(GUI32_OBJS) -s -o $@ $(LDFLAGS_UI) -mwindows
+	$(CC32) $(LDFLAGS) $(GUI32_OBJS) -o $@ $(LDFLAGS_UI) -mwindows
 
 .PHONY: con64 cui64 gui64
 con64: $(CON64_EXE)
@@ -142,15 +142,15 @@ $(CON64_EXE): $(HEADERS) $(CON64_OBJS)
 	@echo "Building Console for x86_64..."
 	@$(MAKE) con64_objs
 	@echo "Linking Console for x86_64..."
-	$(CC64) $(LDFLAGS) $(CON64_OBJS) -s -o $@
+	$(CC64) $(LDFLAGS) $(CON64_OBJS) -o $@
 $(CUI64_EXE): $(HEADERS) $(CUI64_OBJS)
 	@echo "Building Console-with-GUI for x86_64..."
 	@$(MAKE) cui64_objs
 	@echo "Linking Console-with-GUI for x86_64..."
-	$(CC64) $(LDFLAGS) $(CUI64_OBJS) -s -o $@ $(LDFLAGS_UI)
+	$(CC64) $(LDFLAGS) $(CUI64_OBJS) -o $@ $(LDFLAGS_UI)
 $(GUI64_EXE): $(HEADERS) $(GUI64_OBJS)
 	@echo "Building GUI for x86_64..."
 	@$(MAKE) gui64_objs
 	@echo "Linking GUI for x86_64..."
-	$(CC64) $(LDFLAGS) $(GUI64_OBJS) -s -o $@ $(LDFLAGS_UI) -mwindows
+	$(CC64) $(LDFLAGS) $(GUI64_OBJS) -o $@ $(LDFLAGS_UI) -mwindows
 
