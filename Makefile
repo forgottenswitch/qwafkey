@@ -46,8 +46,8 @@ clean:
 
 .PHONY: fetch
 fetch:
-	$(WGET) -O config/Compose https://cgit.freedesktop.org/xorg/lib/libX11/tree/nls/en_US.UTF-8/Compose.pre
-	$(WGET) -O config/keysymdef.h https://cgit.freedesktop.org/xorg/proto/x11proto/tree/keysymdef.h
+	$(WGET) -O config/Compose https://cgit.freedesktop.org/xorg/lib/libX11/plain/nls/en_US.UTF-8/Compose.pre
+	$(WGET) -O config/keysymdef.h https://cgit.freedesktop.org/xorg/proto/x11proto/plain/keysymdef.h
 
 $(CON32_OBJDIR)/%.o: %.c
 	$(CC32) $(CFLAGS32) $(CFLAGS) -c -DNOGUI -DDEBUG $< -o $@
