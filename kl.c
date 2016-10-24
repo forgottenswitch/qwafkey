@@ -239,48 +239,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             return PassThisEvent();
         } else if (lv < 4) { /* ... when level3 is in effect ... */
             printf("[34]");
-            INPUT inp[5], *curinp = inp;
-            char lctrl = (KL_phys[SC_LCONTROL] ? 1 : 0), lctrl1=-lctrl;
-            char ralt = (KL_phys[SC_RMENU] ? 1 : 0), ralt1=-ralt;
-            size_t inpl = lctrl*2 + ralt*2;
-            printf("{inpl:%d}", (int)inpl);
             MaybeDeadKeyVK();
-            if (!inpl) { /* ... just let the event fire when none or shift is in effect */
-                return PassThisEvent();
-            }
-            /* ... release all controls and alts while sending the event otherwise
-             * (this is not to let OS use AltGr binding (its own level3/4) if any,
-             * as it would not be appropriate)
-             * */
-            inpl++;
-            size_t i;
-            DWORD time = GetTickCount();
-            fori (i, 0, inpl) {
-                bool down1;
-                SC sc1;
-                if (lctrl) {
-                    down1 = lctrl > 0;
-                    sc1 = SC_LCONTROL;
-                    lctrl = 0;
-                } else if (ralt) {
-                    down1 = ralt > 0;
-                    sc1 = SC_RMENU;
-                    ralt = 0;
-                } else {
-                    lctrl = lctrl1;
-                    ralt = ralt1;
-                    sc1 = sc;
-                    down1 = down;
-                }
-                curinp->type = INPUT_KEYBOARD;
-                curinp->ki.wVk = 0;
-                curinp->ki.dwFlags = KEYEVENTF_SCANCODE | (down1 ? 0 : KEYEVENTF_KEYUP);
-                curinp->ki.dwExtraInfo = 0;
-                curinp->ki.wScan = sc1;
-                curinp->ki.time = time;
-                curinp++;
-            }
-            SendInput(inpl, inp, sizeof(INPUT));
             return StopThisEvent();
         /* ... block the event if level5 is in effect */
         } else {
