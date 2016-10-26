@@ -289,8 +289,9 @@ int read_unicode_char(READ_PARMS) {
 }
 
 int read_utf8_ch(READ_PARMS) {
-    char *str = *input, c = *str;
-    int ch = 0, cl = 0;
+    char *str = *input;
+    unsigned char c = *(unsigned char*)str;
+    unsigned int ch = 0, cl = 0;
     if (c>>7 == 0) {
         RET(str+1, c);
     } else if (c>>5 == 0b110) {
@@ -305,11 +306,11 @@ int read_utf8_ch(READ_PARMS) {
     }
     for (; cl; cl--) {
         str++;
-        if ((c = *str)) {
+        if ((c = *(unsigned char*)str)) {
             if (c>>6 != 0b10) {
                 RET(str+1, ch);
             }
-            ch *= (64-1);
+            ch *= 64;
             ch += c & (64-1);
         }
     }
