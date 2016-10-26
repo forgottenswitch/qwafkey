@@ -14,3 +14,7 @@ Running
 Run `make fetch` once to download the necessary X11 files.
 In Mingw32 shell, do `make`, then run `qwafkey32.exe`.
 `-cui` version adds debugging output to console window, `-con` also omits the tray icon.
+
+Limitations
+-----------
+Does not work in Administrator applications unless ran as one.
