@@ -66,6 +66,5 @@ qX:=~,=$
 qC:=\\,=|
 qB:=;,=,
 qM:!next_layout
-qSlash:!next_os_layout
 qN:!compose
 qU:!dead_diaeresis
