@@ -35,9 +35,19 @@ HEADERS = \
 	keysymdef.h kl.h km.h kn.h kr.h lm.h parse.h \
 	resource.h scancodes.h stdafx.h ui.h
 
-.PHONY: all
+.PHONY: all zip
 # Do not build x64 by default, as gcc fails on dk.c
 all: 32
+zip: zip32
+
+ZIP_ITEMS = LICENSE config
+REVISION = $$(git rev-list HEAD --count)
+
+.PHONY: zip32
+zip32: ZIPNAME = $(PROJ)-r"$(REVISION)"-x86.zip
+zip32: $(PROJ)32.exe $(ZIP_ITEMS)
+	@rm $(ZIPNAME) 2>/dev/null || true
+	7z a -tzip $(ZIPNAME) $+
 
 .PHONY: 32
 32:
@@ -53,7 +63,7 @@ all: 32
 
 .PHONY: clean
 clean:
-	@rm -r *.exe .obj/* 2>/dev/null || true
+	@rm -r *.exe *.zip .obj/* 2>/dev/null || true
 
 .PHONY: fetch
 fetch:

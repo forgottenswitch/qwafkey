@@ -1,4 +1,5 @@
 *.exe
+*.zip
 .obj
 config/Compose
 config/keysymdef.h
