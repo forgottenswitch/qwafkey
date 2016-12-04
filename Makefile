@@ -1,4 +1,4 @@
-PROJ = qwafkey
+PROJ = vimkeys
 
 WGET ?= wget
 RESCOMP ?= windres
