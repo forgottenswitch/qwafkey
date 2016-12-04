@@ -31,7 +31,7 @@
 
 #include "resource.h"
 
-#define ProgramName "qwafkey"
+#define ProgramName "vimkeys"
 #define DefaultComposeFilename "Compose"
 #define DefaultKeydefsFilename "keysymdef.h"
 

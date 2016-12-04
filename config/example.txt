@@ -1,7 +1,7 @@
-# Example configuration file for QwafKey.
+# Example configuration file for vimkeys.
 # Use UTF-8 encoding for saving.
 #
-# This file is a copy of path\to\qwafkey\config\example.txt
+# This file is a copy of path\to\vimkeys\config\example.txt
 
 # Reading the entire file should only
 # be needed if something is handled incorrectly.
@@ -13,7 +13,7 @@
 
 # Hotkeys are specified as @<modifiers><key>.
 #  Modifier could be a '#' (Win), '!' (Alt), '^' (Control), or '+' (Shift) character.
-# The following binds Win+F2 to toggle whether qwafkey is active:
+# The following binds Win+F2 to toggle whether vimkeys is active:
 
 @#F2: !toggle
 
@@ -34,11 +34,11 @@
 # The file, however, uses key names.
 # The names are first read from config_dir/keysymdef.h
 #
-# The config_dir is first tried as "<User folder>\qwafkey",
-# and then as "<path to qwafkey>\config".
+# The config_dir is first tried as "<User folder>\vimkeys",
+# and then as "<path to vimkeys>\config".
 #
 # If you need to define a Compose combination, copy the config\Compose
-# to qwafkey\Compose, and edit the latter.
+# to vimkeys\Compose, and edit the latter.
 #
 # In Compose file, there are two types of combinations.
 # One type starts with a <Multi_key>, which means a !compose key.
@@ -86,7 +86,7 @@
 # levels: 1,2,3,4,5,6
 
 # The following would bind Capslock to Control (at least on most keyboards):
-# (done for speed/simplicity as an action, as qwafkey needs to track modifiers state)
+# (done for speed/simplicity as an action, as vimkeys needs to track modifiers state)
 
 # sc03A: !control
 
@@ -148,7 +148,7 @@ vks_lang:409
 # qB: qA
 
 # Layout-specific remaps could be put into lang_0000.txt file (lang_0409.txt, etc.).
-# On start, qwafkey examines layouts in use, and loads any matching lang_ files.
+# On start, vimkeys examines layouts in use, and loads any matching lang_ files.
 
 
 # Per-app binds

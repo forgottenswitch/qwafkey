@@ -12,8 +12,8 @@
 /* main window */
 HWND UI_MW;
 
-char UI_MW_Title[] = "qwafkey";
-char UI_MW_Class[] = "qwafkey";
+char UI_MW_Title[] = ProgramName;
+char UI_MW_Class[] = ProgramName;
 
 int UI_TR_ID = 1;
 
