@@ -3,7 +3,7 @@ LDFLAGS = -static
 
 all: lw.exe
 
-OBJS = hk.o kl.o os.o
+OBJS = hk.o kl.o os.o eh.o mh.o
 
 lw.exe: main.cpp $(OBJS)
 	$(LINK.cc) -o $@ $< $(OBJS)
