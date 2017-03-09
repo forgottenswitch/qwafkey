@@ -1,9 +1,9 @@
-CXXFLAGS = -Wall -O2 -fpermissive
+CXXFLAGS = -Wall -O2 -fpermissive -Wno-write-strings
 LDFLAGS = -static
 
 all: lw.exe
 
-OBJS = eh.o hk.o ka.o kl.o lm.o os.o parse.o
+OBJS = eh.o hk.o ka.o kl.o kn.o lm.o os.o parse.o
 
 lw.exe: main.cpp $(OBJS)
 	$(LINK.cc) -o $@ $< $(OBJS)
