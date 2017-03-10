@@ -1,9 +1,24 @@
-Keyboard remapper
+Keyboard remapper.
 
-To build, a mingw cross-comiler is needed.
-Then pass its name as $CC:
+To build, a mingw cross-compiler is needed.
+
+Cygwin:
 ```sh
-make CC=i686-w64-mingw32-gcc
+# Install make and mingw64-i686-gcc-g++
+make clean
+make
 ```
 
-Or just `make` in a MSYS2's "Mingw-w64 Win32 shell" (or Win64 one).
+MSYS2:
+```sh
+pacman -S make mingw-w64-cross-{gcc,crt-git}
+make clean
+make
+```
+
+MSYS2, Mingw-w64 Win32 shell:
+```sh
+pacman -S make mingw-w64-i686-gcc
+make clean
+make CROSS=
+```
