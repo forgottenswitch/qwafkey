@@ -6,7 +6,7 @@ CXX = $(CROSS)g++
 
 all: lw.exe
 
-OBJS = eh.o hk.o ka.o kl.o kn.o lm.o os.o parse.o
+OBJS = eh.o hk.o ka.o kl.o km.o kn.o lm.o os.o parse.o
 
 lw.exe: main.cpp $(OBJS)
 	$(LINK.cc) -o $@ $< $(OBJS)
