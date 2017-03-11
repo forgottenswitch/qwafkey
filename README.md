@@ -1,32 +1,23 @@
-Keyboard remapper.
+Keyboard remapper for Windows.
 
-To build, a mingw cross-compiler is needed.
+Prerequisites
+-------------
+- make
+- mingw cross-compiler
 
-By default, a Console-with-GUI (`cui`) flavour is built.  "Console" here means
-that real and generated key presses and releases would be printed to a console
-window.  To build Console-without-GUI (`con`), or GUI-only (`gui`), pass the
-flavours as arguments to the final `make` invocation below, as in:
-```sh
-make con cui gui
-```
+On Cygwin:
+- Launch setup.exe, and install `mingw64-i686-gcc-g++`
 
-Cygwin:
-```sh
-# Install make and mingw64-i686-gcc-g++
-make clean
-make
-```
+On MSYS2:
+- Run `pacman -S mingw-w64-cross-{gcc,crt-git}`
 
-MSYS2:
-```sh
-pacman -S make mingw-w64-cross-{gcc,crt-git}
-make clean
-make
-```
+On Linux:
+- Install whatever the mingw cross-compiler package is.
 
-MSYS2, Mingw-w64 Win32 shell:
-```sh
-pacman -S make mingw-w64-i686-gcc
-make clean
-make CROSS=
-```
+On MSYS2 in Mingw-w64 Win32 shell:
+- Run `pacman -S mingw-w64-i686-gcc`
+- Build as `make CROSS32= 32`
+
+On MSYS2 in Mingw-w64 Win64 shell:
+- Run `pacman -S mingw-w64-x86_64-gcc`
+- Build as `make CROSS64= 64`
