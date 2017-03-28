@@ -198,7 +198,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
      * */
     if (faked || sc >= KPN) {
         if (!faked) {
-            printf("{sc%03lx,vk%02lx%c} ", ev->scanCode, ev->vkCode, (down ? '_' : '^'));
+            printf("{sc%03lx,vk%02lx%c} ", ev->scanCode, ev->vkCode, duch());
         }
         return PassThisEvent();
     }
@@ -228,7 +228,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         /* the when-modifier alteration */
         if (vk && !(lk.active && lk.mods && KLM_KA)) {
             keybd_event(vk, 0, (down ? 0 : KEYEVENTF_KEYUP), 0);
-            printf(" SendVK%c(%02x=%c)", (down ? '_' : '^'), vk, vk);
+            printf(" SendVK%c(%02x=%c)", duch(), vk, vk);
             return StopThisEvent();
         }
     }
@@ -242,18 +242,18 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 
     /* If there is no alteration ... */
     if (!lk.active) {
-        printf(" na%s", (down ? "_ " : "^\n"));
+        printf(" na%c ", duch());
         if (lv < 2) { /* ... just let the event fire when none or shift is in effect */
-            printf(" lv1");
+            printf("lv1");
             MaybeDeadKeyVK();
             return PassThisEvent();
         } else if (lv < 4) { /* ... when level3 is in effect ... */
-            printf(" lv3");
+            printf("lv3");
             MaybeDeadKeyVK();
             return StopThisEvent();
         /* ... block the event if level5 is in effect */
         } else {
-            printf(" lv5");
+            printf("lv5");
             return StopThisEvent();
         }
     }
@@ -268,7 +268,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
      *  */
     UCHAR mods = lk.mods;
     if (mods == KLM_SC) { /* ... if scancode, just alter the scancode */
-        printf("%csc%03lx=%02x ", (down ? '_' : '^'), ev->scanCode, lk.binding);
+        printf("%csc%03lx=%02x ", duch(), ev->scanCode, lk.binding);
         /* processing of scan code when in dead key sequence */
         if (KL_dk_in_effect) {
             if (down) { KL_dk_on_sc(lk.binding, lv); };
@@ -300,7 +300,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
             KL_dk_in_effect = true;
         }
         KA_call(lk.binding, down, sc);
-        printf("}%s", (down ? "_" : "^\n"));
+        printf("}%c", duch());
     }
     /* ... if virtual key code, temporarily bring shift, control and alt
      * into the state required by alteration, and send the virtual key code.
@@ -317,13 +317,13 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         char mod_alt = (((mods & MOD_ALT) && !KL_km_alt.in_effect) ? 1 : 0), mod_alt0 = mod_alt;
         int mods_count = (mod_shift & 1) + mod_control + mod_alt;
         if (!mods_count) {
-            printf(" evt vk%02x%c", lk.binding, (down ? '_' : '^'));
+            printf(" evt vk%02x%c ", lk.binding, duch());
             keybd_event(lk.binding, sc, (down ? 0 : KEYEVENTF_KEYUP), 0);
         } else {
             int inps_count = 1 + mods_count * 2;
             INPUT inps[7];
             int i, tick_count = GetTickCount();
-            printf(" send%d vk%02x[%d%d%d]%s", inps_count, lk.binding, mod_shift, mod_control, mod_alt, (down ? "_" : "^\n"));
+            printf(" send%d vk%02x[%d%d%d]%c", inps_count, lk.binding, mod_shift, mod_control, mod_alt, duch());
             fori (i, 0, inps_count) {
                 VK vk1 = lk.binding;
                 DWORD flags = 0;
