@@ -122,7 +122,7 @@ void KL_dk_send_wchar(WCHAR wc) {
 #define PassThisEvent() CallNextHookEx(NULL, aCode, wParam, lParam)
 LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     if (aCode != HC_ACTION) {
-        printf("{not_hc_action %d %lx %lx}", aCode, (long)wParam, (long)lParam);
+        printf("\n{not_hc_action %d %lx %lx}", aCode, (long)wParam, (long)lParam);
         return PassThisEvent();
     }
 
@@ -141,7 +141,9 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     // Only check here for injected presses and corresponding releases.
     bool faked;
     faked = (flags & LLKHF_INJECTED || (!(KL_phys[sc]) && !down));
+    if (!faked) { printf("\n"); }
     printf("{sc%03xvk%02lx%c%c}", sc, ev->vkCode, frch(), duch());
+    if (!faked) { printf("\n  "); }
 
     /* Track the modifiers state: shift, control, alt, win, level3, level5
      * (the latter two are not present in the OS)
