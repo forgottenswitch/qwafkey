@@ -227,6 +227,17 @@ KN_LPair KN_lpairs[] = {
     k("qSlash", SC_SLASH),
 };
 
+KN_LPair KN_mods[] = {
+    k("LShift", SC_LSHIFT),
+    k("RShift", SC_RSHIFT),
+    k("LCtrl", SC_LCONTROL),
+    k("RCtrl", SC_RCONTROL),
+    k("LAlt", SC_LMENU),
+    k("RAlt", SC_RMENU),
+    k("LWin", SC_LWIN),
+    k("RWin", SC_RWIN),
+};
+
 SC KN_lname_to_sc(char *name) {
     char *colon = strchr(name, ':');
     char *asgn = strchr(name, '=');
@@ -241,4 +252,25 @@ SC KN_lname_to_sc(char *name) {
         }
     }
     return 0;
+}
+
+const char *KN_sc_to_str(SC sc) {
+    size_t i;
+    fori (i, 0, lenof(KN_lpairs)) {
+        KN_LPair *lp = KN_lpairs + i;
+        if (lp->sc == sc) {
+            const char *s = lp->name;
+            if (s) {
+                if (s[0] == 'q') { s++; }
+            }
+            return s;
+        }
+    }
+    fori (i, 0, lenof(KN_lpairs)) {
+        KN_LPair *lp = KN_mods + i;
+        if (lp->sc == sc) {
+            return lp->name;
+        }
+    }
+    return NULL;
 }

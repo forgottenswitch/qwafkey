@@ -3,6 +3,7 @@
 #include "km.h"
 #include "lm.h"
 #include "dk.h"
+#include "kn.h"
 #include "scancodes.h"
 #include "stdafx.h"
 #ifndef NOGUI
@@ -143,7 +144,11 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     faked = (flags & LLKHF_INJECTED || (!(KL_phys[sc]) && !down));
     if (!faked) { printf("\n"); }
     printf("{sc%03xvk%02lx%c%c}", sc, ev->vkCode, frch(), duch());
-    if (!faked) { printf("\n  "); }
+    if (!faked) {
+        SC sc_ext = (flags & LLKHF_EXTENDED) ? (sc | SC_EXTENDED_BIT) : sc;
+        printf("  %s %s\n  ", KN_sc_to_str(sc_ext), (down ? "down" : "up"));
+        (void) sc_ext;
+    }
 
     /* Track the modifiers state: shift, control, alt, win, level3, level5
      * (the latter two are not present in the OS)
@@ -183,7 +188,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
 
     /* Set the 'extended' bit in scancode if it should be set */
     if (flags & LLKHF_EXTENDED) {
-        sc |= 0x100;
+        sc |= SC_EXTENDED_BIT;
     }
 
     /* Do not process any simulated key events,

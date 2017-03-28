@@ -57,6 +57,7 @@ typedef unsigned short SC;
 #define VK_COUNT 256
 
 #define VK_ch(ch) LOBYTE(VkKeyScan(ch))
+#define SC_EXTENDED_BIT 0x100
 
 typedef struct {
     unsigned char mods;
