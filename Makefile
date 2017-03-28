@@ -82,23 +82,23 @@ DEFINES_con = -DDEBUG -DNOGUI
 DEFINES_cui = -DDEBUG
 DEFINES_gui =
 
-obj/con32/%.o: %.cpp
+obj/con32/%.o: %.c
 	$(MKDIR.outfile)
 	$(COMPILE.cc) -o $@ $< $(DEFINES_con)
-obj/cui32/%.o: %.cpp
+obj/cui32/%.o: %.c
 	$(MKDIR.outfile)
 	$(COMPILE.cc) -o $@ $< $(DEFINES_cui)
-obj/gui32/%.o: %.cpp
+obj/gui32/%.o: %.c
 	$(MKDIR.outfile)
 	$(COMPILE.cc) -o $@ $< $(DEFINES_gui)
 
-obj/con64/%.o: %.cpp
+obj/con64/%.o: %.c
 	$(MKDIR.outfile)
 	$(COMPILE.cc) -o $@ $< $(DEFINES_con)
-obj/cui64/%.o: %.cpp
+obj/cui64/%.o: %.c
 	$(MKDIR.outfile)
 	$(COMPILE.cc) -o $@ $< $(DEFINES_cui)
-obj/gui64/%.o: %.cpp
+obj/gui64/%.o: %.c
 	$(MKDIR.outfile)
 	$(COMPILE.cc) -o $@ $< $(DEFINES_gui)
 
