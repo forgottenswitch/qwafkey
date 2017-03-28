@@ -1,12 +1,12 @@
 PROG = lw
 
-CXXFLAGS = -Wall -O2 -fpermissive -Wno-write-strings
+CFLAGS = -Wall -O2 -Wno-write-strings
 LDFLAGS = -static
 
 CROSS32 = i686-w64-mingw32-
 CROSS64 = x86_64-w64-mingw32-
 
-CXX = $(CROSS)g++
+CC = $(CROSS)gcc
 WINDRES = $(CROSS)windres
 
 # Do not print Entering directory..
@@ -57,24 +57,24 @@ cui64:
 gui64:
 	$(MAKE) $(PROG)-gui64.exe CROSS=$(CROSS64)
 
-OBJS = eh.o hk.o ka.o kl.o km.o kn.o kr.o lm.o main.o os.o parse.o resource.o ui.o
+OBJS = dk.o eh.o freadline.o hk.o ka.o kl.o km.o kn.o kr.o lm.o main.o os.o parse.o resource.o ui.o
 
-LINK.cc.all_deps = $(LINK.cc) -o $@ $+
+LINK.c.all_deps = $(LINK.c) -o $@ $+
 LINK_FLAGS_gui = -mwindows
 
 $(PROG)-con32.exe: $(addprefix obj/con32/, $(OBJS))
-	$(LINK.cc.all_deps)
+	$(LINK.c.all_deps)
 $(PROG)-cui32.exe: $(addprefix obj/cui32/, $(OBJS))
-	$(LINK.cc.all_deps)
+	$(LINK.c.all_deps)
 $(PROG)-gui32.exe: $(addprefix obj/gui32/, $(OBJS))
-	$(LINK.cc.all_deps) $(LINK_FLAGS_gui)
+	$(LINK.c.all_deps) $(LINK_FLAGS_gui)
 
 $(PROG)-con64.exe: $(addprefix obj/con64/, $(OBJS))
-	$(LINK.cc.all_deps)
+	$(LINK.c.all_deps)
 $(PROG)-cui64.exe: $(addprefix obj/cui64/, $(OBJS))
-	$(LINK.cc.all_deps)
+	$(LINK.c.all_deps)
 $(PROG)-gui64.exe: $(addprefix obj/gui64/, $(OBJS))
-	$(LINK.cc.all_deps) $(LINK_FLAGS_gui)
+	$(LINK.c.all_deps) $(LINK_FLAGS_gui)
 
 MKDIR.outfile = @mkdir -p $(@D)
 
@@ -84,23 +84,23 @@ DEFINES_gui =
 
 obj/con32/%.o: %.c
 	$(MKDIR.outfile)
-	$(COMPILE.cc) -o $@ $< $(DEFINES_con)
+	$(COMPILE.c) -o $@ $< $(DEFINES_con)
 obj/cui32/%.o: %.c
 	$(MKDIR.outfile)
-	$(COMPILE.cc) -o $@ $< $(DEFINES_cui)
+	$(COMPILE.c) -o $@ $< $(DEFINES_cui)
 obj/gui32/%.o: %.c
 	$(MKDIR.outfile)
-	$(COMPILE.cc) -o $@ $< $(DEFINES_gui)
+	$(COMPILE.c) -o $@ $< $(DEFINES_gui)
 
 obj/con64/%.o: %.c
 	$(MKDIR.outfile)
-	$(COMPILE.cc) -o $@ $< $(DEFINES_con)
+	$(COMPILE.c) -o $@ $< $(DEFINES_con)
 obj/cui64/%.o: %.c
 	$(MKDIR.outfile)
-	$(COMPILE.cc) -o $@ $< $(DEFINES_cui)
+	$(COMPILE.c) -o $@ $< $(DEFINES_cui)
 obj/gui64/%.o: %.c
 	$(MKDIR.outfile)
-	$(COMPILE.cc) -o $@ $< $(DEFINES_gui)
+	$(COMPILE.c) -o $@ $< $(DEFINES_gui)
 
 COMPILE.rc = $(WINDRES) -o $@ $<
 
