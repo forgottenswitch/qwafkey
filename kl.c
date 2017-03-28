@@ -239,16 +239,16 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     if (!lk.active) {
         printf(" na%s", (down ? "_ " : "^\n"));
         if (lv < 2) { /* ... just let the event fire when none or shift is in effect */
-            printf("[12]");
+            printf(" lv1");
             MaybeDeadKeyVK();
             return PassThisEvent();
         } else if (lv < 4) { /* ... when level3 is in effect ... */
-            printf("[34]");
+            printf(" lv3");
             MaybeDeadKeyVK();
             return StopThisEvent();
         /* ... block the event if level5 is in effect */
         } else {
-            printf("[56]");
+            printf(" lv5");
             return StopThisEvent();
         }
     }
