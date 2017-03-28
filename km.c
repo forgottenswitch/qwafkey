@@ -44,6 +44,11 @@ l_release:
 void KM_shift_event(KM *km, bool down, SC sc) {
     bool found = false;
     size_t i, shifts_count = km->shifts_count;
+    printf(" km[");
+    fori (i, 0, shifts_count) {
+        printf("sc%03x,", km->shifts[i]);
+    }
+    printf("%d total]", shifts_count);
     fori (i, 0, shifts_count) {
         if (km->shifts[i] == sc) {
             if (!down) {
@@ -52,7 +57,7 @@ void KM_shift_event(KM *km, bool down, SC sc) {
                     km->shifts[j-1] = km->shifts[j];
                 }
                 km->in_effect = km->locked || km->latch || (km->shifts_count -= 1);
-                printf("{/:%d}", km->in_effect);
+                printf("{/:%d,%d}", km->in_effect, km->shifts_count);
                 break;
             } else {
                 found = true;

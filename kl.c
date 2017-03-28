@@ -121,7 +121,10 @@ void KL_dk_send_wchar(WCHAR wc) {
 #define StopThisEvent() 1
 #define PassThisEvent() CallNextHookEx(NULL, aCode, wParam, lParam)
 LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
-    if (aCode != HC_ACTION) { return PassThisEvent(); }
+    if (aCode != HC_ACTION) {
+        printf("{not_hc_action %d %lx %lx}", aCode, (long)wParam, (long)lParam);
+        return PassThisEvent();
+    }
 
     /* Gather the values of interest */
     PKBDLLHOOKSTRUCT ev = (PKBDLLHOOKSTRUCT) lParam;
