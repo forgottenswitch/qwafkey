@@ -8,6 +8,7 @@ CROSS64 = x86_64-w64-mingw32-
 
 CC = $(CROSS)gcc
 WINDRES = $(CROSS)windres
+WGET ?= wget
 
 # Do not print Entering directory..
 GNUMAKEFLAGS = --no-print-directory
@@ -30,6 +31,10 @@ usage:
 	@echo "To disable cross-compilation:"
 	@echo " make CROSS32= <32 bit flavour>"
 	@echo " make CROSS64= <64 bit flavour>"
+	@echo
+	@echo "To download the latest Compose definitions:"
+	@echo " make fetch"
+	@echo
 
 .PHONY: 32 64
 # Use sequential build for errors and warnings not to be interspersed
@@ -128,3 +133,8 @@ obj/gui64/%.o: %.rc
 clean:
 	@rm *.exe *.o 2>/dev/null || true
 	@rm -r obj 2>/dev/null || true
+
+.PHONY: fetch
+fetch:
+	$(WGET) -O Compose https://cgit.freedesktop.org/xorg/lib/libX11/plain/nls/en_US.UTF-8/Compose.pre
+	$(WGET) -O keysymdef.h https://cgit.freedesktop.org/xorg/proto/x11proto/plain/keysymdef.h
