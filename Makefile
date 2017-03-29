@@ -62,7 +62,7 @@ cui64:
 gui64:
 	$(MAKE) $(PROG)-gui64.exe CROSS=$(CROSS64)
 
-OBJS = dk.o eh.o freadline.o hk.o ka.o kl.o km.o kn.o kr.o lm.o main.o os.o parse.o resource.o ui.o
+OBJS = dk.o eh.o freadline.o hk.o ka.o kl.o km.o kn.o kr.o lm.o main.o os.o parse.o resource.o str.o ui.o
 
 LINK.c.all_deps = $(LINK.c) -o $@ $+
 LINK_FLAGS_gui = -mwindows
