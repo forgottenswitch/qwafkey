@@ -226,7 +226,7 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
     if (lv <= 1 && (KL_km_alt.in_effect || KL_km_control.in_effect || KL_km_win.in_effect)) {
         VK vk = KL_mods_vks[sc];
         /* the when-modifier alteration */
-        if (vk && !(lk.active && lk.mods && KLM_KA)) {
+        if (vk && !(lk.active && (lk.mods & KLM_KA))) {
             keybd_event(vk, 0, (down ? 0 : KEYEVENTF_KEYUP), 0);
             printf(" SendVK%c(%02x=%c)", duch(), vk, vk);
             return StopThisEvent();
