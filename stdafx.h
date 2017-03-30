@@ -31,7 +31,7 @@
 
 #include "resource.h"
 
-#define ProgramName "vimkeys"
+#define ProgramName "vikb"
 #define DefaultComposeFilename "Compose"
 #define DefaultKeydefsFilename "keysymdef.h"
 

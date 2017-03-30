@@ -1,4 +1,4 @@
-PROG = vimkeys
+PROG = vikb
 
 CFLAGS = -Wall -O2 -Wno-write-strings
 LDFLAGS = -static
