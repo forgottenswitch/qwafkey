@@ -44,18 +44,6 @@ ka(KA_prev_layout) {
     LM_activate_prev_locale();
 }
 
-ka(KA_next_os_layout) {
-    if (!down)
-        return;
-    OS_activate_next_layout(LM_hwnd);
-}
-
-ka(KA_prev_os_layout) {
-    if (!down)
-        return;
-    OS_activate_prev_layout(LM_hwnd);
-}
-
 ka(KA_control) {
     KM_shift_event(&KL_km_control, down, sc);
     if (!(!down && KL_km_control.shifts_count > 0))
@@ -165,8 +153,6 @@ KA_Pair KA_fns[] = {
     ka(KA_restart),
     ka(KA_next_layout),
     ka(KA_prev_layout),
-    ka(KA_next_os_layout),
-    ka(KA_prev_os_layout),
 
     ka(KA_control),
     ka(KA_l5_shift),
