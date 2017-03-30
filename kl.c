@@ -454,7 +454,7 @@ KLY *KL_lang_to_kly(LANGID lang) {
 
 KLC *KL_lang_to_klc(LANGID lang) {
     UINT i;
-    printf("klcs_count:%d ", KL_klcs_count);
+    printf("klcs_count:%d ", (int)KL_klcs_count);
     fori(i, 0, KL_klcs_count) {
         printf("klc.lang:%x ", KL_klcs[i].lang);
         if (KL_klcs[i].lang == lang)

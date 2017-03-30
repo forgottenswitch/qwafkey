@@ -48,7 +48,7 @@ void KM_shift_event(KM *km, bool down, SC sc) {
     fori (i, 0, shifts_count) {
         printf("sc%03x,", km->shifts[i]);
     }
-    printf("%d total]", shifts_count);
+    printf("%d total]", (int)shifts_count);
     fori (i, 0, shifts_count) {
         if (km->shifts[i] == sc) {
             if (!down) {

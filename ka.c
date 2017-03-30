@@ -76,7 +76,7 @@ ka(KA_kr_toggle) {
 
 ka(KA_kr_on_pt) {
     if (down) {
-        printf("kr_on_pt(%d,%d) ", KR_active, KR_id);
+        printf("kr_on_pt(%d,%d) ", KR_active, (int)KR_id);
         if (!KR_active || !KR_id) {
             KR_activate();
         }
@@ -202,7 +202,7 @@ void KA_init() {
     fori (i, 0, lenof(KA_fns)) {
         KA_Pair *ka_pair = KA_fns + i;
         ka_pair->name += 3;
-        printf(" ka%d{%x,%s}", i, (UINT)ka_pair->func, ka_pair->name);
+        printf(" ka%d{%p,%s}", i, ka_pair->func, ka_pair->name);
     }
     puts("");
 }

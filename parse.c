@@ -379,7 +379,7 @@ bool read_bind(READ_PARMS) {
                             KL_bind(sc, i, bind.mods, bind.binding);
                             i++;
                             if ((i < KLVN) && (i % 2)) {
-                                printf("B(%d) ", binds_count);
+                                printf("B(%d) ", (int)binds_count);
                                 bind = binds[(binds_count > 1 ? 1 : 0)];
                                 KL_bind(sc, i, bind.mods, bind.binding);
                             }
@@ -475,7 +475,7 @@ bool read_levs(READ_PARMS) {
         read_spc(&str);
         read_colon(&str);
         if (get_size_t(&str, &n, read_N_decimal)) {
-            printf("lvl(%d) ", n);
+            printf("lvl(%d) ", (int)n);
             n--;
             if (n < lenof(Bind_lvls)) {
                 ZeroBuf(Bind_lvls);
@@ -490,7 +490,7 @@ bool read_levs(READ_PARMS) {
         do {
             read_spc(&str);
             if (get_size_t(&str, &n, read_N_decimal)) {
-                printf("lvn(%d) ", n);
+                printf("lvn(%d) ", (int)n);
                 n--;
                 if (n < lenof(Bind_lvls)) {
                     if (!zeroed) {
@@ -702,13 +702,13 @@ void parse_str(char *str) {
         read_spc(&str);
         char *s0 = str, *s1 = str;
         read_to_eol(&s1);
-        printf("\nline%03d %.*s| ", parse_lineno, (int)(s1 - s0), s0);
+        printf("\nline%03d %.*s| ", (int)parse_lineno, (int)(s1 - s0), s0);
         if (!(read_statement(&str))) {
             char c = *str;
             if (c != '#' && c != '\n' && c != '\r') {
-                printf("Unrecognized line %d\n", parse_lineno);
+                printf("Unrecognized line %d\n", (int)parse_lineno);
                 char line[64];
-                snprintf(line, sizeof(line)-1, "line %03d: %.*s", parse_lineno, (int)(s1-s0), s0);
+                snprintf(line, sizeof(line)-1, "line %03d: %.*s", (int)parse_lineno, (int)(s1-s0), s0);
                 parse_add_failed_line(line);
                 parse_failed_lines_count++;
             }

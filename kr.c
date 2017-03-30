@@ -153,7 +153,7 @@ void KR_hash_the_titles(void) {
         if (i12.one) {
             printf("Titles h%d:\n", i);
             if (i12.one) for (i1=i12.one-1; i1<=i12.two; i1++) {
-                printf(" [%d]: %.*s\n", i1, KR_titles[i1].len, KR_titles[i1].str);
+                printf(" [%d]: %.*s\n", i1, (int)KR_titles[i1].len, KR_titles[i1].str);
             }
         }
     }
@@ -202,7 +202,7 @@ void KR_hash_the_wndcls(void) {
         if (i12.one) {
             printf("Wndcls h%d:\n", i);
             if (i12.one) for (i1=i12.one-1; i1<=i12.two; i1++) {
-                printf(" [%d]: %.*s\n", i1, KR_wndcs[i1].len, KR_wndcs[i1].str);
+                printf(" [%d]: %.*s\n", i1, (int)KR_wndcs[i1].len, KR_wndcs[i1].str);
             }
         }
     }
@@ -244,7 +244,7 @@ KR_App *KR_hwnd_to_app(HWND hwnd) {
         if (i12.one) {
             for (i=i12.one-1; i<=i12.two; i++) {
                 KR_Title *ti = KR_titles + i;
-                printf("t(%d)|%s| ", ti->len, ti->str);
+                printf("t(%d)|%s| ", (int)ti->len, ti->str);
                 if (ti->len && !strnicmp(buf, ti->str, ti->len)) {
                     printf("ok t app%d ", i);
                     return ti->app;
@@ -262,7 +262,7 @@ KR_App *KR_wndcls_to_app(char *wndcls) {
     if (i12.one) {
         for (i=i12.one-1; i<=i12.two; i++) {
             KR_Wndcls *cls = KR_wndcs + i;
-            printf("c(%d)|%s| ", cls->len, cls->str);
+            printf("c(%d)|%s| ", (int)cls->len, cls->str);
             if (cls->len && !strnicmp(wndcls, cls->str, cls->len)) {
                 printf("ok c app%d ", i);
                 return cls->app;
