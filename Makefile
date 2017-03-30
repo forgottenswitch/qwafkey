@@ -1,4 +1,4 @@
-PROG = qwafkey
+PROG = vimkeys
 
 CFLAGS = -Wall -O2 -Wno-write-strings
 LDFLAGS = -static
