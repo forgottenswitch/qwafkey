@@ -21,3 +21,8 @@ On MSYS2 in Mingw-w64 Win32 shell:
 On MSYS2 in Mingw-w64 Win64 shell:
 - Run `pacman -S mingw-w64-x86_64-gcc`
 - Build as `make CROSS64= 64`
+
+Limitations
+-----------
+Would not work in privileged applications unless launched "as Administrator"
+itself (but do this at your own risk).
