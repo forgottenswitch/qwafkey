@@ -1,5 +1,32 @@
 Keyboard remapper for Windows.
 
+By default, implements the [Qwaf] keyboard layout:
+- Works with multiple input languages/layouts
+- Allows for Vim-like editing keys (hold `;` and press `hjkl`)
+- Provides Compose key functionality (press `,n` and then the combination, such as `..`)
+- Provides latching modifiers (type `,` and then `j`; or hold `;`, type `s`, and then any letter)
+
+[Qwaf]: https://github.com/forgottenswitch/qwaf
+
+Bugs and limitations
+--------------------
+Infrequently, Shift and Control inappropriately get pressed.  Be prepared to
+restart the application using the tray icon (and then press Shifts and Controls
+once so that OS sees them being released), should this be the case.
+
+When using multiple layouts, they must not be switched using the
+system-provided shortcuts, as remapper, for performance reasons, wouldn't be
+able to detect it until the next window switching, resulting in shuffled
+remaps.  The program-provided layout switching keys should be used instead (for
+Qwaf, that is `,m`).
+
+When using multiple layouts, sometimes the active one is switched without a
+reason.  Be prepared to switch back using the program-provided layout switching
+keys in this case.
+
+Would not work in privileged applications unless launched "as Administrator"
+itself (but do this at your own risk).  Cannot work at all at password prompts.
+
 Prerequisites
 -------------
 - make
@@ -21,8 +48,3 @@ On MSYS2 in Mingw-w64 Win32 shell:
 On MSYS2 in Mingw-w64 Win64 shell:
 - Run `pacman -S mingw-w64-x86_64-gcc`
 - Build as `make CROSS64= 64`
-
-Limitations
------------
-Would not work in privileged applications unless launched "as Administrator"
-itself (but do this at your own risk).
