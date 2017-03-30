@@ -1,4 +1,4 @@
-PROG = lw
+PROG = qwafkey
 
 CFLAGS = -Wall -O2 -Wno-write-strings
 LDFLAGS = -static
