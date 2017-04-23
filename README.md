@@ -10,10 +10,6 @@ By default, implements the [Qwaf] keyboard layout:
 
 Bugs and limitations
 --------------------
-Infrequently, Shift and Control inappropriately get pressed.  Be prepared to
-restart the application using the tray icon (and then press Shifts and Controls
-once so that OS sees them being released), should this be the case.
-
 When using multiple layouts, they must not be switched using the
 system-provided shortcuts, as remapper, for performance reasons, wouldn't be
 able to detect it until the next window switching, resulting in shuffled

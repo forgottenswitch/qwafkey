@@ -14,6 +14,10 @@ void KM_init(KM *km) {
     ZeroMemory(km, sizeof(KM));
 }
 
+void KM_reset(KM *km) {
+    ZeroMemory(km, sizeof(KM));
+}
+
 void KM_nonmod_event(KM *km, bool down, SC sc) {
     if (km->latch) {
         if (!down) {

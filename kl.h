@@ -34,6 +34,7 @@ void KL_init(void);
 void KL_toggle(void);
 void KL_activate(void);
 void KL_deactivate(void);
+void KL_on_task_switch(void);
 void KL_bind(SC sc, UINT lvl, UINT mods, SC binding);
 void KL_temp_sc(SC sc, SC mods, SC binding);
 

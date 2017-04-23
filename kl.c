@@ -78,6 +78,30 @@ void KL_toggle() {
     }
 }
 
+static bool KL_received_anything_in_this_window;
+
+void KL_on_task_switch(void) {
+    /* A key might have been pressed in a non-Administrator window,
+     * and released in an Administrator one.
+     * If running without Administrator rights, this records the wrong key state.
+     * This, in turn, makes the code faking the ctrl/alt/shift state for vk sending do
+     * (depress,SendInput,press) of one or more of these modifiers instead of
+     * (press,SendInput,depress).
+     * */
+    printf("\n received anything in the last window: %d\n",
+            (int)KL_received_anything_in_this_window);
+    if (!KL_received_anything_in_this_window) {
+        ZeroBuf(KL_phys);
+        KM_reset(&KL_km_shift);
+        KM_reset(&KL_km_control);
+        KM_reset(&KL_km_alt);
+        KM_reset(&KL_km_win);
+        KM_reset(&KL_km_l3);
+        KM_reset(&KL_km_l5);
+    }
+    KL_received_anything_in_this_window = false;
+}
+
 void KL_dk_on_sc(SC sc, int level) {
     printf("{dk sc%03x}", sc);
     WCHAR wc = ((unsigned short)(sc) >= KPN) ? 0 : KL_scw[level % 2][sc];
@@ -202,6 +226,8 @@ LRESULT CALLBACK KL_proc(int aCode, WPARAM wParam, LPARAM lParam) {
         }
         return PassThisEvent();
     }
+
+    KL_received_anything_in_this_window = true;
 
     /* Compute the layout level currently in effect
      * (using the modifier tracking data) */
@@ -645,6 +671,7 @@ void KL_init() {
     ZeroBuf(KL_kly);
     ZeroBuf(KL_phys);
     KL_klcs = (KLC*)calloc((KL_klcs_size = 4), sizeof(KLC));
+    KL_received_anything_in_this_window = false;
 
     KM_init(&KL_km_shift);
     KM_init(&KL_km_control);

@@ -29,6 +29,7 @@ void CALLBACK EH_proc(
     char *wincls = OS_get_window_class(hwnd);
     printf("\n%s switch |%s|{ lang:%08x:%x;%x } ", (langid==0 ? "console" : "task"), wincls, lm_langid, langid, KL_active);
     LM_hwnd = hwnd;
+    KL_on_task_switch();
     if (!strcmp(wincls, "ConsoleWindowClass")) {
         printf("<console/>");
         LM_activate_nth_locale(0);

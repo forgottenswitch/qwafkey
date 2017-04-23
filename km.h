@@ -20,6 +20,7 @@ typedef struct {
 } KM;
 
 void KM_init(KM *km);
+void KM_reset(KM *km);
 
 #define parms KM *km, bool down, SC sc
 void KM_nonmod_event(parms);
