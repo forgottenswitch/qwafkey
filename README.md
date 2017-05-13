@@ -7,17 +7,11 @@ Keyboard remapper for Windows. Main use is to implement features needed for
 
 [qwaf]: https://github.com/forgottenswitch/qwaf
 
-Bugs and limitations
---------------------
-When using multiple layouts, they must not be switched using the
-system-provided shortcuts, as remapper, for performance reasons, wouldn't be
-able to detect it until the next window switching, resulting in shuffled
-remaps.  The program-provided layout switching keys should be used instead (for
-Qwaf, that is `,m`).
-
-When using multiple layouts, sometimes the active one is switched without a
-reason.  Be prepared to switch back using the program-provided layout switching
-keys in this case.
+Limitations
+-----------
+Keyboard layouts need only be switched using the program's own combinations
+(`,m` by default), so that it can notice this and switch the effective
+remappings appropriately.
 
 Would not work in privileged applications unless launched "as Administrator"
 itself (but do this at your own risk).  Cannot work at all at password prompts.
