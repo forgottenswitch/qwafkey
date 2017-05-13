@@ -1,4 +1,4 @@
-PROG = vikb
+PROG = qwkeymap
 
 CFLAGS = -Wall -O2 -Wno-write-strings
 LDFLAGS = -static

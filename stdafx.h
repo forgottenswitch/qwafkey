@@ -31,7 +31,7 @@
 
 #include "resource.h"
 
-#define ProgramName "vikb"
+#define ProgramName "qwkeymap"
 #define DefaultComposeFilename "Compose"
 #define DefaultKeydefsFilename "keysymdef.h"
 
