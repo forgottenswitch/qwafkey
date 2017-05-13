@@ -2,7 +2,7 @@ Keyboard remapper for Windows.
 
 By default, implements the [Qwaf] keyboard layout:
 - Works with multiple input languages/layouts
-- Allows for Vim-like editing keys (hold `;` and press `hjkl`)
+- Allows for Vi-like editing keys (hold `;` and press `hjkl`)
 - Provides Compose key functionality (press `,n` and then the combination, such as `..`)
 - Provides latching modifiers (type `,` and then `j`; or hold `;`, type `s`, and then any letter)
 
