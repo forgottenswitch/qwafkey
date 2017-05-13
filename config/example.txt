@@ -69,9 +69,9 @@
 #   qLBracket/qLBrace, qRBracket/qRBrace, qSemicolon/qSemic/qSemi, qQuote/qApostrophe,
 #   qComma, qPeriod/qDot, qSlash
 #
-# The following binds the key which would be 'Z' in QWERTY to power off the display:
+# The following binds Win+Shift+"The key which would have been 'Z' in QWERTY" to power off the display:
 
-@#qZ: !dim_screen
+@#+qZ: !dim_screen
 
 
 
