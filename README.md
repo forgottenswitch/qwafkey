@@ -1,12 +1,11 @@
-Keyboard remapper for Windows.
+Keyboard remapper for Windows. Main use is to implement features needed for
+[qwaf] keyboard layout:
+- Vi-like editing keys (hold `;` and press `hjkl`)
+- Compose key (press `,n` and then the combination, such as `..`)
+- Latching modifiers (type `,` and then `j`; or hold `;`, type `s`, and then any letter)
+- Work with multiple input languages/layouts
 
-By default, implements the [Qwaf] keyboard layout:
-- Works with multiple input languages/layouts
-- Allows for Vi-like editing keys (hold `;` and press `hjkl`)
-- Provides Compose key functionality (press `,n` and then the combination, such as `..`)
-- Provides latching modifiers (type `,` and then `j`; or hold `;`, type `s`, and then any letter)
-
-[Qwaf]: https://github.com/forgottenswitch/qwaf
+[qwaf]: https://github.com/forgottenswitch/qwaf
 
 Bugs and limitations
 --------------------
