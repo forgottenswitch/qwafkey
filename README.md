@@ -3,14 +3,14 @@ Keyboard remapper for Windows. Main use is to implement features needed for
 - Vi-like editing keys (hold `;` and press `hjkl`)
 - Compose key (press `,n` and then the combination, such as `..`)
 - Latching modifiers (type `,` and then `j`; or hold `;`, type `s`, and then any letter)
-- Work with multiple input languages/layouts
+- Work with multiple layouts
 
 [qwaf]: https://github.com/forgottenswitch/qwaf
 
 Limitations
 -----------
-Keyboard layouts need only be switched using the program's own combinations
-(`,m` by default), so that it can notice this and switch the effective
+Layouts need only be switched using the program's own combinations (`,m` by
+default), so that the remapper can notice this and switch the effective
 remappings appropriately.
 
 Would not work in privileged applications unless launched "as Administrator"
