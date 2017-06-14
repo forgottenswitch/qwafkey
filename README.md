@@ -7,6 +7,13 @@ Keyboard remapper for Windows. Main use is to implement features needed for
 
 [qwaf]: https://github.com/forgottenswitch/qwaf
 
+Borrows interface (and some of the operation - not attempting to query the OS
+for keyboard state) from [AutoHotkey], but written anew to support the
+abovementioned latches and multiple layouts while also minimizing the typing
+lag.
+
+[AutoHotkey]: https://github.com/AutoHotkey/AutoHotkey
+
 Limitations
 -----------
 Layouts need only be switched using the program's own combinations (`,m` by
