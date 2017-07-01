@@ -136,5 +136,5 @@ clean:
 
 .PHONY: fetch
 fetch:
-	$(WGET) -O Compose https://cgit.freedesktop.org/xorg/lib/libX11/plain/nls/en_US.UTF-8/Compose.pre
-	$(WGET) -O keysymdef.h https://cgit.freedesktop.org/xorg/proto/x11proto/plain/keysymdef.h
+	$(WGET) -O config/Compose https://cgit.freedesktop.org/xorg/lib/libX11/plain/nls/en_US.UTF-8/Compose.pre
+	$(WGET) -O config/keysymdef.h https://cgit.freedesktop.org/xorg/proto/x11proto/plain/keysymdef.h
