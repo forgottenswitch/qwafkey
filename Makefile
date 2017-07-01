@@ -10,6 +10,9 @@ CC = $(CROSS)gcc
 WINDRES = $(CROSS)windres
 WGET ?= wget
 
+MKISOFS = mkisofs
+MKISOFS_FLAGS = -iso-level 4 -graft-points
+
 # Do not print Entering directory..
 GNUMAKEFLAGS = --no-print-directory
 
@@ -34,6 +37,9 @@ usage:
 	@echo
 	@echo "To download the latest Compose definitions:"
 	@echo " make fetch"
+	@echo
+	@echo "To package an .iso (intended for VMs):"
+	@echo " make iso"
 	@echo
 
 .PHONY: 32 64
@@ -138,3 +144,13 @@ clean:
 fetch:
 	$(WGET) -O config/Compose https://cgit.freedesktop.org/xorg/lib/libX11/plain/nls/en_US.UTF-8/Compose.pre
 	$(WGET) -O config/keysymdef.h https://cgit.freedesktop.org/xorg/proto/x11proto/plain/keysymdef.h
+
+.PHONY: iso
+iso:
+	$(MAKE) 32
+	$(MAKE) 64
+	$(MKISOFS) $(MKISOFS_FLAGS) -o $(PROG).iso \
+		$$( find config -type f | sed -e ' s:^:config/=:; ' ) \
+		$(PROG)-con32.exe $(PROG)-cui32.exe $(PROG)-gui32.exe \
+		$(PROG)-con64.exe $(PROG)-cui64.exe $(PROG)-gui64.exe \
+		$()

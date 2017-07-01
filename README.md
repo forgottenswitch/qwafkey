@@ -27,6 +27,7 @@ Prerequisites
 -------------
 - make
 - mingw cross-compiler
+- mkisofs (optional)
 
 On Cygwin:
 - Launch setup.exe, and install `mingw64-i686-gcc-g++`
